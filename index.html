@@ -1,244 +1,485 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Web Penghasil Uang</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Penghasil Uang</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body.dark { background: #111827; color: white; }
-    .hidden { display: none; }
+    .hidden{display:none}
+    body.dark{background:#0b1220}
   </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 dark:text-white min-h-screen flex items-center justify-center">
+<body class="bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-100 min-h-screen">
 
-<div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6" id="app">
+  <!-- TOAST -->
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm shadow-lg hidden"></div>
 
-  <!-- 🔑 Auth Section -->
-  <div id="authSection">
-    <h2 class="text-2xl font-bold text-center mb-4">🔑 Masuk / Daftar</h2>
+  <main class="max-w-md mx-auto p-4">
 
-    <!-- Tab Switch -->
-    <div class="flex justify-center mb-4">
-      <button id="btnLoginTab" onclick="showLogin()" class="px-4 py-2 bg-blue-600 text-white rounded-l-lg">Login</button>
-      <button id="btnRegisterTab" onclick="showRegister()" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-r-lg">Register</button>
-    </div>
+    <!-- ===== AUTH SECTION ===== -->
+    <section id="authSection" class="space-y-5">
+      <h1 class="text-center text-2xl font-bold">🔐 Masuk / Daftar</h1>
 
-    <!-- Login Form -->
-    <div id="loginForm" class="space-y-3">
-      <input id="loginEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:bg-gray-700" />
-      <input id="loginPassword" type="password" placeholder="Password" class="w-full p-3 rounded-lg border dark:bg-gray-700" />
-      <button onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-lg">Login</button>
-    </div>
-
-    <!-- Register Form -->
-    <div id="registerForm" class="space-y-3 hidden">
-      <input id="registerEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:bg-gray-700" />
-      <input id="registerPassword" type="password" placeholder="Password" class="w-full p-3 rounded-lg border dark:bg-gray-700" />
-      <button onclick="register()" class="w-full bg-green-600 text-white py-3 rounded-lg">Register</button>
-    </div>
-  </div>
-
-  <!-- 🏠 Main Section -->
-  <div id="mainSection" class="hidden">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-4">
-      <div class="flex items-center gap-3">
-        <img id="userPhoto" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full">
-        <span id="userName" class="font-semibold"></span>
+      <!-- Tabs -->
+      <div class="flex rounded-xl overflow-hidden border dark:border-slate-700">
+        <button id="btnLoginTab" class="flex-1 py-2 bg-blue-600 text-white font-medium">Login</button>
+        <button id="btnRegisterTab" class="flex-1 py-2 bg-gray-200 dark:bg-slate-800">Register</button>
       </div>
-      <div class="text-right">
-        <div class="text-sm">Saldo:</div>
-        <div id="userSaldo" class="font-bold text-green-600">Rp 0</div>
+
+      <!-- Login Form -->
+      <div id="loginForm" class="space-y-3">
+        <input id="loginEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+        <input id="loginPassword" type="password" placeholder="Password" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+        <button onclick="login()" class="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold">Login</button>
       </div>
-    </div>
 
-    <!-- Tombol Iklan -->
-    <button id="btnIklanMonetag" onclick="rewardMonetag()" class="w-full bg-blue-500 text-white py-3 rounded-lg mb-3">Klik Iklan Monetag (+Rp30.000)</button>
-    <div id="timerMonetag" class="text-center text-sm text-gray-500 mb-4"></div>
+      <!-- Register Form -->
+      <div id="registerForm" class="space-y-3 hidden">
+        <input id="registerEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+        <input id="registerPassword" type="password" placeholder="Password (min 6)" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+        <button onclick="register()" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold">Register</button>
+      </div>
+    </section>
 
-    <button id="btnIklanHiltoads" onclick="rewardHiltoads()" class="w-full bg-purple-500 text-white py-3 rounded-lg mb-3">Lihat Iklan Hiltoads (+Rp30.000)</button>
-    <div id="timerHiltoads" class="text-center text-sm text-gray-500 mb-4"></div>
+    <!-- ===== MAIN SECTION ===== -->
+    <section id="mainSection" class="hidden space-y-5">
 
-    <!-- Riwayat WD -->
-    <h3 class="font-semibold mt-4">Riwayat WD</h3>
-    <ul id="riwayatWD" class="text-sm mt-2 space-y-1"></ul>
+      <!-- Header -->
+      <header class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img id="userPhoto" src="https://i.pravatar.cc/80" class="w-10 h-10 rounded-full ring-2 ring-white/50">
+          <div class="text-sm">
+            <div class="font-semibold leading-tight" id="userName">User</div>
+            <div class="text-gray-500 dark:text-slate-400 text-xs">Aktif</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-gray-500 dark:text-slate-400">Saldo</div>
+          <div class="text-2xl font-extrabold text-emerald-500" id="saldoLabel">Rp 0</div>
+        </div>
+      </header>
 
-    <!-- WD -->
-    <input id="walletNumber" type="text" placeholder="Nomor E-Wallet" class="w-full p-3 rounded-lg border mt-3 dark:bg-gray-700" />
-    <button onclick="withdraw()" class="w-full bg-green-600 text-white py-3 rounded-lg mt-2">Withdraw</button>
+      <!-- Actions -->
+      <div class="grid gap-3">
+        <button id="btnMonetag" onclick="handleMonetag()" class="w-full py-4 rounded-2xl bg-blue-600 text-white font-semibold shadow active:opacity-90">
+          📺 Klik Iklan Monetag (+Rp30.000)
+        </button>
+        <div id="timerMonetag" class="text-center text-xs text-gray-600 dark:text-slate-400"></div>
 
-    <!-- Help & Logout -->
-    <div class="flex justify-between mt-4">
-      <button onclick="window.open('https://t.me/usernamekamu','_blank')" class="text-blue-500">Help</button>
-      <button onclick="logout()" class="text-red-500">Logout</button>
-    </div>
+        <button id="btnToHiltoads" onclick="goHiltoads()" class="w-full py-4 rounded-2xl bg-purple-600 text-white font-semibold shadow active:opacity-90">
+          🎯 Tugas Hiltoads (+Rp30.000)
+        </button>
+        <div id="timerHiltoads" class="text-center text-xs text-gray-600 dark:text-slate-400"></div>
+      </div>
 
-    <!-- Tema -->
-    <div class="text-center mt-3">
-      <button onclick="toggleTheme()" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-lg">🌗 Ganti Tema</button>
-    </div>
-  </div>
-</div>
+      <!-- Withdraw -->
+      <section class="space-y-3">
+        <h3 class="font-bold">Withdraw</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <select id="walletType" class="p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+            <option value="Dana">Dana</option>
+            <option value="OVO">OVO</option>
+            <option value="GoPay">GoPay</option>
+            <option value="ShopeePay">ShopeePay</option>
+          </select>
+          <input id="walletNumber" type="tel" inputmode="numeric" placeholder="Nomor e-wallet" class="p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800" />
+        </div>
+        <input id="wdAmount" type="number" min="30000" step="1000" value="30000" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800" />
+        <button onclick="withdraw()" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold">Ajukan WD (Min Rp30.000)</button>
+        <p class="text-xs text-gray-500 dark:text-slate-400">Status WD dapat dilihat pada riwayat di bawah. Notifikasi permintaan WD juga dikirim ke Telegram admin.</p>
+      </section>
 
-<!-- Toast -->
-<div id="toast" class="fixed bottom-5 right-5 px-4 py-2 bg-gray-800 text-white rounded-lg hidden"></div>
+      <!-- Riwayat WD -->
+      <section>
+        <h3 class="font-bold mb-2">Riwayat WD</h3>
+        <ul id="riwayatWd" class="space-y-2 text-sm"></ul>
+      </section>
 
-<!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+      <!-- Footer -->
+      <footer class="flex items-center justify-between pt-4 border-t dark:border-slate-800">
+        <button onclick="toggleTheme()" class="px-3 py-2 rounded-lg bg-gray-200 dark:bg-slate-800">🌗 Tema</button>
+        <div class="flex items-center gap-2">
+          <button onclick="window.open('https://t.me/usernamekamu','_blank')" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Help</button>
+          <button onclick="logout()" class="px-3 py-2 rounded-lg bg-red-600 text-white">Logout</button>
+        </div>
+      </footer>
+    </section>
 
-  // Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
-    authDomain: "penyimpanansaldo-280df.firebaseapp.com",
-    projectId: "penyimpanansaldo-280df",
-    storageBucket: "penyimpanansaldo-280df.appspot.com",
-    messagingSenderId: "659609775130",
-    appId: "1:659609775130:web:bdd088ca5a877498c5b5a3"
-  };
+    <!-- ===== HILTOADS SECTION (5 Banner, hold 5s) ===== -->
+    <section id="hiltoadsSection" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold">Iklan Hiltoads</h3>
+        <button onclick="backFromHiltoads()" id="btnBackHiltoads" class="px-3 py-2 rounded-lg bg-gray-300 dark:bg-slate-800 text-gray-700 dark:text-slate-200" disabled>
+          ⏳ Tunggu 5 dtk...
+        </button>
+      </div>
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+      <!-- Ganti IMG di bawah dengan kode banner Hiltoads milikmu -->
+      <div class="grid gap-3">
+        <img src="https://via.placeholder.com/600x150?text=Hiltoads+Banner+1" class="w-full rounded-xl shadow" alt="Banner 1">
+        <img src="https://via.placeholder.com/600x150?text=Hiltoads+Banner+2" class="w-full rounded-xl shadow" alt="Banner 2">
+        <img src="https://via.placeholder.com/600x150?text=Hiltoads+Banner+3" class="w-full rounded-xl shadow" alt="Banner 3">
+        <img src="https://via.placeholder.com/600x150?text=Hiltoads+Banner+4" class="w-full rounded-xl shadow" alt="Banner 4">
+        <img src="https://via.placeholder.com/600x150?text=Hiltoads+Banner+5" class="w-full rounded-xl shadow" alt="Banner 5">
+      </div>
 
-  let currentUser = null;
+      <p class="text-xs text-gray-500 dark:text-slate-400">Tombol kembali akan aktif setelah 5 detik. Setelah kembali, reward akan ditambahkan jika tidak sedang cooldown 10 menit.</p>
+    </section>
 
-  // UI Functions
-  function showLogin(){
-    loginForm.classList.remove("hidden");
-    registerForm.classList.add("hidden");
-  }
-  function showRegister(){
-    loginForm.classList.add("hidden");
-    registerForm.classList.remove("hidden");
-  }
-  function showToast(msg){
-    const t = document.getElementById("toast");
-    t.innerText = msg;
-    t.classList.remove("hidden");
-    setTimeout(()=>t.classList.add("hidden"),3000);
-  }
-  function toggleTheme(){
-    document.body.classList.toggle("dark");
-  }
+  </main>
 
-  // Auth
-  window.login = async function(){
-    const email = loginEmail.value;
-    const pass = loginPassword.value;
-    try{
-      await signInWithEmailAndPassword(auth, email, pass);
-      showToast("Login sukses");
-    }catch(e){ showToast(e.message); }
-  }
-  window.register = async function(){
-    const email = registerEmail.value;
-    const pass = registerPassword.value;
-    try{
-      await createUserWithEmailAndPassword(auth, email, pass);
-      showToast("Registrasi sukses");
-    }catch(e){ showToast(e.message); }
-  }
-  window.logout = async function(){
-    await signOut(auth);
-  }
+  <!-- Firebase & App Script -->
+  <script type="module">
+    // ===== Firebase (v10.12.2) =====
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, query, where, getDocs,
+      serverTimestamp, Timestamp, increment
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  // Reward & WD
-  async function loadUserData(user){
-    currentUser = user;
-    userName.innerText = user.email;
-    userPhoto.src = user.photoURL || "https://via.placeholder.com/40";
+    // --- Config sesuai yang kamu kirim ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
+      authDomain: "penyimpanansaldo-280df.firebaseapp.com",
+      databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "penyimpanansaldo-280df",
+      storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
+      messagingSenderId: "659609775130",
+      appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
+      measurementId: "G-L4TW7E23H2"
+    };
 
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
-    if(!snap.exists()){
-      await setDoc(ref, { saldo: 0, lastMonetag: null, lastHiltoads: null });
-      userSaldo.innerText = "Rp 0";
-    }else{
-      userSaldo.innerText = "Rp "+snap.data().saldo.toLocaleString();
-    }
-    loadRiwayatWD();
-  }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
 
-  window.rewardMonetag = async function(){
-    const ref = doc(db, "users", currentUser.uid);
-    const snap = await getDoc(ref);
-    let data = snap.data();
-    let now = Date.now();
-    if(data.lastMonetag && now - data.lastMonetag < 5000){
-      showToast("Cooldown 5 detik");
-      return;
-    }
-    let newSaldo = data.saldo + 30000;
-    await updateDoc(ref,{ saldo: newSaldo, lastMonetag: now });
-    userSaldo.innerText = "Rp "+newSaldo.toLocaleString();
-    showToast("Berhasil +Rp30.000");
-  }
+    // ===== TeleBot (simple notif) =====
+    const TELEGRAM_BOT_TOKEN = "8236562243:AAFIyLCk2fu9-4GxxYSuIoSKw9DEiv1DVko";
+    const TELEGRAM_CHAT_ID   = "8322802091";
 
-  window.rewardHiltoads = async function(){
-    const ref = doc(db, "users", currentUser.uid);
-    const snap = await getDoc(ref);
-    let data = snap.data();
-    let now = Date.now();
-    if(data.lastHiltoads && now - data.lastHiltoads < 600000){
-      showToast("Cooldown 10 menit");
-      return;
-    }
-    let newSaldo = data.saldo + 30000;
-    await updateDoc(ref,{ saldo: newSaldo, lastHiltoads: now });
-    userSaldo.innerText = "Rp "+newSaldo.toLocaleString();
-    showToast("Berhasil +Rp30.000");
-  }
+    // ===== Helpers =====
+    const $ = (id)=>document.getElementById(id);
+    const toast = (msg)=>{ const t=$("toast"); t.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),3000); };
+    const formatRp = n => "Rp " + (n||0).toLocaleString("id-ID");
+    const nowJakarta = ()=> new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Jakarta"}));
+    // dayKey reset 03:00 WIB: geser -3 jam -> YYYYMMDD
+    const dayKeyOf = (date)=>{
+      const d = new Date(date.getTime() - 3*3600*1000);
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const da= String(d.getDate()).padStart(2,'0');
+      return `${y}${m}${da}`;
+    };
 
-  window.withdraw = async function(){
-    let nomor = walletNumber.value;
-    if(!nomor){ showToast("Isi nomor E-Wallet"); return; }
+    // UI Tabs
+    $("btnLoginTab").onclick = ()=>{ $("loginForm").classList.remove("hidden"); $("registerForm").classList.add("hidden");
+      $("btnLoginTab").className="flex-1 py-2 bg-blue-600 text-white font-medium";
+      $("btnRegisterTab").className="flex-1 py-2 bg-gray-200 dark:bg-slate-800";
+    };
+    $("btnRegisterTab").onclick = ()=>{ $("loginForm").classList.add("hidden"); $("registerForm").classList.remove("hidden");
+      $("btnRegisterTab").className="flex-1 py-2 bg-blue-600 text-white font-medium";
+      $("btnLoginTab").className="flex-1 py-2 bg-gray-200 dark:bg-slate-800";
+    };
 
-    const ref = doc(db, "users", currentUser.uid);
-    const snap = await getDoc(ref);
-    let data = snap.data();
-    if(data.saldo < 30000){ showToast("Minimal WD Rp30.000"); return; }
+    // Theme
+    window.toggleTheme = ()=> document.body.classList.toggle("dark");
 
-    await addDoc(collection(db,"withdraws"),{
-      uid: currentUser.uid,
-      wallet: nomor,
-      jumlah: data.saldo,
-      status: "Pending",
-      createdAt: serverTimestamp()
+    // Auth
+    window.register = async ()=>{
+      try{
+        const email = $("registerEmail").value.trim();
+        const pass  = $("registerPassword").value.trim();
+        if(pass.length<6) return toast("Password minimal 6 karakter");
+        await createUserWithEmailAndPassword(auth, email, pass);
+        toast("✅ Registrasi sukses");
+      }catch(e){ toast("❌ "+e.message); }
+    };
+    window.login = async ()=>{
+      try{
+        const email = $("loginEmail").value.trim();
+        const pass  = $("loginPassword").value.trim();
+        await signInWithEmailAndPassword(auth, email, pass);
+        toast("✅ Login sukses");
+      }catch(e){ toast("❌ "+e.message); }
+    };
+    window.logout = async ()=>{ await signOut(auth); };
+
+    let currentUser=null, userDocRef=null;
+
+    onAuthStateChanged(auth, async (user)=>{
+      if(user){
+        currentUser = user;
+        userDocRef = doc(db,"users",user.uid);
+        $("authSection").classList.add("hidden");
+        $("mainSection").classList.remove("hidden");
+        await ensureUserDoc();
+        await refreshUserUI();
+        await loadRiwayatWD();
+      }else{
+        currentUser=null; userDocRef=null;
+        $("mainSection").classList.add("hidden");
+        $("authSection").classList.remove("hidden");
+      }
     });
 
-    await updateDoc(ref,{ saldo: 0 });
-    userSaldo.innerText = "Rp 0";
-    loadRiwayatWD();
-    showToast("WD diajukan");
-  }
-
-  async function loadRiwayatWD(){
-    const q = query(collection(db,"withdraws"), where("uid","==",currentUser.uid));
-    const snaps = await getDocs(q);
-    riwayatWD.innerHTML = "";
-    snaps.forEach(docu=>{
-      let d = docu.data();
-      let li = document.createElement("li");
-      li.innerText = `${d.jumlah} -> ${d.wallet} [${d.status}]`;
-      riwayatWD.appendChild(li);
-    });
-  }
-
-  // State
-  onAuthStateChanged(auth,(user)=>{
-    if(user){
-      authSection.classList.add("hidden");
-      mainSection.classList.remove("hidden");
-      loadUserData(user);
-    }else{
-      authSection.classList.remove("hidden");
-      mainSection.classList.add("hidden");
+    async function ensureUserDoc(){
+      const snap = await getDoc(userDocRef);
+      if(!snap.exists()){
+        await setDoc(userDocRef,{
+          email: currentUser.email || "",
+          saldo: 0,
+          monetagCount: 0,
+          lastMonetag: null,
+          lastHiltoads: null,
+          dayKey: dayKeyOf(nowJakarta())
+        });
+      }
     }
-  });
-</script>
+
+    async function refreshUserUI(){
+      const snap = await getDoc(userDocRef);
+      const d = snap.data() || {};
+      $("userName").textContent = currentUser.email||"User";
+      $("saldoLabel").textContent = formatRp(d.saldo||0);
+      // Update timers display
+      updateMonetagCountdown(d.lastMonetag);
+      updateHiltoadsCountdown(d.lastHiltoads);
+    }
+
+    // ===== Monetag (Rp30k, cooldown 5s, max 20/hari reset 03:00) =====
+    const MONETAG_REWARD = 30000;
+    const MONETAG_COOLDOWN_MS = 5000;
+
+    function updateMonetagCountdown(lastTs){
+      const timerEl = $("timerMonetag");
+      if(!lastTs){ timerEl.textContent=""; $("btnMonetag").disabled=false; $("btnMonetag").textContent="📺 Klik Iklan Monetag (+Rp30.000)"; return; }
+      const last = lastTs instanceof Timestamp ? lastTs.toDate() : new Date(lastTs);
+      const remain = MONETAG_COOLDOWN_MS - (Date.now()-last.getTime());
+      if(remain>0){
+        startCountdown($("btnMonetag"), timerEl, remain, "📺 Monetag cooldown");
+      }else{
+        timerEl.textContent=""; $("btnMonetag").disabled=false;
+        $("btnMonetag").textContent="📺 Klik Iklan Monetag (+Rp30.000)";
+      }
+    }
+
+    window.handleMonetag = async ()=>{
+      if(!currentUser) return;
+      const snap = await getDoc(userDocRef);
+      const d = snap.data();
+      // reset harian via dayKey 03:00 WIB
+      const todayKey = dayKeyOf(nowJakarta());
+      let updates = {};
+      if(d.dayKey !== todayKey){ updates.monetagCount = 0; updates.dayKey = todayKey; }
+
+      // cooldown check
+      let last = d.lastMonetag ? (d.lastMonetag instanceof Timestamp ? d.lastMonetag.toDate() : new Date(d.lastMonetag)) : null;
+      const remain = last ? MONETAG_COOLDOWN_MS - (Date.now()-last.getTime()) : 0;
+      if(remain>0){ updateMonetagCountdown(d.lastMonetag); return toast("⏳ Tunggu sebentar..."); }
+
+      // limit harian
+      const count = (updates.monetagCount ?? d.monetagCount) || 0;
+      if(count >= 20) return toast("⚠️ Batas 20x per hari (reset 03:00 WIB)");
+
+      // award
+      await updateDoc(userDocRef,{
+        ...updates,
+        saldo: increment(MONETAG_REWARD),
+        monetagCount: increment(1),
+        lastMonetag: serverTimestamp()
+      });
+
+      toast("✅ +Rp30.000 dari Monetag");
+      await refreshUserUI();
+    };
+
+    // ===== Hiltoads (page dengan 5 banner, hold 5s, cooldown 10 menit) =====
+    const HILTOADS_REWARD = 30000;
+    const HILTOADS_COOLDOWN_MS = 10*60*1000;
+    let hiltoadsHoldTimer = null;
+
+    function updateHiltoadsCountdown(lastTs){
+      const timerEl = $("timerHiltoads");
+      if(!lastTs){ timerEl.textContent=""; $("btnToHiltoads").disabled=false; $("btnToHiltoads").textContent="🎯 Tugas Hiltoads (+Rp30.000)"; return; }
+      const last = lastTs instanceof Timestamp ? lastTs.toDate() : new Date(lastTs);
+      const remain = HILTOADS_COOLDOWN_MS - (Date.now()-last.getTime());
+      if(remain>0){
+        startCountdown($("btnToHiltoads"), timerEl, remain, "🎯 Hiltoads cooldown");
+      }else{
+        timerEl.textContent=""; $("btnToHiltoads").disabled=false;
+        $("btnToHiltoads").textContent="🎯 Tugas Hiltoads (+Rp30.000)";
+      }
+    }
+
+    window.goHiltoads = async ()=>{
+      const snap = await getDoc(userDocRef);
+      const d = snap.data();
+      // cooldown check
+      let last = d.lastHiltoads ? (d.lastHiltoads instanceof Timestamp ? d.lastHiltoads.toDate() : new Date(d.lastHiltoads)) : null;
+      const remain = last ? HILTOADS_COOLDOWN_MS - (Date.now()-last.getTime()) : 0;
+      if(remain>0){ updateHiltoadsCountdown(d.lastHiltoads); return toast("⏳ Masih cooldown"); }
+
+      // Buka halaman Hiltoads + kunci tombol 5 detik
+      $("mainSection").classList.add("hidden");
+      $("hiltoadsSection").classList.remove("hidden");
+
+      let hold = 5;
+      $("btnBackHiltoads").disabled = true;
+      $("btnBackHiltoads").textContent = `⏳ Tunggu ${hold} dtk...`;
+      if(hiltoadsHoldTimer) clearInterval(hiltoadsHoldTimer);
+      hiltoadsHoldTimer = setInterval(()=>{
+        hold--;
+        if(hold<=0){
+          clearInterval(hiltoadsHoldTimer);
+          $("btnBackHiltoads").disabled=false;
+          $("btnBackHiltoads").textContent="⬅️ Kembali & Klaim";
+        }else{
+          $("btnBackHiltoads").textContent=`⏳ Tunggu ${hold} dtk...`;
+        }
+      },1000);
+    };
+
+    window.backFromHiltoads = async ()=>{
+      // Setelah kembali, proses reward jika tidak cooldown (proteksi kedua di sini juga)
+      $("hiltoadsSection").classList.add("hidden");
+      $("mainSection").classList.remove("hidden");
+
+      const snap = await getDoc(userDocRef);
+      const d = snap.data();
+      let last = d.lastHiltoads ? (d.lastHiltoads instanceof Timestamp ? d.lastHiltoads.toDate() : new Date(d.lastHiltoads)) : null;
+      const remain = last ? HILTOADS_COOLDOWN_MS - (Date.now()-last.getTime()) : 0;
+      if(remain>0){ updateHiltoadsCountdown(d.lastHiltoads); return toast("⏳ Masih cooldown"); }
+
+      await updateDoc(userDocRef,{
+        saldo: increment(HILTOADS_REWARD),
+        lastHiltoads: serverTimestamp()
+      });
+      toast("✅ +Rp30.000 dari Hiltoads");
+      await refreshUserUI();
+    };
+
+    // ===== Countdown util for buttons =====
+    function startCountdown(btn, labelEl, ms, prefixText){
+      btn.disabled = true;
+      const endAt = Date.now()+ms;
+      const tick = ()=>{
+        const remain = endAt - Date.now();
+        if(remain<=0){
+          btn.disabled=false;
+          labelEl.textContent="";
+          if(btn=== $("btnMonetag")) btn.textContent="📺 Klik Iklan Monetag (+Rp30.000)";
+          if(btn=== $("btnToHiltoads")) btn.textContent="🎯 Tugas Hiltoads (+Rp30.000)";
+          return;
+        }
+        const s = Math.ceil(remain/1000);
+        const mm = Math.floor(s/60).toString().padStart(2,"0");
+        const ss = (s%60).toString().padStart(2,"0");
+        const nice = s>=60 ? `${mm}:${ss}` : `${ss} dtk`;
+        labelEl.textContent = `${prefixText}: ${nice}`;
+        if(btn=== $("btnMonetag")) btn.textContent=`⏳ Monetag: ${nice}`;
+        if(btn=== $("btnToHiltoads")) btn.textContent=`⏳ Hiltoads: ${nice}`;
+        requestAnimationFrame(tick);
+      };
+      tick();
+    }
+
+    // ===== Withdraw (Telegram notif + Firestore) =====
+    window.withdraw = async ()=>{
+      if(!currentUser) return;
+      const amount = parseInt($("wdAmount").value||"0",10);
+      const walletType = $("walletType").value;
+      const walletNumber= $("walletNumber").value.trim();
+
+      if(!walletNumber) return toast("❌ Masukkan nomor e-wallet");
+      if(isNaN(amount) || amount<30000) return toast("⚠️ Minimal WD Rp30.000");
+
+      const snap = await getDoc(userDocRef);
+      const d = snap.data();
+      if((d.saldo||0)<amount) return toast("⚠️ Saldo tidak cukup");
+
+      // Potong saldo + simpan WD
+      const wdRef = await addDoc(collection(db,"withdrawals"),{
+        uid: currentUser.uid,
+        email: currentUser.email||"",
+        amount,
+        walletType,
+        walletNumber,
+        status: "pending",
+        createdAt: serverTimestamp()
+      });
+      await updateDoc(userDocRef,{ saldo: increment(-amount) });
+
+      // Notif Telegram (simple)
+      const when = nowJakarta().toLocaleString("id-ID",{ timeZone:"Asia/Jakarta" });
+      const text = [
+        "📤 Permintaan WD Baru!",
+        `👤 User: ${currentUser.email||"-"}`,
+        `💰 Jumlah: ${formatRp(amount)}`,
+        `🏧 E-Wallet (${walletType}): ${walletNumber}`,
+        `🕒 Waktu: ${when} WIB`,
+        `🆔 Firestore ID: ${wdRef.id}`
+      ].join("\n");
+
+      try{
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{
+          method:"POST",
+          headers:{ "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
+          body: new URLSearchParams({ chat_id: TELEGRAM_CHAT_ID, text })
+        });
+      }catch(e){
+        console.error("Telegram error:", e);
+      }
+
+      toast("✅ WD diajukan (pending).");
+      await refreshUserUI();
+      await loadRiwayatWD();
+    };
+
+    async function loadRiwayatWD(){
+      const q = query(collection(db,"withdrawals"), where("uid","==", currentUser.uid));
+      const snaps = await getDocs(q);
+      const list = $("riwayatWd");
+      list.innerHTML = "";
+      const items = [];
+      snaps.forEach(s=>{
+        const d = s.data();
+        const when = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+        items.push({ id:s.id, ...d, createdAt: when ? when.getTime():0 });
+      });
+      items.sort((a,b)=>b.createdAt-a.createdAt);
+      for(const d of items){
+        const timeStr = d.createdAt ? new Date(d.createdAt).toLocaleString("id-ID",{ timeZone:"Asia/Jakarta" })+" WIB" : "-";
+        const li = document.createElement("li");
+        li.className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-800 border dark:border-slate-700";
+        li.innerHTML = `
+          <div>
+            <div class="font-semibold">${formatRp(d.amount)} • <span class="capitalize">${d.walletType}</span></div>
+            <div class="text-xs text-gray-500 dark:text-slate-400">${timeStr}</div>
+            <div class="text-xs text-gray-500 dark:text-slate-400">No: ${d.walletNumber}</div>
+          </div>
+          <span class="text-xs px-2 py-1 rounded-lg ${
+            d.status==="pending"?"bg-yellow-100 text-yellow-800":
+            d.status==="success"?"bg-emerald-100 text-emerald-700":
+            "bg-red-100 text-red-700"
+          }">${d.status}</span>
+        `;
+        list.appendChild(li);
+      }
+    }
+
+    // Refresh timers every 3s (to keep labels accurate after server updates)
+    setInterval(async ()=>{
+      if(!userDocRef) return;
+      const snap = await getDoc(userDocRef);
+      const d = snap.data()||{};
+      updateMonetagCountdown(d.lastMonetag);
+      updateHiltoadsCountdown(d.lastHiltoads);
+    }, 3000);
+
+  </script>
 </body>
 </html>
