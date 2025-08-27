@@ -140,8 +140,52 @@
       <div class="flex items-center justify-between">
         <h3 class="text-xl font-bold">Riwayat Withdraw</h3>
         <button id="btnBackHome" class="px-3 py-2 rounded-lg bg-gray-200 dark:bg-slate-800">⬅️ Kembali</button>
-      </div>
-      <ul id="riwayatWd" class="space-y-2 text-sm"></ul>
+        <div id="riwayatList"></div>
+        <script>
+  function showRiwayat() {
+    document.getElementById("homePage").classList.add("hidden");
+    document.getElementById("riwayatPage").classList.remove("hidden");
+
+    const uid = auth.currentUser.uid;
+    db.collection("withdrawals")
+      .where("uid", "==", uid)
+      .orderBy("createdAt", "desc")
+      .onSnapshot(snapshot => {
+        const list = document.getElementById("riwayatList");
+        list.innerHTML = "";
+
+        if (snapshot.empty) {
+          list.innerHTML = "<p class='text-gray-400'>Belum ada riwayat WD.</p>";
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const wd = doc.data();
+          const createdAt = wd.createdAt?.toDate().toLocaleString("id-ID") || "-";
+
+          const item = document.createElement("div");
+          item.className = "p-3 mb-2 rounded bg-gray-800 text-white shadow";
+
+          item.innerHTML = `
+            <div><b>${wd.walletType}</b> - ${wd.walletNumber}</div>
+            <div>Rp${wd.amount.toLocaleString("id-ID")} - 
+              <span class="${wd.status === 'success' ? 'text-green-400' : wd.status === 'pending' ? 'text-yellow-400' : 'text-red-400'}">
+                ${wd.status}
+              </span>
+            </div>
+            <div class="text-xs text-gray-400">${createdAt}</div>
+          `;
+
+          list.appendChild(item);
+        });
+      });
+  }
+
+  function showHome() {
+    document.getElementById("riwayatPage").classList.add("hidden");
+    document.getElementById("homePage").classList.remove("hidden");
+  }
+</script>
       <p class="text-xs text-gray-500 dark:text-slate-400">Riwayat ter-update otomatis (realtime).</p>
     </section>
 
