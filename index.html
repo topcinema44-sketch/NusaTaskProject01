@@ -13,6 +13,7 @@
   </style>
 </head>
 <body class="bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-100 min-h-screen">
+
   <!-- TOAST -->
   <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm shadow-lg hidden"></div>
 
@@ -69,7 +70,7 @@
         </div>
         <div class="text-right">
           <div class="text-xs text-gray-500 dark:text-slate-400">Saldo</div>
-          <div class="text-xl font-extrabold text-emerald-500" id="saldoLabel">Rp 0</div>
+          <div class="text-lg font-extrabold text-emerald-500" id="saldoLabel">Rp 0</div>
           <div id="harianLabel" class="text-[11px] text-gray-500 dark:text-slate-400"></div>
         </div>
       </header>
@@ -142,84 +143,55 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, serverTimestamp, runTransaction, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, onSnapshot, serverTimestamp, runTransaction, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // ===== Firebase Config =====
-    const firebaseConfig = {
-      apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
-      authDomain: "penyimpanansaldo-280df.firebaseapp.com",
-      projectId: "penyimpanansaldo-280df",
-      storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
-      messagingSenderId: "659609775130",
-      appId: "1:659609775130:web:bdd088ca5a877498c5b5a3"
-    };
+    const firebaseConfig = { /* pakai config kamu */ };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ===== Telegram =====
     const TELEGRAM_BOT_TOKEN = "8236562243:AAFIyLCk2fu9-4GxxYSuIoSKw9DEiv1DVko";
-    const TELEGRAM_CHAT_ID   = "8322802091";
+    const TELEGRAM_CHAT_ID = "8322802091";
 
-    // Helpers
     const $=id=>document.getElementById(id);
     const show=el=>el.classList.remove("hidden");
     const hide=el=>el.classList.add("hidden");
     const toast=msg=>{const t=$("toast");t.textContent=msg;t.classList.remove("hidden");setTimeout(()=>t.classList.add("hidden"),2600)};
     const formatRp=n=>"Rp "+(n||0).toLocaleString("id-ID");
-    const nowJakarta=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Jakarta"}));
-    const dayKeyOf=(date)=>{const d=new Date(date.getTime()-3*3600*1000);return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`};
 
-    // Theme
-    $("btnTheme").onclick=()=>{const d=document.body.classList.toggle("dark");localStorage.setItem("theme",d?"dark":"light")};
-    if(localStorage.getItem("theme")==="dark")document.body.classList.add("dark");
-
-    // Tabs
+    // Tabs login/register
     $("btnLoginTab").onclick=()=>{show($("loginForm"));hide($("registerForm"))};
     $("btnRegisterTab").onclick=()=>{hide($("loginForm"));show($("registerForm"))};
 
-    // Auth
-    $("btnLogin").onclick=async()=>{try{await signInWithEmailAndPassword(auth,$("loginEmail").value.trim(),$("loginPassword").value.trim());toast("✅ Login sukses");}catch(e){toast("❌ "+e.message)}};
+    // Auth actions
+    $("btnLogin").onclick=async()=>{try{await signInWithEmailAndPassword(auth,$("loginEmail").value,$("loginPassword").value);toast("✅ Login sukses");}catch(e){toast("❌ "+e.message)}};
     $("btnRegister").onclick=async()=>{try{
-      const email=$("registerEmail").value.trim();const pass=$("registerPassword").value.trim();const uname=$("registerUsername").value.trim()||"User";
-      if(pass.length<6)return toast("⚠️ Min 6 karakter");
+      const email=$("registerEmail").value; const pass=$("registerPassword").value; const uname=$("registerUsername").value||"User";
       const cred=await createUserWithEmailAndPassword(auth,email,pass);
-      await setDoc(doc(db,"users",cred.user.uid),{email,username:uname,saldo:0,monetagCount:0,lastMonetag:null,lastHiltoads:null,dayKey:dayKeyOf(nowJakarta())});
+      await setDoc(doc(db,"users",cred.user.uid),{email,username:uname,saldo:0,monetagCount:0,lastMonetag:null,lastHiltoads:null});
       toast("✅ Registrasi sukses");
     }catch(e){toast("❌ "+e.message)}};
 
-    // State
+    // Theme
+    $("btnTheme").onclick=()=>{const dark=document.body.classList.toggle("dark");localStorage.setItem("theme",dark?"dark":"light")};
+    if(localStorage.getItem("theme")==="dark")document.body.classList.add("dark");
+
+    // Auth state
     let currentUser=null,userDocRef=null;
-    onAuthStateChanged(auth,async(user)=>{if(user){currentUser=user;userDocRef=doc(db,"users",user.uid);hide($("authSection"));show($("mainSection"));bindUser();}else{show($("authSection"));hide($("mainSection"));hide($("hiltoadsSection"));hide($("riwayatSection"));}});
+    onAuthStateChanged(auth,async(user)=>{if(user){currentUser=user;userDocRef=doc(db,"users",user.uid);hide($("authSection"));show($("mainSection"));bindUserSnapshot();}else{show($("authSection"));hide($("mainSection"));hide($("hiltoadsSection"));hide($("riwayatSection"));}});
 
-    // Bind user
-    function bindUser(){onSnapshot(userDocRef,(snap)=>{const d=snap.data()||{};$("userName").textContent=d.username||"User";$("saldoLabel").textContent=formatRp(d.saldo||0);})}
+    function bindUserSnapshot(){onSnapshot(userDocRef,(snap)=>{const d=snap.data()||{};$("userName").textContent=d.username||"User";$("saldoLabel").textContent=formatRp(d.saldo||0)})}
 
-    // ===== Withdraw =====
-    $("btnWD").onclick=async()=>{
-      if(!currentUser)return;
-      const amount=parseInt($("wdAmount").value||"0",10);
-      const walletType=$("walletType").value;
-      const walletNumber=$("walletNumber").value.trim();
-      if(!walletNumber)return toast("❌ Isi nomor e-wallet");
-      if(amount<30000)return toast("⚠️ Minimal Rp30.000");
-      let wdId="";
-      try{
-        await runTransaction(db,async(trx)=>{
-          const snap=await trx.get(userDocRef);
-          const d=snap.data();
-          if((d.saldo||0)<amount)throw new Error("Saldo kurang");
-          trx.update(userDocRef,{saldo:(d.saldo||0)-amount});
-          const ref=doc(collection(db,"withdrawals"));wdId=ref.id;
-          trx.set(ref,{uid:currentUser.uid,username:d.username||"User",amount,walletType,walletNumber,status:"pending",createdAt:serverTimestamp()});
-        });
-        const text=`📤 WD Baru!\n👤 ${currentUser.email}\n🆔 ${wdId}\n💰 ${formatRp(amount)}\n🏧 ${walletType}: ${walletNumber}\n🕒 ${nowJakarta().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})} WIB`;
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({chat_id:TELEGRAM_CHAT_ID,text})});
-        toast("✅ WD diajukan");
-      }catch(e){toast("❌ "+e.message)}
-    };
+    // Withdraw
+    $("btnWD").onclick=async()=>{if(!currentUser)return;const amount=parseInt($("wdAmount").value,10);const walletType=$("walletType").value;const walletNumber=$("walletNumber").value.trim();if(!walletNumber)return toast("❌ Masukkan nomor e-wallet");if(amount<30000)return toast("⚠️ Minimal Rp30.000");
+      let newId="";try{await runTransaction(db,async(trx)=>{const snap=await trx.get(userDocRef);const d=snap.data();if((d.saldo||0)<amount)throw new Error("Saldo tidak cukup");trx.update(userDocRef,{saldo:(d.saldo||0)-amount});const ref=doc(collection(db,"withdrawals"));newId=ref.id;trx.set(ref,{uid:currentUser.uid,email:currentUser.email,amount,walletType,walletNumber,status:"pending",createdAt:serverTimestamp()});});
+      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({chat_id:TELEGRAM_CHAT_ID,text:`📤 WD Baru\n👤 ${currentUser.email}\n💰 ${formatRp(amount)}\n🏧 ${walletType}: ${walletNumber}\n🆔 ${newId}`})});
+      toast("✅ WD diajukan")}catch(e){toast("❌ "+e.message)}};
 
     // Riwayat
     $("btnRiwayatPage").onclick=()=>{hide($("mainSection"));show($("riwayatSection"));bindRiwayat()};
     $("btnBackMain").onclick=()=>{show($("mainSection"));hide($("riwayatSection"))};
-    function bindRiwayat(){const q=query(collection(db,"withdrawals"),where("uid","==",currentUser.uid));onSnapshot(q,(snaps)=>{const list=$("riwayatWd");list.innerHTML="";const arr=[];snaps.forEach(s=>{const d=s.data();arr.push({...d,_t:d.createdAt?.toDate?d.createdAt.toDate().getTime():0})});arr.sort((a,b)=>b._t-a._t);for(const d of arr){const li=document.createElement("li");li.className="p
+    function bindRiwayat(){const q=query(collection(db,"withdrawals"),where("uid","==",currentUser.uid));onSnapshot(q,(snaps)=>{const list=$("riwayatWd");list.innerHTML="";snaps.forEach(s=>{const d=s.data();const li=document.createElement("li");li.className="p-3 rounded-xl bg-white dark:bg-slate-800 border";li.textContent=`${formatRp(d.amount)} - ${d.walletType} (${d.status})`;list.appendChild(li)})})}
+  </script>
+</body>
+</html>
