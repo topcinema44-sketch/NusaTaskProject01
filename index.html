@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Web Penghasil Uang</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:0; text-align:center; }
+    .container { max-width: 400px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; margin-top: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input { width: 90%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; }
+    button { padding: 10px 20px; margin: 10px 0; border: none; background: #28a745; color: white; border-radius: 5px; cursor: pointer; }
+    button:disabled { background: gray; cursor: not-allowed; }
+    .banner { width: 100%; height: 60px; margin: 5px 0; background: #ddd; }
+    .header { display:flex; justify-content: space-between; align-items:center; margin-bottom:20px; }
+    .profile { text-align:left; }
+    .saldo { text-align:right; font-weight:bold; }
+  </style>
+</head>
+<body>
+
+<div id="auth-section" class="container">
+  <div class="banner">[ Iklan Hiltoads 1 ]</div>
+  <div class="banner">[ Iklan Hiltoads 2 ]</div>
+  <h2>Registrasi / Login</h2>
+  <input type="text" id="name" placeholder="Nama (saat registrasi)">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="register()">Registrasi</button>
+  <button onclick="login()">Login</button>
+  <div class="banner">[ Iklan Hiltoads 3 ]</div>
+  <div class="banner">[ Iklan Hiltoads 4 ]</div>
+</div>
+
+<div id="main-section" class="container" style="display:none;">
+  <div class="header">
+    <div class="profile">
+      <img src="https://via.placeholder.com/40" style="border-radius:50%;">
+      <span id="user-name"></span>
+    </div>
+    <div class="saldo">Saldo: Rp <span id="user-saldo">0</span></div>
+  </div>
+
+  <button id="task-btn" onclick="doTask()">Klik Iklan Monetag (Reward Rp 10)</button>
+  <br>
+  <button id="hiltoads-btn" onclick="openHiltoads()">Lihat Iklan Hiltoads (Reward Rp 10)</button>
+
+  <div id="hiltoads-section" style="display:none; margin-top:20px;">
+    <h3>Iklan Hiltoads</h3>
+    <div class="banner">[ Hiltoads Banner 1 ]</div>
+    <div class="banner">[ Hiltoads Banner 2 ]</div>
+    <div class="banner">[ Hiltoads Banner 3 ]</div>
+    <div class="banner">[ Hiltoads Banner 4 ]</div>
+    <div class="banner">[ Hiltoads Banner 5 ]</div>
+    <button id="close-hiltoads" disabled onclick="closeHiltoads()">Tutup & Dapatkan Reward</button>
+  </div>
+
+  <div style="margin-top:30px;">
+    <button onclick="help()">Help</button>
+    <button onclick="withdraw()">WD</button>
+  </div>
+</div>
+
+<script type="module">
+  // ====== Firebase Config (punyamu) ======
+  const firebaseConfig = {
+    apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
+    authDomain: "penyimpanansaldo-280df.firebaseapp.com",
+    databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "penyimpanansaldo-280df",
+    storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
+    messagingSenderId: "659609775130",
+    appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
+    measurementId: "G-L4TW7E23H2"
+  };
+
+  // Import Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let currentUser = null;
+  let clickCount = 0;
+  const MAX_CLICKS = 20;
+  let hiltoadsCooldown = false;
+
+  // Registrasi
+  async function register() {
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      await setDoc(doc(db, "users", user.uid), {
+        name: name,
+        email: email,
+        saldo: 0,
+        todayClicks: 0,
+        lastClick: null
+      });
+      alert("Registrasi berhasil!");
+      showMain(user.uid, name, 0);
+    } catch (e) {
+      alert("Error: " + e.message);
+    }
+  }
+
+  // Login
+  async function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const docSnap = await getDoc(doc(db, "users", user.uid));
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        showMain(user.uid, data.name, data.saldo);
+      }
+    } catch (e) {
+      alert("Error: " + e.message);
+    }
+  }
+
+  function showMain(uid, name, saldo) {
+    currentUser = uid;
+    document.getElementById("auth-section").style.display = "none";
+    document.getElementById("main-section").style.display = "block";
+    document.getElementById("user-name").innerText = name;
+    document.getElementById("user-saldo").innerText = saldo;
+  }
+
+  // Klik tugas (Monetag)
+  async function doTask() {
+    if (clickCount >= MAX_CLICKS) {
+      alert("Maksimal 20 kali per hari. Tunggu reset jam 03.00");
+      return;
+    }
+    clickCount++;
+    document.getElementById("task-btn").disabled = true;
+    setTimeout(() => document.getElementById("task-btn").disabled = false, 5000); // cooldown 5 detik
+    await updateSaldo(10);
+  }
+
+  // Iklan Hiltoads
+  function openHiltoads() {
+    if (hiltoadsCooldown) {
+      alert("Tunggu 10 menit sebelum buka lagi");
+      return;
+    }
+    document.getElementById("hiltoads-section").style.display = "block";
+    document.getElementById("close-hiltoads").disabled = true;
+    setTimeout(() => {
+      document.getElementById("close-hiltoads").disabled = false;
+    }, 5000); // wajib 5 detik
+  }
+
+  async function closeHiltoads() {
+    document.getElementById("hiltoads-section").style.display = "none";
+    await updateSaldo(10);
+    hiltoadsCooldown = true;
+    setTimeout(() => hiltoadsCooldown = false, 600000); // 10 menit cooldown
+  }
+
+  // Update saldo Firestore
+  async function updateSaldo(amount) {
+    const ref = doc(db, "users", currentUser);
+    const docSnap = await getDoc(ref);
+    if (docSnap.exists()) {
+      let saldo = docSnap.data().saldo + amount;
+      await updateDoc(ref, { saldo: saldo });
+      document.getElementById("user-saldo").innerText = saldo;
+    }
+  }
+
+  // Help & WD
+  window.help = function() { alert("Hubungi admin di Telegram untuk bantuan."); }
+  window.withdraw = function() { alert("Fitur Withdraw coming soon."); }
+  window.register = register;
+  window.login = login;
+  window.doTask = doTask;
+  window.openHiltoads = openHiltoads;
+  window.closeHiltoads = closeHiltoads;
+</script>
+</body>
+</html>
