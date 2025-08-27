@@ -1,251 +1,261 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Web Penghasil Uang</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .hidden { display: none; }
-    .banner { width:100%; height:80px; background:#ddd; margin:10px 0; text-align:center; line-height:80px; }
-    .button { padding:10px 20px; margin:10px; cursor:pointer; border:none; border-radius:8px; background:#4CAF50; color:white; }
-    #main { margin-top:20px; }
-    .top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    .profile { display:flex; align-items:center; }
-    .profile img { width:40px; height:40px; border-radius:50%; margin-right:10px; }
-  </style>
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
 
-<div id="auth-section">
-  <div class="banner">[Iklan Hiltoads Banner 1]</div>
-  <div class="banner">[Iklan Hiltoads Banner 2]</div>
-
-  <h2>Login / Registrasi</h2>
-  <input id="email" type="email" placeholder="Email"><br>
-  <input id="password" type="password" placeholder="Password"><br>
-  <button id="loginBtn" class="button">Login</button>
-  <button id="registerBtn" class="button">Register</button>
-
-  <div class="banner">[Iklan Hiltoads Banner 3]</div>
-  <div class="banner">[Iklan Hiltoads Banner 4]</div>
-</div>
-
-<div id="main" class="hidden">
-  <div class="top-bar">
-    <div class="profile">
-      <img src="https://via.placeholder.com/40" id="profilePic">
-      <span id="username"></span>
+  <!-- Login / Register -->
+  <div id="authPage" class="w-full max-w-md p-6 bg-white rounded-2xl shadow-lg hidden">
+    <h2 class="text-2xl font-bold text-center mb-4">Login / Registrasi</h2>
+    
+    <!-- Ads Banner Top -->
+    <div class="grid grid-cols-2 gap-2 mb-4">
+      <img src="https://via.placeholder.com/150x80?text=Hiltoads+Ad1" class="w-full rounded-lg shadow">
+      <img src="https://via.placeholder.com/150x80?text=Hiltoads+Ad2" class="w-full rounded-lg shadow">
     </div>
-    <div>Saldo: Rp <span id="saldo">0</span></div>
+
+    <input id="email" type="email" placeholder="Email" class="w-full p-2 mb-2 border rounded">
+    <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-2 border rounded">
+    <button id="loginBtn" class="w-full bg-blue-500 text-white p-2 rounded mb-2">Login</button>
+    <button id="registerBtn" class="w-full bg-green-500 text-white p-2 rounded">Registrasi</button>
+    
+    <!-- Ads Banner Bottom -->
+    <div class="grid grid-cols-2 gap-2 mt-4">
+      <img src="https://via.placeholder.com/150x80?text=Hiltoads+Ad3" class="w-full rounded-lg shadow">
+      <img src="https://via.placeholder.com/150x80?text=Hiltoads+Ad4" class="w-full rounded-lg shadow">
+    </div>
   </div>
 
-  <button id="monetagBtn" class="button">Klik Iklan Monetag (Reward Rp10)</button>
-  <br>
-  <button id="hiltoadsBtn" class="button">Tugas Hiltoads (Reward Rp10)</button>
+  <!-- Main Page -->
+  <div id="mainPage" class="w-full max-w-lg p-6 bg-white rounded-2xl shadow-lg hidden">
+    <div class="flex justify-between items-center mb-4">
+      <div class="flex items-center space-x-2">
+        <img src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full">
+        <span id="username" class="font-bold"></span>
+      </div>
+      <div>
+        <span class="text-gray-600">Saldo:</span>
+        <span id="saldo" class="font-bold text-green-600">Rp 0</span>
+      </div>
+    </div>
 
-  <div id="hiltoadsPage" class="hidden">
-    <h3>Iklan Hiltoads</h3>
-    <div class="banner">[Iklan Hiltoads 1]</div>
-    <div class="banner">[Iklan Hiltoads 2]</div>
-    <div class="banner">[Iklan Hiltoads 3]</div>
-    <div class="banner">[Iklan Hiltoads 4]</div>
-    <div class="banner">[Iklan Hiltoads 5]</div>
-    <button id="closeHiltoads" class="button hidden">Tutup Halaman</button>
+    <div class="space-y-4">
+      <!-- Klik Iklan Monetag -->
+      <button id="monetagBtn" class="w-full bg-yellow-500 text-white p-3 rounded-lg shadow hover:bg-yellow-600">
+        Klik Iklan Monetag (Reward Rp 10)
+      </button>
+
+      <!-- Iklan Hiltoads -->
+      <button id="hiltoadsBtn" class="w-full bg-purple-500 text-white p-3 rounded-lg shadow hover:bg-purple-600">
+        Tonton Iklan Hiltoads (Reward Rp 10)
+      </button>
+    </div>
+
+    <!-- Extra Menu -->
+    <div class="flex justify-between mt-6">
+      <button id="helpBtn" class="bg-gray-500 text-white px-4 py-2 rounded-lg">Help</button>
+      <button id="wdBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg">Withdraw</button>
+    </div>
   </div>
 
-  <br><br>
-  <button id="helpBtn" class="button">Help</button>
-  <button id="withdrawBtn" class="button">Withdraw</button>
-</div>
+  <!-- Withdraw Page -->
+  <div id="withdrawPage" class="w-full max-w-md p-6 bg-white rounded-2xl shadow-lg hidden">
+    <h2 class="text-xl font-bold mb-4">Withdraw E-Wallet</h2>
+    <select id="ewallet" class="w-full p-2 mb-2 border rounded">
+      <option value="Dana">Dana</option>
+      <option value="GoPay">GoPay</option>
+      <option value="OVO">OVO</option>
+      <option value="ShopeePay">ShopeePay</option>
+    </select>
+    <input id="nomor" type="text" placeholder="Nomor E-Wallet" class="w-full p-2 mb-2 border rounded">
+    <input id="jumlah" type="number" placeholder="Jumlah (min Rp 30000)" class="w-full p-2 mb-2 border rounded">
+    <button id="kirimWD" class="w-full bg-blue-500 text-white p-2 rounded">Kirim Withdraw</button>
+    <button onclick="showMain()" class="w-full bg-gray-400 text-white p-2 rounded mt-2">Kembali</button>
+  </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, updateDoc, serverTimestamp, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-  // Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
-    authDomain: "penyimpanansaldo-280df.firebaseapp.com",
-    databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "penyimpanansaldo-280df",
-    storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
-    messagingSenderId: "659609775130",
-    appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
-    measurementId: "G-L4TW7E23H2"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
+      authDomain: "penyimpanansaldo-280df.firebaseapp.com",
+      projectId: "penyimpanansaldo-280df",
+      storageBucket: "penyimpanansaldo-280df.appspot.com",
+      messagingSenderId: "659609775130",
+      appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
+      measurementId: "G-L4TW7E23H2"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  // Elemen
-  const authSection = document.getElementById('auth-section');
-  const main = document.getElementById('main');
-  const saldoEl = document.getElementById('saldo');
-  const usernameEl = document.getElementById('username');
-  const monetagBtn = document.getElementById('monetagBtn');
-  const hiltoadsBtn = document.getElementById('hiltoadsBtn');
-  const hiltoadsPage = document.getElementById('hiltoadsPage');
-  const closeHiltoads = document.getElementById('closeHiltoads');
-  const helpBtn = document.getElementById('helpBtn');
-  const withdrawBtn = document.getElementById('withdrawBtn');
+    // Elements
+    const authPage = document.getElementById("authPage");
+    const mainPage = document.getElementById("mainPage");
+    const withdrawPage = document.getElementById("withdrawPage");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const saldoEl = document.getElementById("saldo");
+    const usernameEl = document.getElementById("username");
 
-  async function register(email, password) {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    await setDoc(doc(db, "users", user.uid), {
-      email: user.email,
-      saldo: 0,
-      todayClicks: 0,
-      lastClick: null,
-      lastHiltoads: null
-    });
-  }
+    // Reset harian 03:00
+    function isResetNeeded(lastClick) {
+      if (!lastClick) return false;
+      const now = new Date();
+      const last = lastClick.toDate ? lastClick.toDate() : new Date(lastClick);
+      const resetTime = new Date(now);
+      resetTime.setHours(3,0,0,0);
+      if (now > resetTime && last < resetTime) return true;
+      return false;
+    }
 
-  async function login(email, password) {
-    await signInWithEmailAndPassword(auth, email, password);
-  }
+    async function updateUI(user) {
+      const userRef = doc(db, "users", user.uid);
+      let snap = await getDoc(userRef);
 
-  // Login & Register
-  document.getElementById("loginBtn").onclick = () => {
-    login(document.getElementById("email").value, document.getElementById("password").value);
-  };
-  document.getElementById("registerBtn").onclick = () => {
-    register(document.getElementById("email").value, document.getElementById("password").value);
-  };
+      if (!snap.exists()) {
+        await setDoc(userRef, { email: user.email, saldo: 0, todayClicks: 0, lastClick: null });
+        snap = await getDoc(userRef);
+      }
 
-  // Reset harian jam 03.00
-  function isResetNeeded(lastClick) {
-    if (!lastClick) return true;
-    const now = new Date();
-    const last = lastClick.toDate ? lastClick.toDate() : new Date(lastClick);
-    const resetTime = new Date(now);
-    resetTime.setHours(3,0,0,0);
-    if (now > resetTime && last < resetTime) return true;
-    return false;
-  }
-
-  async function updateUI(user) {
-    const userRef = doc(db, "users", user.uid);
-    const snap = await getDoc(userRef);
-    if (snap.exists()) {
       let data = snap.data();
       if (isResetNeeded(data.lastClick)) {
         await updateDoc(userRef, { todayClicks: 0 });
         data.todayClicks = 0;
       }
-      saldoEl.textContent = data.saldo;
+
+      saldoEl.textContent = "Rp " + data.saldo;
       usernameEl.textContent = data.email;
+      authPage.classList.add("hidden");
+      withdrawPage.classList.add("hidden");
+      mainPage.classList.remove("hidden");
     }
-  }
 
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      authSection.classList.add("hidden");
-      main.classList.remove("hidden");
-      updateUI(user);
-    } else {
-      authSection.classList.remove("hidden");
-      main.classList.add("hidden");
-    }
-  });
+    // Auth
+    document.getElementById("registerBtn").onclick = async () => {
+      try {
+        await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+      } catch (err) { alert(err.message); }
+    };
 
-  // Monetag Button
-  monetagBtn.onclick = async () => {
-    const user = auth.currentUser;
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
+    document.getElementById("loginBtn").onclick = async () => {
+      try {
+        await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+      } catch (err) { alert(err.message); }
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) updateUI(user);
+      else {
+        authPage.classList.remove("hidden");
+        mainPage.classList.add("hidden");
+        withdrawPage.classList.add("hidden");
+      }
+    });
+
+    // Monetag Click
+    document.getElementById("monetagBtn").onclick = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
       let data = snap.data();
+
+      if (data.todayClicks >= 20) return alert("Limit harian tercapai, coba lagi besok!");
+
       const now = new Date();
       if (data.lastClick && now - data.lastClick.toDate() < 5000) {
-        alert("Cooldown 5 detik!");
-        return;
+        return alert("Cooldown 5 detik!");
       }
-      if (data.todayClicks >= 20) {
-        alert("Sudah 20 kali hari ini!");
-        return;
-      }
-      await updateDoc(ref, {
+
+      await updateDoc(userRef, {
         saldo: data.saldo + 10,
         todayClicks: data.todayClicks + 1,
         lastClick: serverTimestamp()
       });
-      alert("Berhasil +Rp10");
       updateUI(user);
-    }
-  };
+      alert("Berhasil +Rp 10");
+    };
 
-  // Hiltoads Button
-  hiltoadsBtn.onclick = async () => {
-    hiltoadsPage.classList.remove("hidden");
-    closeHiltoads.classList.add("hidden");
-    setTimeout(() => { closeHiltoads.classList.remove("hidden"); }, 5000);
-  };
-  closeHiltoads.onclick = async () => {
-    const user = auth.currentUser;
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
+    // Hiltoads Click
+    document.getElementById("hiltoadsBtn").onclick = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
       let data = snap.data();
+
       const now = new Date();
-      if (data.lastHiltoads && now - data.lastHiltoads.toDate() < 10*60*1000) {
-        alert("Cooldown 10 menit!");
-        return;
+      if (data.lastHiltoads && now - data.lastHiltoads.toDate() < 600000) {
+        return alert("Cooldown 10 menit!");
       }
-      await updateDoc(ref, {
+
+      await updateDoc(userRef, {
         saldo: data.saldo + 10,
         lastHiltoads: serverTimestamp()
       });
-      alert("Reward Hiltoads +Rp10");
-      hiltoadsPage.classList.add("hidden");
       updateUI(user);
-    }
-  };
+      alert("Berhasil +Rp 10 dari Hiltoads");
+    };
 
-  // Help button
-  helpBtn.onclick = () => {
-    window.location.href = "https://t.me/YourTelegramUsername"; // ganti username telegram kamu
-  };
+    // Help
+    document.getElementById("helpBtn").onclick = () => {
+      window.open("https://t.me/usernamekamu", "_blank");
+    };
 
-  // Withdraw
-  withdrawBtn.onclick = async () => {
-    const metode = prompt("Metode E-Wallet (Dana/OVO/Gopay/ShopeePay):");
-    const nomor = prompt("Nomor E-Wallet:");
-    const jumlah = parseInt(prompt("Jumlah WD (min Rp30.000):"));
-    const user = auth.currentUser;
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      let data = snap.data();
-      if (jumlah < 30000) {
-        alert("Minimal WD Rp30.000");
-        return;
-      }
-      if (data.saldo < jumlah) {
-        alert("Saldo tidak cukup");
-        return;
-      }
+    // Withdraw
+    document.getElementById("wdBtn").onclick = () => {
+      mainPage.classList.add("hidden");
+      withdrawPage.classList.remove("hidden");
+    };
+
+    document.getElementById("kirimWD").onclick = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+      const data = snap.data();
+
+      const jumlah = parseInt(document.getElementById("jumlah").value);
+      if (jumlah < 30000) return alert("Minimal Rp 30.000");
+      if (jumlah > data.saldo) return alert("Saldo tidak cukup");
+
+      const metode = document.getElementById("ewallet").value;
+      const nomor = document.getElementById("nomor").value;
+
       await addDoc(collection(db, "withdraws"), {
         uid: user.uid,
-        email: data.email,
+        name: data.email,
+        saldo: data.saldo,
         metode,
         nomor,
         jumlah,
         status: "pending",
         createdAt: serverTimestamp()
       });
-      await updateDoc(ref, { saldo: data.saldo - jumlah });
-      alert("WD berhasil diajukan!");
-      updateUI(user);
-    }
-  };
-</script>
 
+      await updateDoc(userRef, { saldo: data.saldo - jumlah });
+      updateUI(user);
+      alert("Withdraw request terkirim!");
+      showMain();
+    };
+
+    function showMain() {
+      withdrawPage.classList.add("hidden");
+      mainPage.classList.remove("hidden");
+    }
+  </script>
 </body>
 </html>
