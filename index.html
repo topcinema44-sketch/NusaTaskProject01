@@ -1,187 +1,244 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Penghasil Uang</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Penghasil Uang</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body.dark { background: #111827; color: white; }
+    .hidden { display: none; }
+  </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
+<body class="bg-gray-100 dark:bg-gray-900 dark:text-white min-h-screen flex items-center justify-center">
 
-  <!-- Toast -->
-  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 hidden px-4 py-2 rounded-lg bg-gray-800 text-white text-sm shadow-lg"></div>
+<div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6" id="app">
 
-  <!-- Auth Section -->
-  <div id="authSection" class="p-6 space-y-6">
-    <div class="text-center text-2xl font-bold">🔑 Masuk / Daftar</div>
-    
-    <div class="space-y-3">
-      <h3 class="font-semibold">Login</h3>
-      <input id="loginEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:bg-gray-800" />
-      <input id="loginPassword" type="password" placeholder="Password" class="w-full p-3 rounded-lg border dark:bg-gray-800" />
+  <!-- 🔑 Auth Section -->
+  <div id="authSection">
+    <h2 class="text-2xl font-bold text-center mb-4">🔑 Masuk / Daftar</h2>
+
+    <!-- Tab Switch -->
+    <div class="flex justify-center mb-4">
+      <button id="btnLoginTab" onclick="showLogin()" class="px-4 py-2 bg-blue-600 text-white rounded-l-lg">Login</button>
+      <button id="btnRegisterTab" onclick="showRegister()" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-r-lg">Register</button>
+    </div>
+
+    <!-- Login Form -->
+    <div id="loginForm" class="space-y-3">
+      <input id="loginEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:bg-gray-700" />
+      <input id="loginPassword" type="password" placeholder="Password" class="w-full p-3 rounded-lg border dark:bg-gray-700" />
       <button onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-lg">Login</button>
     </div>
 
-    <div class="space-y-3">
-      <h3 class="font-semibold">Register</h3>
-      <input id="registerEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:bg-gray-800" />
-      <input id="registerPassword" type="password" placeholder="Password" class="w-full p-3 rounded-lg border dark:bg-gray-800" />
+    <!-- Register Form -->
+    <div id="registerForm" class="space-y-3 hidden">
+      <input id="registerEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:bg-gray-700" />
+      <input id="registerPassword" type="password" placeholder="Password" class="w-full p-3 rounded-lg border dark:bg-gray-700" />
       <button onclick="register()" class="w-full bg-green-600 text-white py-3 rounded-lg">Register</button>
     </div>
   </div>
 
-  <!-- Main Section -->
-  <div id="mainSection" class="hidden p-6 space-y-6">
+  <!-- 🏠 Main Section -->
+  <div id="mainSection" class="hidden">
     <!-- Header -->
-    <header class="flex justify-between items-center">
-      <span id="userInfo" class="font-semibold"></span>
-      <button onclick="logout()" class="text-red-500">Logout</button>
-    </header>
-
-    <!-- Saldo Card -->
-    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-2xl shadow-lg">
-      <div>Saldo</div>
-      <div class="text-3xl font-bold">Rp <span id="saldo">0</span></div>
+    <div class="flex justify-between items-center mb-4">
+      <div class="flex items-center gap-3">
+        <img id="userPhoto" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full">
+        <span id="userName" class="font-semibold"></span>
+      </div>
+      <div class="text-right">
+        <div class="text-sm">Saldo:</div>
+        <div id="userSaldo" class="font-bold text-green-600">Rp 0</div>
+      </div>
     </div>
 
-    <!-- Aksi -->
-    <div class="grid grid-cols-1 gap-4">
-      <button id="monetagBtn" onclick="klikIklanMonetag()" class="flex items-center justify-center gap-2 bg-blue-600 text-white py-4 rounded-2xl shadow-md">
-        📺 Klik Iklan Monetag (+Rp30.000)
-      </button>
-      <button id="hiltoadsBtn" onclick="klikIklanHiltoads()" class="flex items-center justify-center gap-2 bg-purple-600 text-white py-4 rounded-2xl shadow-md">
-        🎯 Tugas Hiltoads (+Rp30.000)
-      </button>
-    </div>
+    <!-- Tombol Iklan -->
+    <button id="btnIklanMonetag" onclick="rewardMonetag()" class="w-full bg-blue-500 text-white py-3 rounded-lg mb-3">Klik Iklan Monetag (+Rp30.000)</button>
+    <div id="timerMonetag" class="text-center text-sm text-gray-500 mb-4"></div>
+
+    <button id="btnIklanHiltoads" onclick="rewardHiltoads()" class="w-full bg-purple-500 text-white py-3 rounded-lg mb-3">Lihat Iklan Hiltoads (+Rp30.000)</button>
+    <div id="timerHiltoads" class="text-center text-sm text-gray-500 mb-4"></div>
 
     <!-- Riwayat WD -->
-    <div>
-      <h3 class="text-lg font-semibold mb-2">Riwayat WD</h3>
-      <ul id="riwayatWd" class="space-y-2 text-sm"></ul>
+    <h3 class="font-semibold mt-4">Riwayat WD</h3>
+    <ul id="riwayatWD" class="text-sm mt-2 space-y-1"></ul>
+
+    <!-- WD -->
+    <input id="walletNumber" type="text" placeholder="Nomor E-Wallet" class="w-full p-3 rounded-lg border mt-3 dark:bg-gray-700" />
+    <button onclick="withdraw()" class="w-full bg-green-600 text-white py-3 rounded-lg mt-2">Withdraw</button>
+
+    <!-- Help & Logout -->
+    <div class="flex justify-between mt-4">
+      <button onclick="window.open('https://t.me/usernamekamu','_blank')" class="text-blue-500">Help</button>
+      <button onclick="logout()" class="text-red-500">Logout</button>
     </div>
 
-    <!-- Withdraw -->
-    <div class="space-y-3">
-      <h3 class="text-lg font-semibold">Withdraw</h3>
-      <input id="ewallet" type="text" placeholder="Nomor E-Wallet" class="w-full p-3 rounded-lg border dark:bg-gray-800" />
-      <button onclick="withdraw()" class="w-full bg-green-600 text-white py-3 rounded-lg">Ajukan WD (Min Rp30.000)</button>
-    </div>
-
-    <!-- Footer -->
-    <div class="flex justify-between items-center pt-4 border-t dark:border-gray-700">
-      <button onclick="toggleTheme()" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg">🌙 / ☀️</button>
-      <button onclick="window.open('https://t.me/usernamekamu','_blank')" class="px-4 py-2 bg-blue-500 text-white rounded-lg">Help</button>
+    <!-- Tema -->
+    <div class="text-center mt-3">
+      <button onclick="toggleTheme()" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-lg">🌗 Ganti Tema</button>
     </div>
   </div>
+</div>
 
-  <!-- Firebase + Script -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<!-- Toast -->
+<div id="toast" class="fixed bottom-5 right-5 px-4 py-2 bg-gray-800 text-white rounded-lg hidden"></div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
-      authDomain: "penyimpanansaldo-280df.firebaseapp.com",
-      projectId: "penyimpanansaldo-280df",
-      storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
-      messagingSenderId: "659609775130",
-      appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
-      measurementId: "G-L4TW7E23H2"
-    };
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
+    authDomain: "penyimpanansaldo-280df.firebaseapp.com",
+    projectId: "penyimpanansaldo-280df",
+    storageBucket: "penyimpanansaldo-280df.appspot.com",
+    messagingSenderId: "659609775130",
+    appId: "1:659609775130:web:bdd088ca5a877498c5b5a3"
+  };
 
-    function showToast(msg) {
-      const t = document.getElementById("toast");
-      t.innerText = msg;
-      t.classList.remove("hidden");
-      setTimeout(()=>t.classList.add("hidden"),3000);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let currentUser = null;
+
+  // UI Functions
+  function showLogin(){
+    loginForm.classList.remove("hidden");
+    registerForm.classList.add("hidden");
+  }
+  function showRegister(){
+    loginForm.classList.add("hidden");
+    registerForm.classList.remove("hidden");
+  }
+  function showToast(msg){
+    const t = document.getElementById("toast");
+    t.innerText = msg;
+    t.classList.remove("hidden");
+    setTimeout(()=>t.classList.add("hidden"),3000);
+  }
+  function toggleTheme(){
+    document.body.classList.toggle("dark");
+  }
+
+  // Auth
+  window.login = async function(){
+    const email = loginEmail.value;
+    const pass = loginPassword.value;
+    try{
+      await signInWithEmailAndPassword(auth, email, pass);
+      showToast("Login sukses");
+    }catch(e){ showToast(e.message); }
+  }
+  window.register = async function(){
+    const email = registerEmail.value;
+    const pass = registerPassword.value;
+    try{
+      await createUserWithEmailAndPassword(auth, email, pass);
+      showToast("Registrasi sukses");
+    }catch(e){ showToast(e.message); }
+  }
+  window.logout = async function(){
+    await signOut(auth);
+  }
+
+  // Reward & WD
+  async function loadUserData(user){
+    currentUser = user;
+    userName.innerText = user.email;
+    userPhoto.src = user.photoURL || "https://via.placeholder.com/40";
+
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+    if(!snap.exists()){
+      await setDoc(ref, { saldo: 0, lastMonetag: null, lastHiltoads: null });
+      userSaldo.innerText = "Rp 0";
+    }else{
+      userSaldo.innerText = "Rp "+snap.data().saldo.toLocaleString();
     }
+    loadRiwayatWD();
+  }
 
-    async function register() {
-      try {
-        const email = registerEmail.value, pass = registerPassword.value;
-        await createUserWithEmailAndPassword(auth, email, pass);
-        showToast("✅ Registrasi sukses!");
-      } catch (e) { showToast("❌ "+e.message); }
+  window.rewardMonetag = async function(){
+    const ref = doc(db, "users", currentUser.uid);
+    const snap = await getDoc(ref);
+    let data = snap.data();
+    let now = Date.now();
+    if(data.lastMonetag && now - data.lastMonetag < 5000){
+      showToast("Cooldown 5 detik");
+      return;
     }
+    let newSaldo = data.saldo + 30000;
+    await updateDoc(ref,{ saldo: newSaldo, lastMonetag: now });
+    userSaldo.innerText = "Rp "+newSaldo.toLocaleString();
+    showToast("Berhasil +Rp30.000");
+  }
 
-    async function login() {
-      try {
-        const email = loginEmail.value, pass = loginPassword.value;
-        await signInWithEmailAndPassword(auth, email, pass);
-        showToast("✅ Login sukses!");
-      } catch (e) { showToast("❌ "+e.message); }
+  window.rewardHiltoads = async function(){
+    const ref = doc(db, "users", currentUser.uid);
+    const snap = await getDoc(ref);
+    let data = snap.data();
+    let now = Date.now();
+    if(data.lastHiltoads && now - data.lastHiltoads < 600000){
+      showToast("Cooldown 10 menit");
+      return;
     }
+    let newSaldo = data.saldo + 30000;
+    await updateDoc(ref,{ saldo: newSaldo, lastHiltoads: now });
+    userSaldo.innerText = "Rp "+newSaldo.toLocaleString();
+    showToast("Berhasil +Rp30.000");
+  }
 
-    async function logout(){ await signOut(auth); }
+  window.withdraw = async function(){
+    let nomor = walletNumber.value;
+    if(!nomor){ showToast("Isi nomor E-Wallet"); return; }
 
-    onAuthStateChanged(auth, async (user)=>{
-      if(user){
-        authSection.classList.add("hidden");
-        mainSection.classList.remove("hidden");
-        loadUserData(user);
-      } else {
-        authSection.classList.remove("hidden");
-        mainSection.classList.add("hidden");
-      }
+    const ref = doc(db, "users", currentUser.uid);
+    const snap = await getDoc(ref);
+    let data = snap.data();
+    if(data.saldo < 30000){ showToast("Minimal WD Rp30.000"); return; }
+
+    await addDoc(collection(db,"withdraws"),{
+      uid: currentUser.uid,
+      wallet: nomor,
+      jumlah: data.saldo,
+      status: "Pending",
+      createdAt: serverTimestamp()
     });
 
-    async function loadUserData(user){
-      userInfo.innerText="👤 "+user.email;
-      const ref=doc(db,"users",user.uid);
-      const snap=await getDoc(ref);
-      if(!snap.exists()){
-        await setDoc(ref,{saldo:0,lastMonetag:null,monetagCount:0,lastHiltoads:null});
-        saldo.innerText=0;
-      } else saldo.innerText=snap.data().saldo;
-      loadRiwayatWD(user.uid);
-    }
+    await updateDoc(ref,{ saldo: 0 });
+    userSaldo.innerText = "Rp 0";
+    loadRiwayatWD();
+    showToast("WD diajukan");
+  }
 
-    async function klikIklanMonetag(){
-      const user=auth.currentUser, ref=doc(db,"users",user.uid);
-      const snap=await getDoc(ref), d=snap.data(), now=new Date();
-      const last=d.lastMonetag?.toDate?.()||new Date(0);
-      if(last.toDateString()!==now.toDateString() && now.getHours()>=3){await updateDoc(ref,{monetagCount:0}); d.monetagCount=0;}
-      if(d.monetagCount>=20) return showToast("⚠️ Batas harian 20x!");
-      await updateDoc(ref,{saldo:d.saldo+30000,lastMonetag:serverTimestamp(),monetagCount:(d.monetagCount||0)+1});
-      saldo.innerText=d.saldo+30000; showToast("+Rp30.000 dari Monetag!");
-    }
+  async function loadRiwayatWD(){
+    const q = query(collection(db,"withdraws"), where("uid","==",currentUser.uid));
+    const snaps = await getDocs(q);
+    riwayatWD.innerHTML = "";
+    snaps.forEach(docu=>{
+      let d = docu.data();
+      let li = document.createElement("li");
+      li.innerText = `${d.jumlah} -> ${d.wallet} [${d.status}]`;
+      riwayatWD.appendChild(li);
+    });
+  }
 
-    async function klikIklanHiltoads(){
-      const user=auth.currentUser, ref=doc(db,"users",user.uid);
-      const snap=await getDoc(ref), d=snap.data(), now=new Date();
-      if(d.lastHiltoads){const diff=(now-d.lastHiltoads.toDate())/60000; if(diff<10)return showToast("⏳ Tunggu "+Math.ceil(10-diff)+" menit");}
-      await updateDoc(ref,{saldo:d.saldo+30000,lastHiltoads:serverTimestamp()});
-      saldo.innerText=d.saldo+30000; showToast("+Rp30.000 dari Hiltoads!");
+  // State
+  onAuthStateChanged(auth,(user)=>{
+    if(user){
+      authSection.classList.add("hidden");
+      mainSection.classList.remove("hidden");
+      loadUserData(user);
+    }else{
+      authSection.classList.remove("hidden");
+      mainSection.classList.add("hidden");
     }
-
-    async function withdraw(){
-      const user=auth.currentUser, ref=doc(db,"users",user.uid);
-      const snap=await getDoc(ref), d=snap.data();
-      const ewallet=ewallet.value;
-      if(!ewallet) return showToast("❌ Masukkan nomor e-wallet");
-      if(d.saldo<30000) return showToast("⚠️ Minimal Rp30.000");
-      await addDoc(collection(db,"withdrawals"),{uid:user.uid,ewallet,amount:30000,status:"pending",createdAt:serverTimestamp()});
-      await updateDoc(ref,{saldo:d.saldo-30000});
-      saldo.innerText=d.saldo-30000; showToast("✅ WD diajukan!"); loadRiwayatWD(user.uid);
-    }
-
-    async function loadRiwayatWD(uid){
-      const q=query(collection(db,"withdrawals"),where("uid","==",uid));
-      const snaps=await getDocs(q); riwayatWd.innerHTML="";
-      snaps.forEach(docu=>{
-        const d=docu.data();
-        riwayatWd.innerHTML+=`<li class="p-3 rounded-lg bg-gray-100 dark:bg-gray-800 flex justify-between">
-          <span>Rp${d.amount}</span> <span class="capitalize">${d.status}</span>
-        </li>`;
-      });
-    }
-
-    function toggleTheme(){ document.body.classList.toggle("dark"); }
-  </script>
+  });
+</script>
 </body>
 </html>
