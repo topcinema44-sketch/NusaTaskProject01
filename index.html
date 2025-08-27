@@ -3,66 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Web Penghasil Uang</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin:0; padding:0; }
-    .dark { background:#121212; color:#eee; }
-    header { display:flex; justify-content:space-between; padding:10px; background:#2196F3; color:white; }
-    #authSection, #mainSection { padding:20px; }
-    .hidden { display:none; }
-    button { margin:5px 0; padding:10px; border:none; border-radius:8px; cursor:pointer; }
-    .btn { background:#2196F3; color:white; }
-    .btn:disabled { background:#888; }
-    #toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); 
-             background:#333; color:white; padding:10px 20px; border-radius:5px; display:none; }
-    .banner { width:100%; height:60px; background:#ccc; margin:5px 0; text-align:center; line-height:60px; }
-  </style>
+  <title>Penghasil Uang</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div id="toast"></div>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 hidden px-4 py-2 rounded-lg bg-gray-800 text-white text-sm shadow-lg"></div>
 
   <!-- Auth Section -->
-  <div id="authSection">
-    <div class="banner">[Iklan Hiltoads]</div>
-    <div class="banner">[Iklan Hiltoads]</div>
+  <div id="authSection" class="p-6 space-y-6">
+    <div class="text-center text-2xl font-bold">🔑 Masuk / Daftar</div>
+    
+    <div class="space-y-3">
+      <h3 class="font-semibold">Login</h3>
+      <input id="loginEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:bg-gray-800" />
+      <input id="loginPassword" type="password" placeholder="Password" class="w-full p-3 rounded-lg border dark:bg-gray-800" />
+      <button onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-lg">Login</button>
+    </div>
 
-    <h2>Login</h2>
-    <input id="loginEmail" type="email" placeholder="Email" /><br>
-    <input id="loginPassword" type="password" placeholder="Password" /><br>
-    <button class="btn" onclick="login()">Login</button>
-
-    <h2>Register</h2>
-    <input id="registerEmail" type="email" placeholder="Email" /><br>
-    <input id="registerPassword" type="password" placeholder="Password" /><br>
-    <button class="btn" onclick="register()">Register</button>
-
-    <div class="banner">[Iklan Hiltoads]</div>
-    <div class="banner">[Iklan Hiltoads]</div>
+    <div class="space-y-3">
+      <h3 class="font-semibold">Register</h3>
+      <input id="registerEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:bg-gray-800" />
+      <input id="registerPassword" type="password" placeholder="Password" class="w-full p-3 rounded-lg border dark:bg-gray-800" />
+      <button onclick="register()" class="w-full bg-green-600 text-white py-3 rounded-lg">Register</button>
+    </div>
   </div>
 
   <!-- Main Section -->
-  <div id="mainSection" class="hidden">
-    <header>
-      <div id="userInfo">👤 User</div>
-      <div>Saldo: Rp <span id="saldo">0</span></div>
+  <div id="mainSection" class="hidden p-6 space-y-6">
+    <!-- Header -->
+    <header class="flex justify-between items-center">
+      <span id="userInfo" class="font-semibold"></span>
+      <button onclick="logout()" class="text-red-500">Logout</button>
     </header>
-    
-    <button id="monetagBtn" class="btn" onclick="klikIklanMonetag()">Klik Iklan Monetag (+Rp30.000)</button>
-    <button id="hiltoadsBtn" class="btn" onclick="klikIklanHiltoads()">Tugas Hiltoads (+Rp30.000)</button>
 
-    <h3>Riwayat WD</h3>
-    <ul id="riwayatWd"></ul>
+    <!-- Saldo Card -->
+    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-2xl shadow-lg">
+      <div>Saldo</div>
+      <div class="text-3xl font-bold">Rp <span id="saldo">0</span></div>
+    </div>
 
-    <h3>Withdraw</h3>
-    <input id="ewallet" type="text" placeholder="Nomor E-Wallet" /><br>
-    <button class="btn" onclick="withdraw()">Ajukan WD</button>
+    <!-- Aksi -->
+    <div class="grid grid-cols-1 gap-4">
+      <button id="monetagBtn" onclick="klikIklanMonetag()" class="flex items-center justify-center gap-2 bg-blue-600 text-white py-4 rounded-2xl shadow-md">
+        📺 Klik Iklan Monetag (+Rp30.000)
+      </button>
+      <button id="hiltoadsBtn" onclick="klikIklanHiltoads()" class="flex items-center justify-center gap-2 bg-purple-600 text-white py-4 rounded-2xl shadow-md">
+        🎯 Tugas Hiltoads (+Rp30.000)
+      </button>
+    </div>
 
-    <br><br>
-    <button onclick="toggleTheme()">🌙/☀️ Tema</button>
-    <button onclick="logout()">Logout</button>
-    <button onclick="window.open('https://t.me/usernamekamu','_blank')">Help</button>
+    <!-- Riwayat WD -->
+    <div>
+      <h3 class="text-lg font-semibold mb-2">Riwayat WD</h3>
+      <ul id="riwayatWd" class="space-y-2 text-sm"></ul>
+    </div>
+
+    <!-- Withdraw -->
+    <div class="space-y-3">
+      <h3 class="text-lg font-semibold">Withdraw</h3>
+      <input id="ewallet" type="text" placeholder="Nomor E-Wallet" class="w-full p-3 rounded-lg border dark:bg-gray-800" />
+      <button onclick="withdraw()" class="w-full bg-green-600 text-white py-3 rounded-lg">Ajukan WD (Min Rp30.000)</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex justify-between items-center pt-4 border-t dark:border-gray-700">
+      <button onclick="toggleTheme()" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg">🌙 / ☀️</button>
+      <button onclick="window.open('https://t.me/usernamekamu','_blank')" class="px-4 py-2 bg-blue-500 text-white rounded-lg">Help</button>
+    </div>
   </div>
 
+  <!-- Firebase + Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -71,7 +83,6 @@
     const firebaseConfig = {
       apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
       authDomain: "penyimpanansaldo-280df.firebaseapp.com",
-      databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "penyimpanansaldo-280df",
       storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
       messagingSenderId: "659609775130",
@@ -83,19 +94,16 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let cooldowns = {};
-
     function showToast(msg) {
-      const toast = document.getElementById("toast");
-      toast.innerText = msg;
-      toast.style.display = "block";
-      setTimeout(()=> toast.style.display="none", 3000);
+      const t = document.getElementById("toast");
+      t.innerText = msg;
+      t.classList.remove("hidden");
+      setTimeout(()=>t.classList.add("hidden"),3000);
     }
 
     async function register() {
       try {
-        const email = document.getElementById("registerEmail").value;
-        const pass = document.getElementById("registerPassword").value;
+        const email = registerEmail.value, pass = registerPassword.value;
         await createUserWithEmailAndPassword(auth, email, pass);
         showToast("✅ Registrasi sukses!");
       } catch (e) { showToast("❌ "+e.message); }
@@ -103,116 +111,77 @@
 
     async function login() {
       try {
-        const email = document.getElementById("loginEmail").value;
-        const pass = document.getElementById("loginPassword").value;
+        const email = loginEmail.value, pass = loginPassword.value;
         await signInWithEmailAndPassword(auth, email, pass);
         showToast("✅ Login sukses!");
       } catch (e) { showToast("❌ "+e.message); }
     }
 
-    async function logout() {
-      await signOut(auth);
-    }
+    async function logout(){ await signOut(auth); }
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        document.getElementById("authSection").classList.add("hidden");
-        document.getElementById("mainSection").classList.remove("hidden");
+    onAuthStateChanged(auth, async (user)=>{
+      if(user){
+        authSection.classList.add("hidden");
+        mainSection.classList.remove("hidden");
         loadUserData(user);
       } else {
-        document.getElementById("authSection").classList.remove("hidden");
-        document.getElementById("mainSection").classList.add("hidden");
+        authSection.classList.remove("hidden");
+        mainSection.classList.add("hidden");
       }
     });
 
-    async function loadUserData(user) {
-      document.getElementById("userInfo").innerText = "👤 " + user.email;
-      const userRef = doc(db, "users", user.uid);
-      const snap = await getDoc(userRef);
-      if (!snap.exists()) {
-        await setDoc(userRef, { saldo:0, lastMonetag:null, monetagCount:0, lastHiltoads:null });
-        document.getElementById("saldo").innerText = 0;
-      } else {
-        document.getElementById("saldo").innerText = snap.data().saldo;
-      }
+    async function loadUserData(user){
+      userInfo.innerText="👤 "+user.email;
+      const ref=doc(db,"users",user.uid);
+      const snap=await getDoc(ref);
+      if(!snap.exists()){
+        await setDoc(ref,{saldo:0,lastMonetag:null,monetagCount:0,lastHiltoads:null});
+        saldo.innerText=0;
+      } else saldo.innerText=snap.data().saldo;
       loadRiwayatWD(user.uid);
     }
 
-    async function klikIklanMonetag() {
-      const user = auth.currentUser;
-      const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-      const data = snap.data();
-      const now = new Date();
-
-      // Reset harian jam 03:00
-      const last = data.lastMonetag?.toDate?.() || new Date(0);
-      if (last.toDateString() !== now.toDateString() && now.getHours()>=3) {
-        await updateDoc(ref, { monetagCount:0 });
-        data.monetagCount = 0;
-      }
-
-      if (data.monetagCount >= 20) return showToast("⚠️ Sudah 20x hari ini!");
-      await updateDoc(ref, {
-        saldo: data.saldo+30000,
-        lastMonetag: serverTimestamp(),
-        monetagCount: (data.monetagCount||0)+1
-      });
-      document.getElementById("saldo").innerText = data.saldo+30000;
-      showToast("+Rp30.000 dari Monetag!");
+    async function klikIklanMonetag(){
+      const user=auth.currentUser, ref=doc(db,"users",user.uid);
+      const snap=await getDoc(ref), d=snap.data(), now=new Date();
+      const last=d.lastMonetag?.toDate?.()||new Date(0);
+      if(last.toDateString()!==now.toDateString() && now.getHours()>=3){await updateDoc(ref,{monetagCount:0}); d.monetagCount=0;}
+      if(d.monetagCount>=20) return showToast("⚠️ Batas harian 20x!");
+      await updateDoc(ref,{saldo:d.saldo+30000,lastMonetag:serverTimestamp(),monetagCount:(d.monetagCount||0)+1});
+      saldo.innerText=d.saldo+30000; showToast("+Rp30.000 dari Monetag!");
     }
 
-    async function klikIklanHiltoads() {
-      const user = auth.currentUser;
-      const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-      const data = snap.data();
-      const now = new Date();
-
-      if (data.lastHiltoads) {
-        const diff = (now - data.lastHiltoads.toDate())/60000;
-        if (diff < 10) return showToast("⚠️ Tunggu "+Math.ceil(10-diff)+" menit lagi");
-      }
-
-      await updateDoc(ref, { 
-        saldo: data.saldo+30000,
-        lastHiltoads: serverTimestamp()
-      });
-      document.getElementById("saldo").innerText = data.saldo+30000;
-      showToast("+Rp30.000 dari Hiltoads!");
+    async function klikIklanHiltoads(){
+      const user=auth.currentUser, ref=doc(db,"users",user.uid);
+      const snap=await getDoc(ref), d=snap.data(), now=new Date();
+      if(d.lastHiltoads){const diff=(now-d.lastHiltoads.toDate())/60000; if(diff<10)return showToast("⏳ Tunggu "+Math.ceil(10-diff)+" menit");}
+      await updateDoc(ref,{saldo:d.saldo+30000,lastHiltoads:serverTimestamp()});
+      saldo.innerText=d.saldo+30000; showToast("+Rp30.000 dari Hiltoads!");
     }
 
-    async function withdraw() {
-      const user = auth.currentUser;
-      const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-      const data = snap.data();
-      const ewallet = document.getElementById("ewallet").value;
-      if (!ewallet) return showToast("❌ Masukkan nomor e-wallet");
-      if (data.saldo < 30000) return showToast("⚠️ Minimal Rp30.000");
-      await addDoc(collection(db,"withdrawals"), {
-        uid:user.uid, ewallet, amount:30000, status:"pending", createdAt:serverTimestamp()
-      });
-      await updateDoc(ref, { saldo:data.saldo-30000 });
-      document.getElementById("saldo").innerText = data.saldo-30000;
-      showToast("✅ WD diajukan!");
-      loadRiwayatWD(user.uid);
+    async function withdraw(){
+      const user=auth.currentUser, ref=doc(db,"users",user.uid);
+      const snap=await getDoc(ref), d=snap.data();
+      const ewallet=ewallet.value;
+      if(!ewallet) return showToast("❌ Masukkan nomor e-wallet");
+      if(d.saldo<30000) return showToast("⚠️ Minimal Rp30.000");
+      await addDoc(collection(db,"withdrawals"),{uid:user.uid,ewallet,amount:30000,status:"pending",createdAt:serverTimestamp()});
+      await updateDoc(ref,{saldo:d.saldo-30000});
+      saldo.innerText=d.saldo-30000; showToast("✅ WD diajukan!"); loadRiwayatWD(user.uid);
     }
 
-    async function loadRiwayatWD(uid) {
-      const q = query(collection(db,"withdrawals"), where("uid","==",uid));
-      const snaps = await getDocs(q);
-      const list = document.getElementById("riwayatWd");
-      list.innerHTML="";
+    async function loadRiwayatWD(uid){
+      const q=query(collection(db,"withdrawals"),where("uid","==",uid));
+      const snaps=await getDocs(q); riwayatWd.innerHTML="";
       snaps.forEach(docu=>{
         const d=docu.data();
-        list.innerHTML += `<li>Rp${d.amount} - ${d.status}</li>`;
+        riwayatWd.innerHTML+=`<li class="p-3 rounded-lg bg-gray-100 dark:bg-gray-800 flex justify-between">
+          <span>Rp${d.amount}</span> <span class="capitalize">${d.status}</span>
+        </li>`;
       });
     }
 
-    function toggleTheme() {
-      document.body.classList.toggle("dark");
-    }
+    function toggleTheme(){ document.body.classList.toggle("dark"); }
   </script>
 </body>
 </html>
