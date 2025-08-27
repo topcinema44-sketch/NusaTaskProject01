@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Money Web App</title>
+  <title>Penghasil Uang</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Firebase -->
@@ -12,238 +12,238 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
   <style>
-    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f9f9f9; }
-    .container { max-width: 480px; margin:auto; padding:15px; }
-    .card { background:#fff; border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-    h2,h3 { margin:0 0 10px; }
+    :root {
+      --bg: #f4f7fa;
+      --text: #000;
+      --card: #fff;
+      --header: #2196F3;
+      --btn-monetag: #4CAF50;
+      --btn-hiltoads: #FF9800;
+      --btn-help: #607D8B;
+      --btn-wd: #9C27B0;
+    }
+    body.dark {
+      --bg: #121212;
+      --text: #f0f0f0;
+      --card: #1e1e1e;
+      --header: #333;
+    }
+    body {
+      font-family: Arial, sans-serif; background: var(--bg); color: var(--text); margin:0; padding:0;
+    }
+    header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:15px; background: var(--header); color:white;
+    }
+    header img { width:40px; height:40px; border-radius:50%; }
+    .saldo { font-size:16px; font-weight:bold; }
+    main { padding:20px; }
     button {
-      width:100%; padding:14px; font-size:16px; border:none;
-      border-radius:10px; margin-top:10px; cursor:pointer;
-      background:#4CAF50; color:#fff;
+      width:100%; padding:12px; margin:10px 0;
+      border:none; border-radius:10px; font-size:16px; cursor:pointer;
     }
-    button:disabled { background:#ccc; cursor:not-allowed; }
-
-    /* Profil header */
-    .header { display:flex; justify-content:space-between; align-items:center; }
-    .profile { display:flex; align-items:center; }
-    .profile img { width:40px; height:40px; border-radius:50%; margin-right:10px; }
-    .saldo { font-size:18px; font-weight:bold; color:#333; }
-
-    /* History as card */
-    .history-card {
-      background:#fff; padding:12px; border-radius:10px; margin-bottom:10px;
-      box-shadow:0 1px 4px rgba(0,0,0,0.1);
-    }
-    .status-pending { color:orange; }
-    .status-approved { color:green; }
-    .status-rejected { color:red; }
-
-    /* Popup notif */
-    .popup {
-      position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center;
-      visibility:hidden; opacity:0; transition:0.3s;
-    }
-    .popup.show { visibility:visible; opacity:1; }
-    .popup-content {
-      background:#fff; padding:20px; border-radius:12px; max-width:300px; text-align:center;
-      box-shadow:0 4px 10px rgba(0,0,0,0.3);
-    }
-    .popup-content h3 { margin-bottom:10px; }
-    .popup-content button { background:#2196F3; }
-
+    .monetag { background: var(--btn-monetag); color:white; }
+    .hiltoads { background: var(--btn-hiltoads); color:white; }
+    .help { background: var(--btn-help); color:white; }
+    .wd { background: var(--btn-wd); color:white; }
+    .card { background: var(--card); padding:10px; border-radius:10px; margin-bottom:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .notif { background:#333; color:#fff; padding:10px; border-radius:8px; text-align:center; display:none; margin:10px; }
+    .theme-toggle { cursor:pointer; font-size:20px; }
   </style>
 </head>
 <body>
 
-<div class="container" id="loginPage">
-  <div class="card">
-    <h2>Login / Registrasi</h2>
-    <input id="email" type="email" placeholder="Email" style="width:100%;padding:10px;margin:5px 0;">
-    <input id="password" type="password" placeholder="Password" style="width:100%;padding:10px;margin:5px 0;">
-    <button onclick="login()">Login</button>
-    <button onclick="register()">Registrasi</button>
-  </div>
-</div>
-
-<div class="container" id="mainPage" style="display:none;">
-
-  <!-- Header user -->
-  <div class="card header">
-    <div class="profile">
-      <img id="profilePic" src="https://i.pravatar.cc/100" alt="foto">
+  <header>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img id="profilePic" src="https://via.placeholder.com/40">
       <span id="username">User</span>
     </div>
-    <div class="saldo">Rp<span id="saldo">0</span></div>
-  </div>
+    <div style="display:flex;align-items:center;gap:15px;">
+      <div class="saldo">Rp<span id="saldo">0</span></div>
+      <div class="theme-toggle" id="themeToggle">🌙</div>
+    </div>
+  </header>
 
-  <!-- Monetag task -->
-  <div class="card">
-    <h3>Tugas Monetag</h3>
-    <button id="monetagBtn" onclick="doMonetag()">Klik Iklan (Rp 10)</button>
-  </div>
+  <div class="notif" id="notif"></div>
 
-  <!-- Hiltoads task -->
-  <div class="card">
-    <h3>Tugas Hiltoads</h3>
-    <button id="hiltoadsBtn" onclick="doHiltoads()">Lihat Iklan (Rp 10)</button>
-  </div>
+  <main>
+    <button class="monetag" id="monetagBtn">Klik Iklan Monetag (Reward Rp10)</button>
+    <button class="hiltoads" id="hiltoadsBtn">Tonton Hiltoads (Reward Rp10)</button>
+    <button class="help" onclick="window.open('https://t.me/username','_blank')">Help (Telegram)</button>
+    <button class="wd" onclick="withdraw()">Withdraw</button>
 
-  <!-- Withdraw -->
-  <div class="card">
-    <h3>Withdraw</h3>
-    <select id="ewallet" style="width:100%;padding:10px;margin-bottom:10px;">
-      <option value="Dana">Dana</option>
-      <option value="OVO">OVO</option>
-      <option value="GoPay">GoPay</option>
-    </select>
-    <input id="ewalletNum" placeholder="Nomor E-Wallet" style="width:100%;padding:10px;margin-bottom:10px;">
-    <input id="amount" type="number" placeholder="Jumlah (min 30000)" style="width:100%;padding:10px;margin-bottom:10px;">
-    <button onclick="withdraw()">Ajukan WD</button>
-  </div>
+    <h3>Riwayat WD</h3>
+    <div id="wdHistory"></div>
+  </main>
 
-  <!-- History WD -->
-  <div class="card">
-    <h3>Riwayat Withdraw</h3>
-    <div id="historyList"></div>
-  </div>
+  <script>
+    // 🔥 Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
+      authDomain: "penyimpanansaldo-280df.firebaseapp.com",
+      databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "penyimpanansaldo-280df",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const fs = firebase.firestore();
 
-  <!-- Help -->
-  <div class="card">
-    <h3>Bantuan</h3>
-    <button onclick="window.open('https://t.me/usernamekamu','_blank')">Kontak Telegram</button>
-    <button onclick="logout()">Logout</button>
-  </div>
-</div>
-
-<!-- Popup notif -->
-<div class="popup" id="popup">
-  <div class="popup-content">
-    <h3 id="popupTitle">Info</h3>
-    <p id="popupMsg"></p>
-    <button onclick="closePopup()">OK</button>
-  </div>
-</div>
-
-<script>
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
-    authDomain: "penyimpanansaldo-280df.firebaseapp.com",
-    databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "penyimpanansaldo-280df",
-    storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
-    messagingSenderId: "659609775130",
-    appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
-    measurementId: "G-L4TW7E23H2"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.database();
-  const fs = firebase.firestore();
-
-  // Popup
-  function showPopup(title,msg){
-    document.getElementById("popupTitle").innerText=title;
-    document.getElementById("popupMsg").innerText=msg;
-    document.getElementById("popup").classList.add("show");
-  }
-  function closePopup(){ document.getElementById("popup").classList.remove("show"); }
-
-  // Auth
-  function login(){
-    auth.signInWithEmailAndPassword(email.value,password.value).catch(e=>showPopup("Error",e.message));
-  }
-  function register(){
-    auth.createUserWithEmailAndPassword(email.value,password.value)
-      .then(()=>{ db.ref("users/"+auth.currentUser.uid).set({email:email.value,saldo:0}); })
-      .catch(e=>showPopup("Error",e.message));
-  }
-  function logout(){ auth.signOut(); }
-
-  auth.onAuthStateChanged(user=>{
-    if(user){
-      loginPage.style.display="none"; mainPage.style.display="block";
-      username.innerText = user.email.split("@")[0];
-      loadUser(user.uid);
-    } else {
-      loginPage.style.display="block"; mainPage.style.display="none";
+    // ✅ Notif helper
+    function notif(msg){
+      let n=document.getElementById("notif");
+      n.innerText=msg;
+      n.style.display="block";
+      setTimeout(()=>{n.style.display="none"},3000);
     }
-  });
 
-  // Load user data
-  function loadUser(uid){
-    db.ref("users/"+uid).on("value",snap=>{
-      if(snap.exists()) saldo.innerText = snap.val().saldo || 0;
-    });
-    loadHistory(uid);
-  }
+    let currentUser;
+    let monetagCooldown = 0;
+    let hiltoadsCooldown = 0;
 
-  // Monetag
-  let monetagClicks=0, monetagLast=0;
-  function doMonetag(){
-    let now=Date.now();
-    if(monetagClicks>=20) return showPopup("Info","Limit harian tercapai, coba lagi besok.");
-    if(now-monetagLast<5000) return showPopup("Tunggu","Cooldown 5 detik.");
-    monetagLast=now; monetagClicks++;
-    addSaldo(10);
-  }
+    auth.onAuthStateChanged(user=>{
+      if(user){
+        currentUser=user;
+        document.getElementById("username").innerText=user.email;
+        if(user.photoURL) document.getElementById("profilePic").src=user.photoURL;
 
-  // Hiltoads
-  let hiltoadsLast=0;
-  function doHiltoads(){
-    let now=Date.now();
-    if(now-hiltoadsLast<600000) return showPopup("Tunggu","Cooldown 10 menit.");
-    hiltoadsLast=now;
-    setTimeout(()=>addSaldo(10),5000);
-    showPopup("Info","Tunggu 5 detik di halaman iklan...");
-  }
-
-  // Tambah saldo
-  function addSaldo(amount){
-    let uid=auth.currentUser.uid;
-    db.ref("users/"+uid+"/saldo").transaction(s=>(s||0)+amount);
-    showPopup("Sukses","+Rp"+amount+" ditambahkan ke saldo");
-  }
-
-  // Withdraw
-  function withdraw(){
-    let uid=auth.currentUser.uid;
-    let type=ewallet.value, num=ewalletNum.value, amt=parseInt(amount.value);
-    if(!num || !amt) return showPopup("Error","Isi semua data WD.");
-    if(amt<30000) return showPopup("Error","Minimal WD Rp30.000");
-    db.ref("users/"+uid).once("value").then(snap=>{
-      let saldo = snap.val().saldo||0;
-      if(saldo<amt) return showPopup("Error","Saldo tidak cukup.");
-      db.ref("users/"+uid+"/saldo").set(saldo-amt);
-      fs.collection("withdrawRequests").add({
-        uid:uid,email:snap.val().email, type:type, number:num, amount:amt,
-        status:"pending", created:firebase.firestore.FieldValue.serverTimestamp()
-      });
-      showPopup("Sukses","WD diajukan, tunggu proses admin.");
-    });
-  }
-
-  // History WD
-  function loadHistory(uid){
-    fs.collection("withdrawRequests").where("uid","==",uid)
-      .orderBy("created","desc")
-      .onSnapshot(snaps=>{
-        historyList.innerHTML="";
-        snaps.forEach(doc=>{
-          let wd=doc.data();
-          let div=document.createElement("div");
-          div.className="history-card";
-          div.innerHTML=`
-            <b>${wd.type}</b> - ${wd.number}<br>
-            Rp${wd.amount}<br>
-            <span class="status-${wd.status}">${wd.status}</span>
-          `;
-          historyList.appendChild(div);
+        // listen saldo
+        db.ref("users/"+user.uid+"/saldo").on("value",snap=>{
+          document.getElementById("saldo").innerText=snap.val()||0;
         });
+
+        // listen WD history
+        fs.collection("withdrawRequests")
+          .where("email","==",user.email)
+          .orderBy("created","desc")
+          .onSnapshot(snaps=>{
+            let list="";
+            snaps.forEach(doc=>{
+              let wd=doc.data();
+              let status = wd.status==="approved"?"✅ Sukses":
+                           wd.status==="rejected"?"❌ Ditolak":"⏳ Pending";
+              list+=`<div class="card">
+                <b>${wd.type} - ${wd.number}</b><br>
+                Rp${wd.amount}<br>
+                <span>${status}</span>
+              </div>`;
+            });
+            document.getElementById("wdHistory").innerHTML=list;
+          });
+      } else {
+        window.location.href="login.html"; // ganti sesuai file login
+      }
+    });
+
+    // ✅ Monetag
+    document.getElementById("monetagBtn").onclick=()=>{
+      let ref=db.ref("users/"+currentUser.uid);
+      ref.once("value").then(snap=>{
+        let data=snap.val()||{};
+        let now=Date.now();
+        let last=data.lastMonetag||0;
+        let count=data.dailyMonetag||0;
+
+        // reset harian jam 03:00
+        let today=new Date();
+        today.setHours(3,0,0,0);
+        if(!data.resetDate||data.resetDate<today.getTime()){
+          count=0;
+          ref.update({resetDate:today.getTime(),dailyMonetag:0});
+        }
+
+        if(now-last<5000){
+          monetagCooldown = Math.ceil((5000-(now-last))/1000);
+          notif("Cooldown Monetag belum selesai!");
+          return;
+        }
+        if(count>=20){ notif("Limit harian 20x tercapai"); return; }
+
+        ref.child("saldo").transaction(saldo=>(saldo||0)+10);
+        ref.update({lastMonetag:now,dailyMonetag:count+1});
+        notif("Reward +Rp10 dari Monetag");
+        monetagCooldown=5;
       });
-  }
-</script>
+    };
+
+    // ✅ Hiltoads
+    document.getElementById("hiltoadsBtn").onclick=()=>{
+      let ref=db.ref("users/"+currentUser.uid);
+      ref.once("value").then(snap=>{
+        let data=snap.val()||{};
+        let now=Date.now();
+        let last=data.lastHiltoads||0;
+
+        if(now-last<600000){
+          hiltoadsCooldown = Math.ceil((600000-(now-last))/1000);
+          notif("Cooldown Hiltoads belum selesai!");
+          return;
+        }
+
+        ref.child("saldo").transaction(saldo=>(saldo||0)+10);
+        ref.update({lastHiltoads:now});
+        notif("Reward +Rp10 dari Hiltoads");
+        hiltoadsCooldown=600;
+      });
+    };
+
+    // ✅ Countdown updater
+    setInterval(()=>{
+      if(monetagCooldown>0){
+        document.getElementById("monetagBtn").innerText=`Tunggu ${monetagCooldown}s`;
+        document.getElementById("monetagBtn").disabled=true;
+        monetagCooldown--;
+      } else {
+        document.getElementById("monetagBtn").innerText="Klik Iklan Monetag (Reward Rp10)";
+        document.getElementById("monetagBtn").disabled=false;
+      }
+      if(hiltoadsCooldown>0){
+        document.getElementById("hiltoadsBtn").innerText=`Tunggu ${hiltoadsCooldown}s`;
+        document.getElementById("hiltoadsBtn").disabled=true;
+        hiltoadsCooldown--;
+      } else {
+        document.getElementById("hiltoadsBtn").innerText="Tonton Hiltoads (Reward Rp10)";
+        document.getElementById("hiltoadsBtn").disabled=false;
+      }
+    },1000);
+
+    // ✅ Withdraw
+    function withdraw(){
+      let amount=prompt("Masukkan jumlah WD (min Rp30000):");
+      amount=parseInt(amount);
+      if(isNaN(amount)||amount<30000){ notif("Minimal WD Rp30000"); return; }
+      let type=prompt("Masukkan jenis E-Wallet (OVO/DANA/Gopay):");
+      let number=prompt("Masukkan nomor E-Wallet:");
+
+      let ref=db.ref("users/"+currentUser.uid+"/saldo");
+      ref.once("value").then(snap=>{
+        let saldo=snap.val()||0;
+        if(saldo<amount){ notif("Saldo tidak cukup!"); return; }
+
+        ref.set(saldo-amount);
+        fs.collection("withdrawRequests").add({
+          email:currentUser.email,
+          type:type, number:number,
+          amount:amount,
+          status:"pending",
+          created:firebase.firestore.FieldValue.serverTimestamp()
+        });
+        notif("Permintaan WD terkirim!");
+      });
+    }
+
+    // ✅ Tema toggle
+    const themeToggle=document.getElementById("themeToggle");
+    if(localStorage.getItem("theme")==="dark"){document.body.classList.add("dark"); themeToggle.innerText="☀️";}
+    themeToggle.onclick=()=>{
+      document.body.classList.toggle("dark");
+      if(document.body.classList.contains("dark")){
+        themeToggle.innerText="☀️"; localStorage.setItem("theme","dark");
+      } else {
+        themeToggle.innerText="🌙"; localStorage.setItem("theme","light");
+      }
+    };
+  </script>
 
 </body>
 </html>
