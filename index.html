@@ -268,44 +268,87 @@
       });
     }
 
-    // ===== Riwayat WD realtime (selalu tampil) =====
-    function bindRiwayatRealtime(){
-      const qy = query(collection(db,"withdrawals"), where("uid","==", currentUser.uid));
-      onSnapshot(qy, (snaps)=>{
-        const list = $("riwayatWd");
-        if(!list) return;
-        list.innerHTML = "";
-        const items=[];
-        snaps.forEach(s=>{
-          const d=s.data();
-          const t=d.createdAt?.toDate ? d.createdAt.toDate().getTime():0;
-          items.push({id:s.id, ...d, _t:t});
-        });
-        items.sort((a,b)=>b._t-a._t); // terbaru dulu
-        if(items.length===0){
-          list.innerHTML = "<li class='text-center text-gray-400'>Belum ada riwayat WD.</li>";
-          return;
+    <!-- Tambahkan ini di bagian body -->
+<ul id="riwayatWd" class="space-y-2"></ul>
+
+<script type="module">
+  import { 
+    getFirestore, collection, query, where, onSnapshot 
+  } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+  const db = getFirestore();
+  const auth = getAuth();
+
+  // Fungsi tampilkan riwayat WD
+  function bindRiwayatRealtime(currentUser){
+    const qy = query(
+      collection(db, "withdrawals"),
+      where("uid", "==", currentUser.uid) // hanya data milik user ini
+    );
+
+    onSnapshot(qy, (snaps)=>{
+      const list = document.getElementById("riwayatWd");
+      if(!list) return;
+      list.innerHTML = "";
+
+      const items = [];
+      snaps.forEach(s=>{
+        const d = s.data();
+        let t = 0;
+
+        // amanin createdAt
+        if (d.createdAt) {
+          try {
+            t = d.createdAt.toDate().getTime();
+          } catch(e) {
+            t = typeof d.createdAt === "number" ? d.createdAt : 0;
+          }
         }
-        for(const d of items){
-          const timeStr = d._t ? new Date(d._t).toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})+" WIB" : "-";
-          const badge =
-            d.status==="success" ? "bg-emerald-100 text-emerald-700" :
-            d.status==="pending" ? "bg-yellow-100 text-yellow-800" :
-            "bg-red-100 text-red-700";
-          const li = document.createElement("li");
-          li.className = "flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-800 border dark:border-slate-700";
-          li.innerHTML = `
-            <div>
-              <div class="font-semibold">${formatRp(d.amount)} • <span class="capitalize">${d.walletType}</span></div>
-              <div class="text-xs text-gray-500 dark:text-slate-400">${timeStr}</div>
-              <div class="text-xs text-gray-500 dark:text-slate-400">No: ${d.walletNumber}</div>
-            </div>
-            <span class="text-xs px-2 py-1 rounded-lg ${badge}">${d.status}</span>
-          `;
-          list.appendChild(li);
-        }
+
+        items.push({id: s.id, ...d, _t: t});
       });
+
+      // urutkan terbaru dulu
+      items.sort((a,b)=>b._t - a._t);
+
+      if(items.length === 0){
+        list.innerHTML = `<li class="text-center text-gray-400">Belum ada riwayat WD</li>`;
+        return;
+      }
+
+      for(const d of items){
+        const timeStr = d._t ? new Date(d._t).toLocaleString("id-ID",{dateStyle:"short",timeStyle:"short"}) : "-";
+        const badge =
+          d.status === "success" ? "bg-emerald-100 text-emerald-700" :
+          d.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+          "bg-red-100 text-red-700";
+
+        const li = document.createElement("li");
+        li.className = "flex items-center justify-between p-3 rounded-xl border";
+
+        li.innerHTML = `
+          <div>
+            <div class="font-semibold">Rp ${d.amount ?? 0}</div>
+            <div class="text-sm text-gray-500">${timeStr}</div>
+          </div>
+          <span class="px-2 py-1 rounded ${badge}">${d.status}</span>
+        `;
+        list.appendChild(li);
+      }
+    });
+  }
+
+  // Jalankan setelah user login
+  onAuthStateChanged(auth, (user)=>{
+    if(user){
+      console.log("UID user login:", user.uid);
+      bindRiwayatRealtime(user);
+    } else {
+      console.log("Belum login");
     }
+  });
+</script>
 
     // ===== Auth State =====
     onAuthStateChanged(auth, async (user)=>{
