@@ -8,7 +8,7 @@
   <style>
     body.dark{background:#0b1220}
     .hidden{display:none}
-    .fade-in{animation:fadeIn .35s ease-in-out}
+    .fade-in{animation:fadeIn .3s ease}
     @keyframes fadeIn{from{opacity:.0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
@@ -78,12 +78,12 @@
 
       <!-- Actions -->
       <div class="grid gap-3">
-        <button id="btnMonetag" class="w-full py-4 rounded-2xl bg-blue-600 text-white font-semibold shadow">
+        <button id="btnMonetag" class="w-full py-4 rounded-2xl bg-blue-600 text-white font-semibold shadow active:opacity-95">
           🚀 Menghasilkan (+Rp30.000)
         </button>
         <div id="timerMonetag" class="text-center text-xs text-gray-600 dark:text-slate-400"></div>
 
-        <button id="btnToHiltoads" class="w-full py-4 rounded-2xl bg-purple-600 text-white font-semibold shadow">
+        <button id="btnToHiltoads" class="w-full py-4 rounded-2xl bg-purple-600 text-white font-semibold shadow active:opacity-95">
           🎯 Xstra Bonus (+Rp30.000)
         </button>
         <div id="timerHiltoads" class="text-center text-xs text-gray-600 dark:text-slate-400"></div>
@@ -104,7 +104,7 @@
         <input id="wdAmount" type="number" min="30000" step="1000" value="30000" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800" />
         <button id="btnWD" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold">Ajukan WD (Min Rp30.000)</button>
         <button id="btnRiwayat" class="w-full py-3 rounded-xl bg-gray-300 dark:bg-slate-700 text-gray-800 dark:text-white">📜 Lihat Riwayat WD</button>
-        <p class="text-xs text-gray-500 dark:text-slate-400">Notifikasi permintaan WD dikirim ke Telegram admin. Status bisa dilihat pada Riwayat WD.</p>
+        <p class="text-xs text-gray-500 dark:text-slate-400">Notifikasi WD dikirim ke Telegram admin. Status bisa dilihat di Riwayat WD.</p>
       </section>
 
       <!-- Footer -->
@@ -113,7 +113,7 @@
         <div class="flex items-center gap-2">
           <button onclick="window.open('https://t.me/nusataskproject','_blank')" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Help</button>
           <button onclick="window.open('https://www.youtube.com/@NUSATASKPROJECTS','_blank')" class="px-3 py-2 rounded-lg bg-red-600 text-white">YouTube</button>
-          <button onclick="window.open('https://www.instagram.com/nusataskproject','_blank')" class="px-3 py-2 rounded-lg bg-pink-600 text-white">Instagram</button>
+          <button onclick="window.open('https://www.instagram.com/nusataskproject?igsh=MTh5Ync0bjhqeGxtdg==','_blank')" class="px-3 py-2 rounded-lg bg-pink-600 text-white">Instagram</button>
         </div>
       </footer>
     </section>
@@ -154,10 +154,10 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import {
       getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, query, where, onSnapshot,
-      serverTimestamp, Timestamp, increment, runTransaction
+      serverTimestamp, Timestamp, increment, runTransaction, getDocs
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // === Config (dari kamu) ===
+    // === Config (punyamu) ===
     const firebaseConfig = {
       apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
       authDomain: "penyimpanansaldo-280df.firebaseapp.com",
@@ -183,7 +183,6 @@
     const toast = (msg)=>{ const t=$("toast"); t.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2600); };
     const formatRp = n => "Rp " + (n||0).toLocaleString("id-ID");
     const nowJakarta = ()=> new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Jakarta"}));
-    // dayKey reset 03:00 WIB -> geser -3 jam lalu YYYYMMDD
     const dayKeyOf = (date)=>{ const d = new Date(date.getTime() - 3*3600*1000); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`; };
 
     // ===== Tema =====
@@ -195,7 +194,7 @@
     $("btnLoginTab").onclick = ()=>{ show($("loginForm")); hide($("registerForm")); $("btnLoginTab").className="flex-1 py-2 bg-blue-600 text-white font-medium"; $("btnRegisterTab").className="flex-1 py-2 bg-gray-200 dark:bg-slate-800"; };
     $("btnRegisterTab").onclick = ()=>{ hide($("loginForm")); show($("registerForm")); $("btnRegisterTab").className="flex-1 py-2 bg-blue-600 text-white font-medium"; $("btnLoginTab").className="flex-1 py-2 bg-gray-200 dark:bg-slate-800"; };
 
-    // ===== Auth Actions (auto-login setelah register, tidak ada logout) =====
+    // ===== Auth (auto-login, tanpa logout) =====
     $("btnLogin").onclick = async ()=>{
       try{ await signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPassword").value.trim()); toast("✅ Login sukses"); }
       catch(e){ toast("❌ "+e.message); }
@@ -215,10 +214,10 @@
       }catch(e){ toast("❌ "+e.message); }
     };
 
-    // ===== Global State =====
-    let currentUser=null, userDocRef=null;
+    // ===== State =====
+    let currentUser=null, userDocRef=null, unsubWD=null;
 
-    // ===== Countdown Utils =====
+    // ===== Countdown =====
     function startCountdown(btn, labelEl, ms, baseText){
       clearInterval(btn._cd); btn.disabled = true;
       const endAt = Date.now()+ms;
@@ -256,7 +255,7 @@
       else { btn.disabled=false; btn.textContent="🎯 Xstra Bonus (+Rp30.000)"; lab.textContent=""; }
     }
 
-    // ===== Bind User + UI =====
+    // ===== Bind User Snapshot =====
     function bindUserSnapshot(){
       onSnapshot(userDocRef, snap=>{
         const d = snap.data()||{};
@@ -268,87 +267,75 @@
       });
     }
 
-    <!-- Tambahkan ini di bagian body -->
-<ul id="riwayatWd" class="space-y-2"></ul>
-
-<script type="module">
-  import { 
-    getFirestore, collection, query, where, onSnapshot 
-  } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-
-  const db = getFirestore();
-  const auth = getAuth();
-
-  // Fungsi tampilkan riwayat WD
-  function bindRiwayatRealtime(currentUser){
-    const qy = query(
-      collection(db, "withdrawals"),
-      where("uid", "==", currentUser.uid) // hanya data milik user ini
-    );
-
-    onSnapshot(qy, (snaps)=>{
-      const list = document.getElementById("riwayatWd");
-      if(!list) return;
+    // ===== Render Riwayat Helper =====
+    function renderRiwayat(items){
+      const list = $("riwayatWd");
       list.innerHTML = "";
-
-      const items = [];
-      snaps.forEach(s=>{
-        const d = s.data();
-        let t = 0;
-
-        // amanin createdAt
-        if (d.createdAt) {
-          try {
-            t = d.createdAt.toDate().getTime();
-          } catch(e) {
-            t = typeof d.createdAt === "number" ? d.createdAt : 0;
-          }
-        }
-
-        items.push({id: s.id, ...d, _t: t});
-      });
-
-      // urutkan terbaru dulu
-      items.sort((a,b)=>b._t - a._t);
-
-      if(items.length === 0){
-        list.innerHTML = `<li class="text-center text-gray-400">Belum ada riwayat WD</li>`;
+      if(items.length===0){
+        list.innerHTML = "<li class='text-center text-gray-400'>Belum ada riwayat WD.</li>";
         return;
       }
-
+      items.sort((a,b)=> (b._t||0) - (a._t||0));
       for(const d of items){
-        const timeStr = d._t ? new Date(d._t).toLocaleString("id-ID",{dateStyle:"short",timeStyle:"short"}) : "-";
+        const timeStr = d._t ? new Date(d._t).toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})+" WIB" : "-";
         const badge =
-          d.status === "success" ? "bg-emerald-100 text-emerald-700" :
-          d.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+          d.status==="success" ? "bg-emerald-100 text-emerald-700" :
+          d.status==="pending" ? "bg-yellow-100 text-yellow-800" :
           "bg-red-100 text-red-700";
-
         const li = document.createElement("li");
-        li.className = "flex items-center justify-between p-3 rounded-xl border";
-
+        li.className = "flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-800 border dark:border-slate-700";
         li.innerHTML = `
           <div>
-            <div class="font-semibold">Rp ${d.amount ?? 0}</div>
-            <div class="text-sm text-gray-500">${timeStr}</div>
+            <div class="font-semibold">${formatRp(d.amount)} • <span class="capitalize">${d.walletType}</span></div>
+            <div class="text-xs text-gray-500 dark:text-slate-400">${timeStr}</div>
+            <div class="text-xs text-gray-500 dark:text-slate-400">No: ${d.walletNumber}</div>
           </div>
-          <span class="px-2 py-1 rounded ${badge}">${d.status}</span>
+          <span class="text-xs px-2 py-1 rounded-lg ${badge}">${d.status}</span>
         `;
         list.appendChild(li);
       }
-    });
-  }
-
-  // Jalankan setelah user login
-  onAuthStateChanged(auth, (user)=>{
-    if(user){
-      console.log("UID user login:", user.uid);
-      bindRiwayatRealtime(user);
-    } else {
-      console.log("Belum login");
     }
-  });
-</script>
+
+    // ===== Realtime Riwayat + Error Handler =====
+    async function startRiwayatRealtime(){
+      if(unsubWD) unsubWD();
+      try{
+        const qy = query(collection(db,"withdrawals"), where("uid","==", currentUser.uid));
+        unsubWD = onSnapshot(qy, (snaps)=>{
+          const arr=[];
+          snaps.forEach(s=>{
+            const d=s.data();
+            const t = d.createdAt?.toDate ? d.createdAt.toDate().getTime()
+                    : (d.createdAtClient || 0);
+            arr.push({...d, _t:t});
+          });
+          renderRiwayat(arr);
+        }, (err)=>{
+          // Kalau rules menolak / error lain
+          toast("Gagal realtime riwayat: "+err.message);
+        });
+      }catch(err){
+        toast("Gagal inisialisasi riwayat: "+err.message);
+      }
+    }
+
+    // ===== Fallback sekali (getDocs) saat halaman dibuka =====
+    async function fetchRiwayatOnce(){
+      try{
+        const qy = query(collection(db,"withdrawals"), where("uid","==", currentUser.uid));
+        const ss = await getDocs(qy);
+        const arr=[];
+        ss.forEach(s=>{
+          const d=s.data();
+          const t = d.createdAt?.toDate ? d.createdAt.toDate().getTime()
+                  : (d.createdAtClient || 0);
+          arr.push({...d, _t:t});
+        });
+        renderRiwayat(arr);
+      }catch(err){
+        toast("Gagal memuat riwayat: "+err.message);
+      }
+    }
 
     // ===== Auth State =====
     onAuthStateChanged(auth, async (user)=>{
@@ -361,13 +348,14 @@
           await setDoc(userDocRef,{ email:user.email||"", username:"User", saldo:0, monetagCount:0, lastMonetag:null, lastHiltoads:null, dayKey: dayKeyOf(nowJakarta()) });
         }
         bindUserSnapshot();
-        bindRiwayatRealtime();
+        // mulai listener realtime di background
+        startRiwayatRealtime();
       }else{
         show($("authSection")); hide($("mainSection")); hide($("riwayatSection")); hide($("hiltoadsSection"));
       }
     });
 
-    // ===== Monetag (Rp30k, cooldown 5s, max 20/hari reset 03:00 WIB) =====
+    // ===== Menghasilkan (Monetag) =====
     $("btnMonetag").onclick = async ()=>{
       if(!currentUser) return;
       try{
@@ -397,7 +385,7 @@
       }catch(e){ toast("❌ "+e.message); }
     };
 
-    // ===== Hiltoads (hold 5 dtk, cooldown 10 menit) =====
+    // ===== Xstra Bonus (Hiltoads) =====
     let holdTimer=null;
     $("btnToHiltoads").onclick = async ()=>{
       if(!currentUser) return;
@@ -450,7 +438,7 @@
           // potong saldo
           trx.update(userDocRef, { saldo: saldoNow - amount });
 
-          // buat WD doc (trx.set agar atomic)
+          // buat WD doc
           const ref = doc(collection(db,"withdrawals"));
           wdId = ref.id;
           trx.set(ref, {
@@ -461,15 +449,18 @@
             walletType,
             walletNumber,
             status: "pending",
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            createdAtClient: Date.now() // utk sort instan
           });
         });
 
-        // Notif Telegram (di luar transaksi)
+        // Notif Telegram
         const when = nowJakarta().toLocaleString("id-ID",{ timeZone:"Asia/Jakarta" });
+        const userSnap = await getDoc(userDocRef);
+        const uname = userSnap.data()?.username || "-";
         const text = [
           "📤 Permintaan WD Baru!",
-          `👤 User: ${currentUser.email||"-"} (${(await getDoc(userDocRef)).data()?.username||"-"})`,
+          `👤 User: ${currentUser.email||"-"} (${uname})`,
           `💰 Jumlah: ${formatRp(amount)}`,
           `🏧 E-Wallet (${walletType}): ${walletNumber}`,
           `🕒 Waktu: ${when} WIB`,
@@ -487,7 +478,11 @@
     };
 
     // ===== Navigasi Riwayat =====
-    $("btnRiwayat").onclick = ()=>{ hide($("mainSection")); show($("riwayatSection")); };
+    $("btnRiwayat").onclick = async ()=>{
+      hide($("mainSection")); show($("riwayatSection"));
+      // fallback fetch sekali saat dibuka
+      await fetchRiwayatOnce();
+    };
     $("btnBackMain").onclick = ()=>{ hide($("riwayatSection")); show($("mainSection")); };
 
     // ===== Refresh label cooldown tiap 3s =====
