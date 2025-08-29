@@ -8,9 +8,17 @@
   <style>
     .hidden{display:none}
     body.dark{background:#0b1220}
-    .btn{transition:transform .05s ease}
-    .btn:active{transform:scale(.99)}
   </style>
+
+  <!-- ====== SDK IKLAN (head) ====== -->
+  <!-- RichAds (TelegramAdsController) -->
+  <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+
+  <!-- Adexium -->
+  <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+  <script src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
+
+  <!-- Monetag SDK akan dipanggil dinamis saat klik (agar tidak blok) -->
 </head>
 <body class="bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-100 min-h-screen">
   <!-- TOAST -->
@@ -24,7 +32,6 @@
 
       <!-- 2 Banner atas -->
       <div class="grid grid-cols-2 gap-2">
-        <!-- ganti <img> dengan script/banner Hiltoads kamu -->
         <img src="https://via.placeholder.com/300x80?text=Hiltoads+Banner+A" class="w-full rounded-lg shadow" alt="Hiltoads A">
         <img src="https://via.placeholder.com/300x80?text=Hiltoads+Banner+B" class="w-full rounded-lg shadow" alt="Hiltoads B">
       </div>
@@ -39,14 +46,15 @@
       <div id="loginForm" class="space-y-3">
         <input id="loginEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
         <input id="loginPassword" type="password" placeholder="Password" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
-        <button id="btnLogin" class="btn w-full py-3 rounded-xl bg-blue-600 text-white font-semibold">Login</button>
+        <button id="btnLogin" class="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold">Login</button>
       </div>
 
       <!-- Register Form -->
       <div id="registerForm" class="space-y-3 hidden">
         <input id="registerEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
         <input id="registerPassword" type="password" placeholder="Password (min 6)" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
-        <button id="btnRegister" class="btn w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold">Register</button>
+        <input id="registerTg" type="text" placeholder="Username Telegram (tanpa @)" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+        <button id="btnRegister" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold">Register</button>
       </div>
 
       <!-- 2 Banner bawah -->
@@ -57,7 +65,7 @@
     </section>
 
     <!-- ===== MAIN SECTION ===== -->
-    <section id="mainSection" class="hidden space-y-5">
+    <section id="mainSection" class="hidden space-y-6">
       <!-- Header -->
       <header class="flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -68,59 +76,47 @@
           </div>
         </div>
         <div class="text-right">
-          <div class="text-xs text-gray-500 dark:text-slate-400">Saldo</div>
-          <!-- lebih kecil (xl) -->
+          <div class="text-[11px] text-gray-500 dark:text-slate-400">Saldo</div>
           <div class="text-xl font-extrabold text-emerald-500" id="saldoLabel">Rp 0</div>
           <div id="harianLabel" class="text-[11px] text-gray-500 dark:text-slate-400"></div>
         </div>
       </header>
 
-      <!-- Tombol riwayat & tema -->
-      <div class="flex items-center justify-between -mt-2">
-        <button id="btnTheme" class="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-slate-800 text-sm">🌗 Tema</button>
-        <button id="btnOpenHistory" class="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-slate-800 text-sm">📜 Riwayat WD</button>
-      </div>
+      <!-- Row: Menghasilkan / Xstra Bonus -->
+      <section class="space-y-3">
+        <h3 class="font-bold">Tugas</h3>
 
-      <!-- ===== 3 BARIS TUGAS ===== -->
-      <div id="taskGrid" class="grid gap-3">
-        <!-- Baris 1 -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <button id="btnMeng-m1" class="btn w-full py-4 rounded-2xl bg-blue-600 text-white font-semibold shadow">Menghasilkan (+Rp30.000)</button>
-            <div id="timerMeng-m1" class="text-center text-xs text-gray-600 dark:text-slate-400 mt-1"></div>
-          </div>
-          <div>
-            <button id="btnXstra-x1" class="btn w-full py-4 rounded-2xl bg-purple-600 text-white font-semibold shadow">Xstra Bonus (+Rp30.000)</button>
-            <div id="timerXstra-x1" class="text-center text-xs text-gray-600 dark:text-slate-400 mt-1"></div>
-          </div>
-        </div>
-        <!-- Baris 2 -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <button id="btnMeng-m2" class="btn w-full py-4 rounded-2xl bg-blue-600 text-white font-semibold shadow">Menghasilkan (+Rp30.000)</button>
-            <div id="timerMeng-m2" class="text-center text-xs text-gray-600 dark:text-slate-400 mt-1"></div>
-          </div>
-          <div>
-            <button id="btnXstra-x2" class="btn w-full py-4 rounded-2xl bg-purple-600 text-white font-semibold shadow">Xstra Bonus (+Rp30.000)</button>
-            <div id="timerXstra-x2" class="text-center text-xs text-gray-600 dark:text-slate-400 mt-1"></div>
-          </div>
-        </div>
-        <!-- Baris 3 -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <button id="btnMeng-m3" class="btn w-full py-4 rounded-2xl bg-blue-600 text-white font-semibold shadow">Menghasilkan (+Rp30.000)</button>
-            <div id="timerMeng-m3" class="text-center text-xs text-gray-600 dark:text-slate-400 mt-1"></div>
-          </div>
-          <div>
-            <button id="btnXstra-x3" class="btn w-full py-4 rounded-2xl bg-purple-600 text-white font-semibold shadow">Xstra Bonus (+Rp30.000)</button>
-            <div id="timerXstra-x3" class="text-center text-xs text-gray-600 dark:text-slate-400 mt-1"></div>
-          </div>
-        </div>
-      </div>
+        <!-- Menghasilkan (RichAds) -->
+        <button id="btnRichAds" class="w-full py-4 rounded-2xl bg-blue-600 text-white font-semibold shadow active:opacity-90">
+          💠 Menghasilkan (RichAds) +Rp30.000
+        </button>
+        <div id="timerRichAds" class="text-center text-xs text-gray-600 dark:text-slate-400"></div>
+
+        <!-- Menghasilkan (Monetag) -->
+        <button id="btnMonetag" class="w-full py-4 rounded-2xl bg-blue-600 text-white font-semibold shadow active:opacity-90">
+          📺 Menghasilkan (Monetag) +Rp30.000
+        </button>
+        <div id="timerMonetag" class="text-center text-xs text-gray-600 dark:text-slate-400"></div>
+
+        <!-- Menghasilkan (Adexium) -->
+        <button id="btnAdexium" class="w-full py-4 rounded-2xl bg-blue-600 text-white font-semibold shadow active:opacity-90">
+          🚀 Menghasilkan (Adexium) +Rp30.000
+        </button>
+        <div id="timerAdexium" class="text-center text-xs text-gray-600 dark:text-slate-400"></div>
+
+        <!-- Xstra Bonus (Hiltoads) -->
+        <button id="btnToHiltoads" class="w-full py-4 rounded-2xl bg-purple-600 text-white font-semibold shadow active:opacity-90">
+          🎯 Xstra Bonus (Hiltoads) +Rp30.000
+        </button>
+        <div id="timerXstra" class="text-center text-xs text-gray-600 dark:text-slate-400"></div>
+      </section>
 
       <!-- Withdraw -->
-      <section class="space-y-3 pt-1">
-        <h3 class="font-bold">Withdraw</h3>
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="font-bold">Withdraw</h3>
+          <button id="btnToHistory" class="text-xs px-2 py-1 rounded-lg bg-gray-200 dark:bg-slate-800">Riwayat WD</button>
+        </div>
         <div class="grid grid-cols-2 gap-3">
           <select id="walletType" class="p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
             <option value="Dana">Dana</option>
@@ -131,16 +127,17 @@
           <input id="walletNumber" type="tel" inputmode="numeric" placeholder="Nomor e-wallet" class="p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800" />
         </div>
         <input id="wdAmount" type="number" min="30000" step="1000" value="30000" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800" />
-        <button id="btnWD" class="btn w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold">Ajukan WD (Min Rp30.000)</button>
-        <p class="text-xs text-gray-500 dark:text-slate-400">Notifikasi WD terkirim ke Telegram admin. Status dapat dilihat di riwayat.</p>
+        <button id="btnWD" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold">Ajukan WD (Min Rp30.000)</button>
+        <p class="text-xs text-gray-500 dark:text-slate-400">Permintaan WD akan dikirim ke Telegram admin dan bisa dipantau di riwayat.</p>
       </section>
 
-      <!-- Footer link -->
+      <!-- Footer -->
       <footer class="flex items-center justify-between pt-4 border-t dark:border-slate-800">
-        <a href="https://t.me/nusataskproject" target="_blank" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Help</a>
+        <button id="btnTheme" class="px-3 py-2 rounded-lg bg-gray-200 dark:bg-slate-800">🌗 Tema</button>
         <div class="flex items-center gap-2">
-          <a href="https://www.youtube.com/@NUSATASKPROJECTS" target="_blank" class="px-3 py-2 rounded-lg bg-red-600 text-white">YouTube</a>
-          <a href="https://www.instagram.com/nusataskproject?igsh=MTh5Ync0bjhqeGxtdg==" target="_blank" class="px-3 py-2 rounded-lg bg-pink-600 text-white">Instagram</a>
+          <button onclick="window.open('https://t.me/@nusataskproject','_blank')" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Help</button>
+          <button onclick="window.open('https://www.youtube.com/@NUSATASKPROJECTS','_blank')" class="px-3 py-2 rounded-lg bg-red-600 text-white">YouTube</button>
+          <button onclick="window.open('https://www.instagram.com/nusataskproject?igsh=MTh5Ync0bjhqeGxtdg==','_blank')" class="px-3 py-2 rounded-lg bg-pink-600 text-white">Instagram</button>
         </div>
       </footer>
     </section>
@@ -153,8 +150,7 @@
           ⏳ Tunggu 5 dtk...
         </button>
       </div>
-
-      <!-- Ganti IMG di bawah dengan kode/banner Hiltoads kamu -->
+      <!-- Ganti ke script/banner Hiltoads real milikmu -->
       <div class="grid gap-3">
         <img src="https://via.placeholder.com/600x150?text=Hiltoads+Banner+1" class="w-full rounded-xl shadow" alt="Banner 1">
         <img src="https://via.placeholder.com/600x150?text=Hiltoads+Banner+2" class="w-full rounded-xl shadow" alt="Banner 2">
@@ -162,15 +158,16 @@
         <img src="https://via.placeholder.com/600x150?text=Hiltoads+Banner+4" class="w-full rounded-xl shadow" alt="Banner 4">
         <img src="https://via.placeholder.com/600x150?text=Hiltoads+Banner+5" class="w-full rounded-xl shadow" alt="Banner 5">
       </div>
-
-      <p class="text-xs text-gray-500 dark:text-slate-400">Tombol kembali aktif setelah 5 detik. Setelah kembali, reward ditambahkan bila tidak sedang cooldown (3 menit per tombol) & kuota harian belum habis.</p>
+      <p class="text-xs text-gray-500 dark:text-slate-400">Tombol kembali aktif setelah 5 detik. Reward ditambahkan jika tidak sedang cooldown (3 menit) dan masih dalam limit harian.</p>
     </section>
 
-    <!-- ===== RIWAYAT WD SECTION ===== -->
+    <!-- ===== HISTORY SECTION ===== -->
     <section id="historySection" class="hidden space-y-4">
       <div class="flex items-center justify-between">
-        <h3 class="text-xl font-bold">Riwayat Withdraw</h3>
-        <button id="btnCloseHistory" class="px-3 py-2 rounded-lg bg-gray-300 dark:bg-slate-800">Tutup</button>
+        <h3 class="text-xl font-bold">Riwayat WD</h3>
+        <button id="btnBackHome" class="px-3 py-2 rounded-lg bg-gray-300 dark:bg-slate-800 text-gray-700 dark:text-slate-200">
+          ⬅️ Kembali
+        </button>
       </div>
       <ul id="riwayatWd" class="space-y-2 text-sm"></ul>
     </section>
@@ -186,10 +183,10 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import {
       getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, query, where, onSnapshot,
-      serverTimestamp, Timestamp, runTransaction, increment
+      serverTimestamp, Timestamp, runTransaction
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // --- Config dari kamu ---
+    // --- Config milikmu ---
     const firebaseConfig = {
       apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
       authDomain: "penyimpanansaldo-280df.firebaseapp.com",
@@ -227,55 +224,93 @@
     $("btnLoginTab").onclick = ()=>{ show($("loginForm")); hide($("registerForm")); $("btnLoginTab").className="flex-1 py-2 bg-blue-600 text-white font-medium"; $("btnRegisterTab").className="flex-1 py-2 bg-gray-200 dark:bg-slate-800"; };
     $("btnRegisterTab").onclick = ()=>{ hide($("loginForm")); show($("registerForm")); $("btnRegisterTab").className="flex-1 py-2 bg-blue-600 text-white font-medium"; $("btnLoginTab").className="flex-1 py-2 bg-gray-200 dark:bg-slate-800"; };
 
-    // Auth actions
-    $("btnLogin").onclick = async ()=>{ try{
-      await signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPassword").value.trim());
-      toast("✅ Login sukses");
-    }catch(e){ toast("❌ "+e.message); } };
-
+    // Auth actions (tanpa tombol Logout; auto-login handled by onAuthStateChanged)
+    $("btnLogin").onclick = async ()=>{ try{ await signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPassword").value.trim()); toast("✅ Login sukses"); }catch(e){ toast("❌ "+e.message); } };
     $("btnRegister").onclick = async ()=>{ try{
-      const email=$("registerEmail").value.trim(); const pass=$("registerPassword").value.trim();
+      const email=$("registerEmail").value.trim(); const pass=$("registerPassword").value.trim(); const tg=($("registerTg").value||"").replace(/^@/,"").trim();
       if(pass.length<6) return toast("⚠️ Password minimal 6 karakter");
+      if(!tg) return toast("⚠️ Isi username Telegram");
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      // user doc awal
       await setDoc(doc(db,"users",cred.user.uid),{
-        email,
-        // username/pp Telegram opsional bisa diisi nanti
-        saldo:0,
-        dayKey: dayKeyOf(nowJakarta()),
-        menghasilkanCount:0,
-        xstraCount:0,
-        lastMenghasilkan:{ m1:null, m2:null, m3:null },
-        lastXstra:{ x1:null, x2:null, x3:null }
+        email, tgUsername: tg, saldo:0,
+        // per-jenis: count & last
+        richadsCount:0, lastRichads:null,
+        monetagCount:0, lastMonetag:null,
+        adexiumCount:0, lastAdexium:null,
+        xstraCount:0, lastXstra:null,
+        dayKey:dayKeyOf(nowJakarta())
       });
       toast("✅ Registrasi sukses");
     }catch(e){ toast("❌ "+e.message); } };
 
-    // ===== State =====
+    // Global state
     let currentUser=null, userDocRef=null;
-    let pendingXstraBtnId=null; // tombol xstra mana yang sedang dibuka
 
-    // ===== Bind UI Buttons =====
-    // Menghasilkan
-    ["m1","m2","m3"].forEach(id=>{
-      $("btnMeng-"+id).onclick = ()=>handleMenghasilkan(id);
-    });
-    // Xstra
-    ["x1","x2","x3"].forEach(id=>{
-      $("btnXstra-"+id).onclick = ()=>goHiltoads(id);
-    });
+    // Countdown util
+    function startCountdown(btn, labelEl, ms, baseText, readyText){
+      clearInterval(btn._cd); btn.disabled = true;
+      const endAt = Date.now()+ms;
+      btn.textContent = `⏳ ${baseText}`;
+      btn._cd = setInterval(()=>{
+        const left = endAt - Date.now();
+        if(left<=0){
+          clearInterval(btn._cd);
+          btn.disabled=false; labelEl.textContent="";
+          btn.textContent = readyText;
+          return;
+        }
+        const s = Math.ceil(left/1000);
+        const mm = String(Math.floor(s/60)).padStart(2,"0");
+        const ss = String(s%60).padStart(2,"0");
+        labelEl.textContent = s>=60 ? `Cooldown: ${mm}:${ss}` : `Cooldown: ${ss} dtk`;
+        btn.textContent = `⏳ ${baseText}: ${s>=60? mm+":"+ss : ss+" dtk"}`;
+      }, 500);
+    }
 
-    $("btnBackHiltoads").onclick = backFromHiltoads;
-    $("btnOpenHistory").onclick = ()=>{ hide($("mainSection")); hide($("hiltoadsSection")); show($("historySection")); };
-    $("btnCloseHistory").onclick = ()=>{ hide($("historySection")); show($("mainSection")); };
+    // Per-jenis helper
+    const REWARD = 30000;
+    const CD_3M = 3*60*1000; // 3 menit
+    const TYPES = {
+      richads:  { btn:"btnRichAds",  label:"timerRichAds",  count:"richadsCount",  last:"lastRichads",  title:"Menghasilkan (RichAds)" },
+      monetag:  { btn:"btnMonetag",  label:"timerMonetag",  count:"monetagCount",  last:"lastMonetag",  title:"Menghasilkan (Monetag)" },
+      adexium:  { btn:"btnAdexium",  label:"timerAdexium",  count:"adexiumCount",  last:"lastAdexium",  title:"Menghasilkan (Adexium)" },
+      xstra:    { btn:"btnToHiltoads", label:"timerXstra",   count:"xstraCount",    last:"lastXstra",    title:"Xstra Bonus (Hiltoads)" }
+    };
 
-    // ===== Auth State (auto-login) =====
+    function updateCountdownGeneric(lastTs, typeKey){
+      const cfg = TYPES[typeKey];
+      const btn = $(cfg.btn), lab=$(cfg.label);
+      if(!lastTs){ btn.disabled=false; btn.textContent = typeKey==="xstra" ? "🎯 Xstra Bonus (Hiltoads) +Rp30.000" : `💠/📺/🚀`.includes(btn.textContent[0])?btn.textContent: `Menghasilkan +Rp30.000`; lab.textContent=""; return; }
+      const last = lastTs instanceof Timestamp ? lastTs.toDate() : new Date(lastTs);
+      const remain = CD_3M - (Date.now()-last.getTime());
+      const readyText = btn.getAttribute("data-ready") || btn.textContent;
+      if(remain>0) startCountdown(btn, lab, remain, cfg.title, readyText);
+      else { btn.disabled=false; lab.textContent=""; btn.textContent = readyText; }
+    }
+
+    // Bind tombol
+    $("btnRichAds").setAttribute("data-ready","💠 Menghasilkan (RichAds) +Rp30.000");
+    $("btnMonetag").setAttribute("data-ready","📺 Menghasilkan (Monetag) +Rp30.000");
+    $("btnAdexium").setAttribute("data-ready","🚀 Menghasilkan (Adexium) +Rp30.000");
+    $("btnToHiltoads").setAttribute("data-ready","🎯 Xstra Bonus (Hiltoads) +Rp30.000");
+
+    $("btnRichAds").onclick = ()=> doTask("richads");
+    $("btnMonetag").onclick = ()=> doTask("monetag");
+    $("btnAdexium").onclick = ()=> doTask("adexium");
+    $("btnToHiltoads").onclick = ()=> goHiltoads(); // untuk Xstra: masuk halaman banner, klaim saat kembali
+
+    // Navigation History
+    $("btnToHistory").onclick = ()=>{ hide($("mainSection")); hide($("hiltoadsSection")); show($("historySection")); };
+    $("btnBackHome").onclick  = ()=>{ hide($("historySection")); hide($("hiltoadsSection")); show($("mainSection")); };
+
+    // Auth state
     onAuthStateChanged(auth, async (user)=>{
       if(user){
         currentUser=user;
         userDocRef = doc(db,"users",user.uid);
-        hide($("authSection")); show($("mainSection")); hide($("hiltoadsSection")); hide($("historySection"));
         await ensureUserDoc();
+        // UI
+        hide($("authSection")); show($("mainSection")); hide($("hiltoadsSection")); hide($("historySection"));
         bindUserSnapshot();
         bindRiwayatSnapshot();
       }else{
@@ -289,12 +324,13 @@
       if(!s.exists()){
         await setDoc(userDocRef,{
           email: auth.currentUser?.email || "",
+          tgUsername: "",
           saldo:0,
-          dayKey: dayKeyOf(nowJakarta()),
-          menghasilkanCount:0,
-          xstraCount:0,
-          lastMenghasilkan:{ m1:null, m2:null, m3:null },
-          lastXstra:{ x1:null, x2:null, x3:null }
+          richadsCount:0, lastRichads:null,
+          monetagCount:0, lastMonetag:null,
+          adexiumCount:0, lastAdexium:null,
+          xstraCount:0, lastXstra:null,
+          dayKey: dayKeyOf(nowJakarta())
         });
       }
     }
@@ -302,262 +338,31 @@
     function bindUserSnapshot(){
       onSnapshot(userDocRef, snap=>{
         const d = snap.data()||{};
-        // tampilkan username dari profile jika ada (fallback email)
-        $("userName").textContent = d.usernameTelegram || d.email || "User";
+        $("userName").textContent = d.tgUsername ? "@"+d.tgUsername : (d.email || "User");
         $("saldoLabel").textContent = formatRp(d.saldo||0);
-        $("harianLabel").textContent = `Menghasilkan: ${Math.max(0, 20 - (d.menghasilkanCount||0))}/20 • Xstra: ${Math.max(0, 20 - (d.xstraCount||0))}/20 (reset 03:00)`;
-
-        // update countdown semua tombol
-        updateAllCountdowns(d);
+        const sisa = 20 - Math.min(20,(d.richadsCount||0)+(d.monetagCount||0)+(d.adexiumCount||0));
+        $("harianLabel").textContent = `Sisa harian Menghasilkan: ${Math.max(0,sisa)} / 20 • Xstra: ${Math.max(0,20-(d.xstraCount||0))}/20 (reset 03:00)`;
+        // countdown
+        updateCountdownGeneric(d.lastRichads,"richads");
+        updateCountdownGeneric(d.lastMonetag,"monetag");
+        updateCountdownGeneric(d.lastAdexium,"adexium");
+        updateCountdownGeneric(d.lastXstra,"xstra");
       });
     }
 
-    // ===== Countdown Helpers =====
-    const COOLDOWN_MS = 3*60*1000; // 3 menit
-    const mengIds=["m1","m2","m3"];
-    const xstraIds=["x1","x2","x3"];
-
-    function startCountdownFor(btnEl, labelEl, ms, baseText){
-      clearInterval(btnEl._cd);
-      btnEl.disabled = true;
-      const endAt = Date.now()+ms;
-      const tick = ()=>{
-        const left = endAt - Date.now();
-        if(left<=0){
-          clearInterval(btnEl._cd);
-          btnEl.disabled=false; labelEl.textContent="";
-          btnEl.textContent = baseText;
-          return;
-        }
-        const s = Math.ceil(left/1000);
-        const mm = String(Math.floor(s/60)).padStart(2,"0");
-        const ss = String(s%60).padStart(2,"0");
-        labelEl.textContent = s>=60 ? `Cooldown: ${mm}:${ss}` : `Cooldown: ${ss} dtk`;
-        btnEl.textContent = `⏳ ${baseText} (${s>=60? mm+":"+ss : ss+" dtk"})`;
-        btnEl._cd = requestAnimationFrame(tick);
-      };
-      tick();
-    }
-
-    function tsToDate(ts){
-      return ts ? (ts.toDate ? ts.toDate() : new Date(ts)) : null;
-    }
-
-    function updateAllCountdowns(d){
-      // Menghasilkan
-      mengIds.forEach(id=>{
-        const last = tsToDate(d?.lastMenghasilkan?.[id]);
-        const btn=$("btnMeng-"+id), lab=$("timerMeng-"+id);
-        if(!last){ btn.disabled=false; btn.textContent="Menghasilkan (+Rp30.000)"; lab.textContent=""; return; }
-        const remain = COOLDOWN_MS - (Date.now()-last.getTime());
-        if(remain>0) startCountdownFor(btn, lab, remain, "Menghasilkan (+Rp30.000)");
-        else { btn.disabled=false; btn.textContent="Menghasilkan (+Rp30.000)"; lab.textContent=""; }
-      });
-      // Xstra
-      xstraIds.forEach(id=>{
-        const last = tsToDate(d?.lastXstra?.[id]);
-        const btn=$("btnXstra-"+id), lab=$("timerXstra-"+id);
-        if(!last){ btn.disabled=false; btn.textContent="Xstra Bonus (+Rp30.000)"; lab.textContent=""; return; }
-        const remain = COOLDOWN_MS - (Date.now()-last.getTime());
-        if(remain>0) startCountdownFor(btn, lab, remain, "Xstra Bonus (+Rp30.000)");
-        else { btn.disabled=false; btn.textContent="Xstra Bonus (+Rp30.000)"; lab.textContent=""; }
-      });
-    }
-
-    // ===== Menghasilkan (per tombol, 3 menit, limit harian 20 total) =====
-    async function handleMenghasilkan(btnId){
-      if(!currentUser) return;
-      try{
-        await runTransaction(db, async (trx)=>{
-          const snap = await trx.get(userDocRef);
-          if(!snap.exists()) throw new Error("User tidak ditemukan");
-          const d = snap.data();
-
-          // reset harian via dayKey
-          const todayKey = dayKeyOf(nowJakarta());
-          let menghasilkanCount = d.menghasilkanCount||0;
-          let updates = {};
-          if(d.dayKey !== todayKey){
-            updates.dayKey = todayKey;
-            menghasilkanCount = 0;
-            updates.menghasilkanCount = 0;
-            updates.xstraCount = 0;
-            updates.lastMenghasilkan = { m1:null, m2:null, m3:null };
-            updates.lastXstra = { x1:null, x2:null, x3:null };
-          }
-
-          // limit harian
-          if(menghasilkanCount >= 20) throw new Error("⚠️ Batas Menghasilkan 20x/hari (reset 03:00 WIB)");
-
-          // cooldown per tombol
-          const lastMap = d.lastMenghasilkan || { m1:null,m2:null,m3:null };
-          const last = tsToDate(lastMap[btnId]);
-          const remain = last ? COOLDOWN_MS - (Date.now()-last.getTime()) : 0;
-          if(remain>0) throw new Error("⏳ Masih cooldown tombol ini");
-
-          // update
-          const newLast = { ...(updates.lastMenghasilkan||lastMap) };
-          newLast[btnId] = serverTimestamp();
-
-          trx.update(userDocRef,{
-            ...updates,
-            saldo: (d.saldo||0) + 30000,
-            menghasilkanCount: (updates.menghasilkanCount ?? menghasilkanCount) + 1,
-            lastMenghasilkan: newLast
-          });
-        });
-        toast("✅ +Rp30.000 (Menghasilkan)");
-      }catch(e){ toast("❌ "+e.message); }
-    }
-
-    // ===== Xstra (open hiltoads, hold 5 detik, per tombol 3 menit, limit 20) =====
-    let holdTimer=null, holdLeft=5;
-    async function goHiltoads(btnId){
-      if(!currentUser) return;
-      pendingXstraBtnId = btnId;
-
-      // sebelum buka halaman, cek cooldown cepat (UX)
-      const s = await getDoc(userDocRef); const d=s.data();
-      const last = tsToDate((d.lastXstra||{})[btnId]);
-      const remain = last ? COOLDOWN_MS - (Date.now()-last.getTime()) : 0;
-      if(remain>0){ updateAllCountdowns(d); return toast("⏳ Xstra tombol ini masih cooldown"); }
-
-      hide($("mainSection")); hide($("historySection")); show($("hiltoadsSection"));
-      const backBtn = $("btnBackHiltoads");
-      backBtn.disabled = true;
-      holdLeft = 5;
-      backBtn.textContent = `⏳ Tunggu ${holdLeft} dtk...`;
-      if(holdTimer) clearInterval(holdTimer);
-      holdTimer = setInterval(()=>{
-        holdLeft--;
-        if(holdLeft<=0){ clearInterval(holdTimer); backBtn.disabled=false; backBtn.textContent="⬅️ Kembali & Klaim"; }
-        else backBtn.textContent = `⏳ Tunggu ${holdLeft} dtk...`;
-      },1000);
-    }
-
-    async function backFromHiltoads(){
-      hide($("hiltoadsSection")); show($("mainSection"));
-      if(!pendingXstraBtnId) return;
-      const btnId = pendingXstraBtnId; pendingXstraBtnId=null;
-
-      try{
-        await runTransaction(db, async (trx)=>{
-          const snap = await trx.get(userDocRef);
-          if(!snap.exists()) throw new Error("User tidak ditemukan");
-          const d=snap.data();
-
-          // reset harian
-          const todayKey = dayKeyOf(nowJakarta());
-          let xstraCount = d.xstraCount||0;
-          let updates = {};
-          if(d.dayKey !== todayKey){
-            updates.dayKey=todayKey;
-            xstraCount=0;
-            updates.menghasilkanCount=0;
-            updates.xstraCount=0;
-            updates.lastMenghasilkan = { m1:null, m2:null, m3:null };
-            updates.lastXstra = { x1:null, x2:null, x3:null };
-          }
-
-          // limit harian Xstra
-          if(xstraCount>=20) throw new Error("⚠️ Batas Xstra 20x/hari (reset 03:00 WIB)");
-
-          // cooldown per tombol
-          const lastMap = d.lastXstra || { x1:null,x2:null,x3:null };
-          const last = tsToDate(lastMap[btnId]);
-          const remain = last ? COOLDOWN_MS - (Date.now()-last.getTime()) : 0;
-          if(remain>0) throw new Error("⏳ Masih cooldown tombol ini");
-
-          // update
-          const newLast = { ...(updates.lastXstra||lastMap) };
-          newLast[btnId] = serverTimestamp();
-
-          trx.update(userDocRef,{
-            ...updates,
-            saldo: (d.saldo||0) + 30000,
-            xstraCount: (updates.xstraCount ?? xstraCount) + 1,
-            lastXstra: newLast
-          });
-        });
-        toast("✅ +Rp30.000 (Xstra Bonus)");
-      }catch(e){ toast("❌ "+e.message); }
-    }
-
-    // ===== Withdraw (transaction + Telegram) =====
-    $("btnWD").onclick = withdraw;
-    async function withdraw(){
-      if(!currentUser) return;
-      const amount = parseInt($("wdAmount").value||"0",10);
-      const walletType = $("walletType").value;
-      const walletNumber= $("walletNumber").value.trim();
-
-      if(!walletNumber) return toast("❌ Masukkan nomor e-wallet");
-      if(isNaN(amount)||amount<30000) return toast("⚠️ Minimal WD Rp30.000");
-
-      let newId="";
-      try{
-        await runTransaction(db, async (trx)=>{
-          const snap = await trx.get(userDocRef);
-          if(!snap.exists()) throw new Error("User tidak ditemukan");
-          const d=snap.data();
-          if((d.saldo||0) < amount) throw new Error("Saldo tidak cukup");
-
-          trx.update(userDocRef,{ saldo:(d.saldo||0)-amount });
-
-          const ref = doc(collection(db,"withdrawals"));
-          newId = ref.id;
-          trx.set(ref,{
-            uid: currentUser.uid,
-            email: currentUser.email||"",
-            amount, walletType, walletNumber,
-            status:"pending",
-            createdAt: serverTimestamp()
-          });
-        });
-
-        // Notif Telegram
-        const when = nowJakarta().toLocaleString("id-ID",{ timeZone:"Asia/Jakarta" });
-        const text = [
-          "📤 Permintaan WD Baru!",
-          `👤 User: ${currentUser.email||"-"}`,
-          `💰 Jumlah: ${formatRp(amount)}`,
-          `🏧 E-Wallet (${walletType}): ${walletNumber}`,
-          `🕒 Waktu: ${when} WIB`,
-          `🆔 Firestore ID: ${newId}`
-        ].join("\n");
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{
-          method:"POST",
-          headers:{ "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
-          body: new URLSearchParams({ chat_id: TELEGRAM_CHAT_ID, text })
-        }).catch(()=>{});
-
-        toast("✅ WD diajukan (pending).");
-      }catch(e){ toast("❌ "+e.message); }
-    }
-
-    // ===== Riwayat WD (realtime, tanpa orderBy index) =====
     function bindRiwayatSnapshot(){
-      const qy = query(collection(db,"withdrawals"), where("uid","==", currentUser.uid));
+      const qy = query(collection(db,"withdrawals"), where("uid","==", auth.currentUser.uid));
       onSnapshot(qy, (snaps)=>{
-        const items=[];
-        snaps.forEach(s=>{
-          const d=s.data();
-          const t = d.createdAt?.toDate ? d.createdAt.toDate().getTime() : 0;
-          items.push({ id:s.id, ...d, _t:t });
-        });
-        items.sort((a,b)=>b._t-a._t);
-
         const list = $("riwayatWd");
         list.innerHTML = "";
-        if(!items.length){
-          const li=document.createElement("li");
-          li.className="text-center text-sm text-gray-500 dark:text-slate-400";
-          li.textContent="Belum ada riwayat.";
-          list.appendChild(li);
-          return;
-        }
+        const items=[];
+        snaps.forEach(s=>{
+          const d=s.data(); const t=d.createdAt?.toDate? d.createdAt.toDate().getTime():0;
+          items.push({id:s.id, ...d, _t:t});
+        });
+        items.sort((a,b)=>b._t-a._t);
         for(const d of items){
-          const timeStr = d._t? new Date(d._t).toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})+" WIB" : "-";
+          const timeStr = d._t? new Date(d._t).toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})+" WIB":"-";
           const li = document.createElement("li");
           li.className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-800 border dark:border-slate-700";
           li.innerHTML = `
@@ -570,12 +375,233 @@
               d.status==="pending" ? "bg-yellow-100 text-yellow-800" :
               d.status==="success" ? "bg-emerald-100 text-emerald-700" :
               "bg-red-100 text-red-700"
-            }">${d.status}</span>
+            }">${d.status||"pending"}</span>
           `;
           list.appendChild(li);
         }
       });
     }
+
+    // ====== TASK HANDLERS ======
+    async function doTask(typeKey){
+      if(!currentUser) return;
+      const cfg = TYPES[typeKey];
+      try{
+        // Enforce cooldown + limit di server (anti tuyul)
+        await runTransaction(db, async (trx)=>{
+          const snap=await trx.get(userDocRef);
+          if(!snap.exists()) throw new Error("User tidak ditemukan");
+          const d=snap.data();
+
+          // reset harian via dayKey 03:00
+          const todayKey = dayKeyOf(nowJakarta());
+          let updates = {};
+          if(d.dayKey !== todayKey){
+            updates.dayKey = todayKey;
+            updates.richadsCount = 0;
+            updates.monetagCount = 0;
+            updates.adexiumCount = 0;
+            updates.xstraCount = 0;
+          }
+
+          const lastField = cfg.last;
+          const countField= cfg.count;
+          const lastDate = d[lastField]?.toDate ? d[lastField].toDate() : (d[lastField]? new Date(d[lastField]):null);
+          const remain = lastDate ? CD_3M - (Date.now()-lastDate.getTime()) : 0;
+          if(remain>0) throw new Error("⏳ Masih cooldown");
+
+          // Limit harian: Menghasilkan total 20 untuk (richads+monetag+adexium)
+          if(typeKey!=="xstra"){
+            const totalMenghasilkan = (updates.richadsCount ?? d.richadsCount || 0)
+                                    + (updates.monetagCount ?? d.monetagCount || 0)
+                                    + (updates.adexiumCount ?? d.adexiumCount || 0);
+            if(totalMenghasilkan >= 20) throw new Error("⚠️ Batas 20x Menghasilkan / hari (reset 03:00)");
+          }else{
+            if(((updates.xstraCount ?? d.xstraCount) || 0) >= 20)
+              throw new Error("⚠️ Batas 20x Xstra / hari (reset 03:00)");
+          }
+
+          // Set last timestamp terlebih dulu; saldo & count diberikan SETELAH iklan terverifikasi (untuk Monetag via promise)
+          trx.update(userDocRef, { ...updates, [lastField]: serverTimestamp() });
+        });
+
+        // ====== PANGGIL IKLAN SESUAI JENIS ======
+        if(typeKey==="monetag"){
+          // Load SDK jika belum
+          if(!window.__monetagLoaded){
+            await new Promise((resolve,reject)=>{
+              const s=document.createElement("script");
+              s.src='//libtl.com/sdk.js'; s.dataset.zone='9779635'; s.dataset.sdk='show_9779635';
+              s.onload=()=>{ window.__monetagLoaded=true; resolve(); };
+              s.onerror=()=>reject(new Error("Gagal muat SDK Monetag"));
+              document.head.appendChild(s);
+            });
+          }
+          if(typeof window.show_9779635!=="function") throw new Error("SDK Monetag belum siap");
+          await window.show_9779635(); // menunggu user selesai menonton
+          await grantReward("monetag");
+          toast("✅ +Rp30.000 dari Monetag");
+        }
+        else if(typeKey==="richads"){
+          try{
+            // Inisialisasi & coba tampilkan interstitial
+            if(!window.TelegramAdsController) throw new Error("SDK RichAds belum siap");
+            if(!window.__richInit){
+              window.TelegramAdsController = new TelegramAdsController();
+              window.TelegramAdsController.initialize({ pubId:"984631", appId:"3504" });
+              window.__richInit=true;
+            }
+            // SDK ini tidak expose promise completed; tetap jalankan dan berikan reward (dengan proteksi cooldown/hari sudah di server)
+            // Jika nanti ada callback completed, pindahkan grantReward ke callback.
+            await grantReward("richads");
+            toast("✅ +Rp30.000 dari RichAds");
+          }catch(e){
+            // Jika gagal load/tampil, tetap biarkan user menekan lagi setelah cooldown server
+            throw e;
+          }
+        }
+        else if(typeKey==="adexium"){
+          try{
+            const widget = new AdexiumWidget({wid:'b78f386d-0a18-43d6-b658-27055787953f', adFormat:'interstitial'});
+            widget.autoMode();
+            // Sama seperti RichAds, belum ada callback completed → grant via proteksi server
+            await grantReward("adexium");
+            toast("✅ +Rp30.000 dari Adexium");
+          }catch(e){
+            throw e;
+          }
+        }
+      }catch(e){
+        toast("❌ "+(e?.message||e));
+      }
+    }
+
+    // Grant reward (server-side transaction per jenis)
+    async function grantReward(typeKey){
+      const cfg=TYPES[typeKey];
+      await runTransaction(db, async (trx)=>{
+        const snap=await trx.get(userDocRef);
+        const d=snap.data();
+        // Pastikan masih tidak cooldown & limit belum tembus (double safety)
+        const lastDate = d[cfg.last]?.toDate ? d[cfg.last].toDate() : (d[cfg.last]? new Date(d[cfg.last]):null);
+        const remain = lastDate ? CD_3M - (Date.now()-lastDate.getTime()) : 0;
+        if(remain>0) throw new Error("Cooldown aktif");
+
+        if(typeKey!=="xstra"){
+          const totalMenghasilkan = (d.richadsCount||0)+(d.monetagCount||0)+(d.adexiumCount||0);
+          if(totalMenghasilkan >= 20) throw new Error("Limit harian Menghasilkan tercapai");
+        }else{
+          if((d.xstraCount||0) >= 20) throw new Error("Limit harian Xstra tercapai");
+        }
+
+        const newCount = (d[cfg.count]||0) + 1;
+        trx.update(userDocRef, {
+          saldo: (d.saldo||0) + REWARD,
+          [cfg.count]: newCount,
+          [cfg.last]: serverTimestamp()
+        });
+      });
+    }
+
+    // ====== HILTOADS (Xstra Bonus) ======
+    let hiltoadsHoldTimer=null;
+    async function goHiltoads(){
+      if(!currentUser) return;
+      // Cek cooldown & limit Xstra sebelum masuk halaman
+      try{
+        await runTransaction(db, async (trx)=>{
+          const snap=await trx.get(userDocRef);
+          const d=snap.data();
+          // reset harian
+          const todayKey=dayKeyOf(nowJakarta());
+          let updates={};
+          if(d.dayKey!==todayKey){
+            updates.dayKey=todayKey; updates.xstraCount=0; updates.richadsCount=0; updates.monetagCount=0; updates.adexiumCount=0;
+          }
+          const last = d.lastXstra?.toDate ? d.lastXstra.toDate() : (d.lastXstra? new Date(d.lastXstra):null);
+          const remain = last ? CD_3M - (Date.now()-last.getTime()) : 0;
+          if(remain>0) throw new Error("⏳ Xstra masih cooldown");
+          if(((updates.xstraCount ?? d.xstraCount)||0) >= 20) throw new Error("⚠️ Batas 20x Xstra / hari");
+          trx.update(userDocRef,{ ...updates, lastXstra: serverTimestamp() });
+        });
+      }catch(e){ return toast("❌ "+e.message); }
+
+      hide($("mainSection")); show($("hiltoadsSection"));
+      let hold=5; const btn=$("btnBackHiltoads");
+      btn.disabled=true; btn.textContent=`⏳ Tunggu ${hold} dtk...`;
+      if(hiltoadsHoldTimer) clearInterval(hiltoadsHoldTimer);
+      hiltoadsHoldTimer=setInterval(()=>{
+        hold--; if(hold<=0){ clearInterval(hiltoadsHoldTimer); btn.disabled=false; btn.textContent="⬅️ Kembali & Klaim"; }
+        else btn.textContent=`⏳ Tunggu ${hold} dtk...`;
+      },1000);
+    }
+
+    $("btnBackHiltoads").onclick = async ()=>{
+      hide($("hiltoadsSection")); show($("mainSection"));
+      try{
+        await grantReward("xstra");
+        toast("✅ +Rp30.000 dari Xstra");
+      }catch(e){ toast("❌ "+e.message); }
+    };
+
+    // ===== Withdraw (transaction + Telegram) =====
+    $("btnWD").onclick = async ()=>{
+      if(!currentUser) return;
+      const amount = parseInt($("wdAmount").value||"0",10);
+      const walletType = $("walletType").value;
+      const walletNumber= $("walletNumber").value.trim();
+      if(!walletNumber) return toast("❌ Masukkan nomor e-wallet");
+      if(isNaN(amount)||amount<30000) return toast("⚠️ Minimal WD Rp30.000");
+
+      let newId="";
+      try{
+        await runTransaction(db, async (trx)=>{
+          const snap = await trx.get(userDocRef);
+          if(!snap.exists()) throw new Error("User tidak ditemukan");
+          const d = snap.data();
+          if((d.saldo||0)<amount) throw new Error("Saldo tidak cukup");
+          trx.update(userDocRef,{ saldo: (d.saldo||0)-amount });
+          const ref = doc(collection(db,"withdrawals"));
+          newId = ref.id;
+          trx.set(ref,{
+            uid: currentUser.uid,
+            email: d.email || currentUser.email || "",
+            tgUsername: d.tgUsername || "",
+            amount, walletType, walletNumber,
+            status:"pending", createdAt: serverTimestamp()
+          });
+        });
+
+        // Notif Telegram
+        const when = nowJakarta().toLocaleString("id-ID",{ timeZone:"Asia/Jakarta" });
+        const text = [
+          "📤 Permintaan WD Baru!",
+          `👤 User: ${auth.currentUser.email||"-"} (${(await getDoc(userDocRef)).data().tgUsername||"-"})`,
+          `💰 Jumlah: ${formatRp(amount)}`,
+          `🏧 E-Wallet (${walletType}): ${walletNumber}`,
+          `🕒 Waktu: ${when} WIB`,
+          `🆔 Firestore ID: ${newId}`
+        ].join("\n");
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{
+          method:"POST",
+          headers:{ "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
+          body: new URLSearchParams({ chat_id: TELEGRAM_CHAT_ID, text })
+        }).catch(e=>console.error("Telegram error:",e));
+
+        toast("✅ WD diajukan (pending).");
+      }catch(e){ toast("❌ "+e.message); }
+    };
+
+    // ===== Saldo/timer refresher ringan (sinkron UI server) =====
+    setInterval(async ()=>{
+      if(!userDocRef) return;
+      const s=await getDoc(userDocRef); const d=s.data()||{};
+      updateCountdownGeneric(d.lastRichads,"richads");
+      updateCountdownGeneric(d.lastMonetag,"monetag");
+      updateCountdownGeneric(d.lastAdexium,"adexium");
+      updateCountdownGeneric(d.lastXstra,"xstra");
+    }, 3000);
+
   </script>
 </body>
 </html>
