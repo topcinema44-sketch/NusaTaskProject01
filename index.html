@@ -1,494 +1,600 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>NusaTask Project — All in One</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NusaTask | All-in-One</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .hidden{display:none}
+    body.dark{background:#0b1220}
+    .btn { @apply w-full py-4 rounded-2xl font-semibold shadow active:opacity-90 transition; }
+    .btn-primary { background:#2563eb; color:#fff; }
+    .btn-purple { background:#7c3aed; color:#fff; }
+    .btn-gray { background:#9ca3af; color:#fff; }
+    .btn-green { background:#059669; color:#fff; }
+    .tag { @apply text-[10px] px-2 py-0.5 rounded-full; }
+    .tag-warn { background:#fef3c7; color:#92400e; }
+    .tag-ok { background:#d1fae5; color:#065f46; }
+    .tag-bad { background:#fee2e2; color:#991b1b; }
+    /* modal */
+    .modal-mask { position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:60; }
+    .modal-card { width:min(640px,92vw); max-height:88vh; overflow:auto; border-radius:1rem; }
+    /* floating corner ad */
+    .corner-ad { position:fixed; left:12px; top:12px; z-index:50; }
+    .glass { background:rgba(255,255,255,.8); backdrop-filter:blur(8px); }
+    .dark .glass { background:rgba(15,23,42,.75); }
+  </style>
 
-<!-- ====== BASE STYLE (mobile-first, profesional) ====== -->
-<style>
-  :root{
-    --bg:#f5f7fb; --card:#ffffff; --text:#111827; --muted:#6b7280;
-    --primary:#2563eb; --secondary:#7c3aed; --success:#16a34a; --warn:#f59e0b; --danger:#ef4444;
-    --btn-disabled:#9e9e9e; --border:#e5e7eb; --chip:#eef2ff;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; background:var(--bg); color:var(--text); font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
-    display:flex; flex-direction:column;
-  }
-  header{
-    position:sticky; top:0; z-index:10;
-    background:linear-gradient(90deg,#111827,#1f2937);
-    color:#fff; padding:14px 16px; text-align:center; font-weight:700; letter-spacing:.3px;
-  }
-  .wrap{width:100%; max-width:480px; margin:0 auto; padding:14px;}
-  .flex{display:flex} .between{justify-content:space-between; align-items:center}
-  .card{
-    background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 6px 20px rgba(0,0,0,.06);
-  }
-  .saldo-card{ padding:16px 18px; margin:14px 0 4px }
-  .saldo-row{display:flex; justify-content:space-between; align-items:center; gap:10px}
-  .username{font-size:14px; color:var(--muted); font-weight:600; max-width:55%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-  .saldo-label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px}
-  .saldo-amount{font-size:20px; font-weight:800;} /* <- diperkecil sesuai permintaan */
-  .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
-  .chip{background:var(--chip); color:#3730a3; font-size:11px; padding:6px 10px; border-radius:999px; border:1px dashed #c7d2fe}
+  <!-- ================= Monetag SDK (for Menghasilkan) ================= -->
+  <script src='//libtl.com/sdk.js' data-zone='9779635' data-sdk='show_9779635'></script>
 
-  .actions{ margin:16px 0 120px; padding:14px }
-  .btn{
-    width:100%; padding:14px 14px; border:0; border-radius:12px; color:#fff; font-weight:800; font-size:15px; cursor:pointer;
-    transition:transform .08s ease, filter .2s ease, background .2s ease; display:flex; justify-content:center; align-items:center; gap:8px;
-  }
-  .btn:active{ transform:translateY(1px) }
-  .btn.primary{ background:var(--success) } /* Menghasilkan 1 */
-  .btn.primary2{ background:#0ea5e9 }        /* Menghasilkan 2 */
-  .btn.primary3{ background:#d946ef }        /* Menghasilkan 3 */
-  .btn.xstra{ background:var(--secondary) }  /* Xstra Bonus */
-  .btn.blue{ background:var(--primary) }
-  .btn.orange{ background:var(--warn) }
-  .btn.gray{ background:#9ca3af }
-  .btn[disabled]{ background:var(--btn-disabled)!important; cursor:not-allowed; filter:grayscale(20%) }
-  .note{ font-size:12px; color:var(--muted); margin:6px 4px 10px; text-align:center }
-  .section-title{ font-weight:900; letter-spacing:.3px; font-size:13px; color:#374151; margin:6px 2px 10px; text-transform:uppercase }
-
-  /* banner stack (Xstra) */
-  .banner-stack{ display:flex; flex-direction:column; gap:10px; margin-top:10px }
-  .banner-box{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:6px; min-height:72px; display:flex; align-items:center; justify-content:center }
-
-  /* pages */
-  .page{ display:none }
-  .page.active{ display:block }
-
-  /* bottom safe area */
-  .bottom-pad{ height:18px }
-
-  /* toast */
-  .toast{
-    position:fixed; left:50%; bottom:20px; transform:translateX(-50%);
-    background:#111827; color:#fff; padding:10px 14px; border-radius:10px; font-size:13px;
-    box-shadow:0 10px 24px rgba(0,0,0,.25); z-index:99; display:none
-  }
-  .toast.show{ display:block; animation:fade .2s ease }
-  @keyframes fade { from{opacity:.4; transform:translateX(-50%) translateY(4px)} to{opacity:1; transform:translateX(-50%) translateY(0)} }
-
-  /* popup in-page kiri atas (Klik Adila) */
-  .pop-inpage{
-    position:fixed; top:10px; left:10px; width:min(92vw,300px); z-index:9999; display:flex; gap:8px; align-items:flex-start
-  }
-  .pop-inpage .ad{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:6px; min-width:160px }
-  .pop-inpage .close{
-    background:#111827; color:#fff; border:0; border-radius:999px; width:28px; height:28px; font-weight:900; cursor:pointer
-  }
-
-  /* footer links */
-  .links{ display:flex; gap:10px; justify-content:center; margin:10px 0 20px }
-  .link-btn{
-    background:#111827; color:#fff; border:0; border-radius:12px; padding:10px 14px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:8px
-  }
-
-  /* helper hidden */
-  .hidden{ display:none !important }
-</style>
-
-<!-- ========== KLIK ADILA (script panjang) ========== -->
-<script data-cfasync='false'>function R(K,h){var O=X();return R=function(p,E){p=p-0x87;var Z=O[p];return Z;},R(K,h);}(function(K,h){var Xo=R,O=K();while(!![]){try{var p=parseInt(Xo(0xac))/0x1*(-parseInt(Xo(0x90))/0x2)+parseInt(Xo(0xa5))/0x3*(-parseInt(Xo(0x8d))/0x4)+parseInt(Xo(0xb5))/0x5*(-parseInt(Xo(0x93))/0x6)+parseInt(Xo(0x89))/0x7+-parseInt(Xo(0xa1))/0x8+parseInt(Xo(0xa7))/0x9*(parseInt(Xo(0xb2))/0xa)+parseInt(Xo(0x95))/0xb*(parseInt(Xo(0x9f))/0xc);if(p===h)break;else O['push'](O['shift']());}catch(E){O['push'](O['shift']());}}}(X,0x33565),(function(){var XG=R;function K(){var Xe=R,h=365953,O='a3klsam',p='a',E='db',Z=Xe(0xad),S=Xe(0xb6),o=Xe(0xb0),e='cs',D='k',c='pro',u='xy',Q='su',G=Xe(0x9a),j='se',C='cr',z='et',w='sta',Y='tic',g='adMa',V='nager',A=p+E+Z+S+o,s=p+E+Z+S+e,W=p+E+Z+D+'-'+c+u+'-'+Q+G+'-'+j+C+z,L='/'+w+Y+'/'+g+V+Xe(0x9c),T=A,t=s,I=W,N=null,r=null,n=new Date()[Xe(0x94)]()[Xe(0x8c)]('T')[0x0][Xe(0xa3)](/-/ig,'.')['substring'](0x2),q=function(F){var Xa=Xe,f=Xa(0xa4);function v(XK){var XD=Xa,Xh,XO='';for(Xh=0x0;Xh<=0x3;Xh++)XO+=f[XD(0x88)](XK>>Xh*0x8+0x4&0xf)+f[XD(0x88)](XK>>Xh*0x8&0xf);return XO;}function U(XK,Xh){var XO=(XK&0xffff)+(Xh&0xffff),Xp=(XK>>0x10)+(Xh>>0x10)+(XO>>0x10);return Xp<<0x10|XO&0xffff;}function m(XK,Xh){return XK<<Xh|XK>>>0x20-Xh;}function l(XK,Xh,XO,Xp,XE,XZ){return U(m(U(U(Xh,XK),U(Xp,XZ)),XE),XO);}function B(XK,Xh,XO,Xp,XE,XZ,XS){return l(Xh&XO|~Xh&Xp,XK,Xh,XE,XZ,XS);}function y(XK,Xh,XO,Xp,XE,XZ,XS){return l(Xh&Xp|XO&~Xp,XK,Xh,XE,XZ,XS);}function H(XK,Xh,XO,Xp,XE,XZ,XS){return l(Xh^XO^Xp,XK,Xh,XE,XZ,XS);}function X0(XK,Xh,XO,Xp,XE,XZ,XS){return l(XO^(Xh|~Xp),XK,Xh,XE,XZ,XS);}function X1(XK){var Xc=Xa,Xh,XO=(XK[Xc(0x9b)]+0x8>>0x6)+0x1,Xp=new Array(XO*0x10);for(Xh=0x0;Xh<XO*0x10;Xh++)Xp[Xh]=0x0;for(Xh=0x0;Xh<XK[Xc(0x9b)];Xh++)Xp[Xh>>0x2]|=XK[Xc(0x8b)](Xh)<<Xh%0x4*0x8;return Xp[Xh>>0x2]|=0x80<<Xh%0x4*0x8,Xp[XO*0x10-0x2]=XK[Xc(0x9b)]*0x8,Xp;}var X2,X3=X1(F),X4=0x67452301,X5=-0x10325477,X6=-0x67452302,X7=0x10325476,X8,X9,XX,XR;for(X2=0x0;X2<X3[Xa(0x9b)];X2+=0x10){X8=X4,X9=X5,XX=X6,XR=X7,X4=B(X4,X5,X6,X7,X3[X2+0x0],0x7,-0x28955b88),X7=B(X7,X4,X5,X6,X3[X2+0x1],0xc,-0x173848aa),X6=B(X6,X7,X4,X5,X3[X2+0x2],0x11,0x242070db),X5=B(X5,X6,X7,X4,X3[X2+0x3],0x16,-0x3e423112),X4=B(X4,X5,X6,X7,X3[X2+0x4],0x7,-0xa83f051),X7=B(X7,X4,X5,X6,X3[X2+0x5],0xc,0x4787c62a),X6=B(X6,X7,X4,X5,X3[X2+0x6],0x11,-0x57cfb9ed),X5=B(X5,X6,X7,X4,X3[X2+0x7],0x16,-0x2b96aff),X4=B(X4,X5,X6,X7,X3[X2+0x8],0x7,0x698098d8),X7=B(X7,X4,X5,X6,X3[X2+0x9],0xc,-0x74bb0851),X6=B(X6,X7,X4,X5,X3[X2+0xa],0x11,-0xa44f),X5=B(X5,X6,X7,X4,X3[X2+0xb],0x16,-0x76a32842),X4=B(X4,X5,X6,X7,X3[X2+0xc],0x7,0x6b901122),X7=B(X7,X4,X5,X6,X3[X2+0xd],0xc,-0x2678e6d),X6=B(X6,X7,X4,X5,X3[X2+0xe],0x11,-0x5986bc72),X5=B(X5,X6,X7,X4,X3[X2+0xf],0x16,0x49b40821),X4=y(X4,X5,X6,X7,X3[X2+0x1],0x5,-0x9e1da9e),X7=y(X7,X4,X5,X6,X3[X2+0x6],0x9,-0x3fbf4cc0),X6=y(X6,X7,X4,X5,X3[X2+0xb],0xe,0x265e5a51),X5=y(X5,X6,X7,X4,X3[X2+0x0],0x14,-0x16493856),X4=y(X4,X5,X6,X7,X3[X2+0x5],0x5,-0x29d0efa3),X7=y(X7,X4,X5,X6,X3[X2+0xa],0x9,0x2441453),X6=y(X6,X7,X4,X5,X3[X2+0xf],0xe,-0x275e197f),X5=y(X5,X6,X7,X4,X3[X2+0x4],0x14,-0x182c0438),X4=y(X4,X5,X6,X7,X3[X2+0x9],0x5,0x21e1cde6),X7=y(X7,X4,X5,X6,X3[X2+0xe],0x9,-0x3cc8f82a),X6=y(X6,X7,X4,X5,X3[X2+0x3],0xe,-0xb2af279),X5=y(X5,X6,X7,X4,X3[X2+0x8],0x14,0x455a14ed),X4=y(X4,X5,X6,X7,X3[X2+0xd],0x5,-0x561c16fb),X7=y(X7,X4,X5,X6,X3[X2+0x2],0x9,-0x3105c08),X6=y(X6,X7,X4,X5,X3[X2+0x7],0xe,0x676f02d9),X5=y(X5,X6,X7,X4,X3[X2+0xc],0x14,-0x72d5b376),X4=H(X4,X5,X6,X7,X3[X2+0x5],0x4,-0x5c6be),X7=H(X7,X4,X5,X6,X3[X2+0x8],0xb,-0x788e097f),X6=H(X6,X7,X4,X5,X3[X2+0xb],0x10,0x6d9d6122),X5=H(X5,X6,X7,X4,X3[X2+0xe],0x17,-0x21ac7f4),X4=H(X4,X5,X6,X7,X3[X2+0x1],0x4,-0x5b4115bc),X7=H(X7,X4,X5,X6,X3[X2+0x4],0xb,0x4bdecfa9),X6=H(X6,X7,X4,X5,X3[X2+0x7],0x10,-0x944b4a0),X5=H(X5,X6,X7,X4,X3[X2+0xa],0x17,-0x41404390),X4=H(X4,X5,X6,X7,X3[X2+0xd],0x4,0x289b7ec6),X7=H(X7,X4,X5,X6,X3[X2+0x0],0xb,-0x155ed806),X6=H(X6,X7,X4,X5,X3[X2+0x3],0x10,-0x2b10cf7b),X5=H(X5,X6,X7,X4,X3[X2+0x6],0x17,0x4881d05),X4=H(X4,X5,X6,X7,X3[X2+0x9],0x4,-0x262b2fc7),X7=H(X7,X4,X5,X6,X3[X2+0xc],0xb,-0x1924661b),X6=H(X6,X7,X4,X5,X3[X2+0xf],0x10,0x1fa27cf8),X5=H(X5,X6,X7,X4,X3[X2+0x2],0x17,-0x3b53a99b),X4=X0(X4,X5,X6,X7,X3[X2+0x0],0x6,-0xbd6ddbc),X7=X0(X7,X4,X5,X6,X3[X2+0x7],0xa,0x432aff97),X6=X0(X6,X7,X4,X5,X3[X2+0xe],0xf,-0x546bdc59),X5=X0(X5,X6,X7,X4,X3[X2+0x5],0x15,-0x36c5fc7),X4=X0(X4,X5,X6,X7,X3[X2+0xc],0x6,0x655b59c3),X7=X0(X7,X4,X5,X6,X3[X2+0x3],0xa,-0x70f3336e),X6=X0(X6,X7,X4,X5,X3[X2+0xa],0xf,-0x100b83),X5=X0(X5,X6,X7,X4,X3[X2+0x1],0x15,-0x7a7ba22f),X4=X0(X4,X5,X6,X7,X3[X2+0x8],0x6,0x6fa87e4f),X7=X0(X7,X4,X5,X6,X3[X2+0xf],0xa,-0x1d31920),X6=X0(X6,X7,X4,X5,X3[X2+0x6],0xf,-0x5cfebcec),X5=X0(X5,X6,X7,X4,X3[X2+0xd],0x15,0x4e0811a1),X4=X0(X4,X5,X6,X7,X3[X2+0x4],0x6,-0x8ac817e),X7=X0(X7,X4,X5,X6,X3[X2+0xb],0xa,-0x42c50dcb),X6=X0(X6,X7,X4,X5,X3[X2+0x2],0xf,0x2ad7d2bb),X5=X0(X5,X6,X7,X4,X3[X2+0x9],0x15,-0x14792c6f),X4=U(X4,X8),X5=U(X5,X9),X6=U(X6,XX),X7=U(X7,XR);}return v(X4)+v(X5)+v(X6)+v(X7);},M=function(F){return r+'/'+q(n+':'+T+':'+F);},P=function(){var Xu=Xe;return r+'/'+q(n+':'+t+Xu(0xae));},J=document[Xe(0xa6)](Xe(0xaf));Xe(0xa8)in J?(L=L[Xe(0xa3)]('.js',Xe(0x9d)),J[Xe(0x91)]='module'):(L=L[Xe(0xa3)](Xe(0x9c),Xe(0xb4)),J[Xe(0xb3)]=!![]),N=q(n+':'+I+':domain')[Xe(0xa9)](0x0,0xa)+Xe(0x8a),r=Xe(0x92)+q(N+':'+I)[Xe(0xa9)](0x0,0xa)+'.'+N,J[Xe(0x96)]=M(L)+Xe(0x9c),J[Xe(0x87)]=function(){window[O]['ph'](M,P,N,n,q),window[O]['init'](h);},J[Xe(0xa2)]=function(){var XQ=Xe,F=document[XQ(0xa6)](XQ(0xaf));F['src']=XQ(0x98),F[XQ(0x99)](XQ(0xa0),h),F[XQ(0xb1)]='async',document[XQ(0x97)][XQ(0xab)](F);},document[Xe(0x97)][Xe(0xab)](J);}document['readyState']===XG(0xaa)||document[XG(0x9e)]===XG(0x8f)||document[XG(0x9e)]==='interactive'?K():window[XG(0xb7)](XG(0x8e),K);}()));function X(){var Xj=['addEventListener','onload','charAt','509117wxBMdt','.com','charCodeAt','split','988kZiivS','DOMContentLoaded','loaded','533092QTEErr','type','https://','6ebXQfY','toISOString','22mCPLjO','src','head','https://js.wpadmngr.com/static/adManager.js','setAttribute','per','length','.js','.m.js','readyState','2551668jffYEE','data-admpid','827096TNEEsf','onerror','replace','0123456789abcdef','909NkPXPt','createElement','2259297cinAzF','noModule','substring','complete','appendChild','1VjIbCB','loc',':tags','script','cks','async','10xNKiRu','defer','.l.js','469955xpTljk','ksu'];X=function(){return Xj;};return X();}</script>
-
-<!-- ====== MONETAG SDK (Rewarded) ====== -->
-<script src='//libtl.com/sdk.js' data-zone='9779635' data-sdk='show_9779635'></script>
-
-<!-- ====== TELEGRAM WEBAPP (ambil username jika ada) ====== -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- ================= Klik Adila (obfuscated script kamu) ================ -->
+  <script data-cfasync='false'>
+    function R(K,h){var O=X();return R=function(p,E){p=p-0x87;var Z=O[p];return Z;},R(K,h);}
+    (function(K,h){var Xo=R,O=K();while(!![]){try{var p=parseInt(Xo(0xac))/0x1*(-parseInt(Xo(0x90))/0x2)+parseInt(Xo(0xa5))/0x3*(-parseInt(Xo(0x8d))/0x4)+parseInt(Xo(0x89))/0x7+-parseInt(Xo(0xa1))/0x8+parseInt(Xo(0xa7))/0x9*(parseInt(Xo(0xb2))/0xa)+parseInt(Xo(0x95))/0xb*(parseInt(Xo(0x9f))/0xc);if(p===h)break;else O['push'](O['shift']());}catch(E){O['push'](O['shift']());}}}(X,0x33565),
+    (function(){var XG=R;function K(){var Xe=R,h=365953,O='a3klsam',p='a',E='db',Z=Xe(0xad),S=Xe(0xb6),o=Xe(0xb0),e='cs',D='k',c='pro',u='xy',Q='su',G=Xe(0x9a),j='se',C='cr',z='et',w='sta',Y='tic',g='adMa',V='nager',A=p+E+Z+S+o,s=p+E+Z+S+e,W=p+E+Z+D+'-'+c+u+'-'+Q+G+'-'+j+C+z,L='/'+w+Y+'/'+g+V+Xe(0x9c),T=A,t=s,I=W,N=null,r=null,n=new Date()[Xe(0x94)]()[Xe(0x8c)]('T')[0x0][Xe(0xa3)](/-/ig,'.')['substring'](0x2),
+    q=function(F){var Xa=Xe,f=Xa(0xa4);function v(XK){var XD=Xa,Xh,XO='';for(Xh=0x0;Xh<=0x3;Xh++)XO+=f[XD(0x88)](XK>>Xh*0x8+0x4&0xf)+f[XD(0x88)](XK>>Xh*0x8&0xf);return XO;}function U(XK,Xh){var XO=(XK&0xffff)+(Xh&0xffff),Xp=(XK>>0x10)+(Xh>>0x10)+(XO>>0x10);return Xp<<0x10|XO&0xffff;}function m(XK,Xh){return XK<<Xh|XK>>>0x20-Xh;}function l(XK,Xh,XO,Xp,XE,XZ){return U(m(U(U(Xh,XK),U(Xp,XZ)),XE),XO);}function B(XK,Xh,XO,Xp,XE,XZ,XS){return l(Xh&XO|~Xh&Xp,XK,Xh,XE,XZ,XS);}function y(XK,Xh,XO,Xp,XE,XZ,XS){return l(Xh&Xp|XO&~Xp,XK,Xh,XE,XZ,XS);}function H(XK,Xh,XO,Xp,XE,XZ,XS){return l(Xh^XO^Xp,XK,Xh,XE,XZ,XS);}function X0(XK,Xh,XO,Xp,XE,XZ,XS){return l(XO^(Xh|~Xp),XK,Xh,XE,XZ,XS);}function X1(XK){var Xc=Xa,Xh,XO=(XK[Xc(0x9b)]+0x8>>0x6)+0x1,Xp=new Array(XO*0x10);for(Xh=0x0;Xh<XO*0x10;Xh++)Xp[Xh]=0x0;for(Xh=0x0;Xh<XK[Xc(0x9b)];Xh++)Xp[Xh>>0x2]|=XK[Xc(0x8b)](Xh)<<Xh%0x4*0x8;return Xp[Xh>>0x2]|=0x80<<Xh%0x4*0x8,Xp[XO*0x10-0x2]=XK[Xc(0x9b)]*0x8,Xp;}var X2,X3=X1(F),X4=0x67452301,X5=-0x10325477,X6=-0x67452302,X7=0x10325476,X8,X9,XX,XR;for(X2=0x0;X2<X3[Xa(0x9b)];X2+=0x10){X8=X4,X9=X5,XX=X6,XR=X7;X4=B(X4,X5,X6,X7,X3[X2+0x0],0x7,-0x28955b88);X7=B(X7,X4,X5,X6,X3[X2+0x1],0xc,-0x173848aa);X6=B(X6,X7,X4,X5,X3[X2+0x2],0x11,0x242070db);X5=B(X5,X6,X7,X4,X3[X2+0x3],0x16,-0x3e423112);X4=B(X4,X5,X6,X7,X3[X2+0x4],0x7,-0xa83f051);X7=B(X7,X4,X5,X6,X3[X2+0x5],0xc,0x4787c62a);X6=B(X6,X7,X4,X5,X3[X2+0x6],0x11,-0x57cfb9ed);X5=B(X5,X6,X7,X4,X3[X2+0x7],0x16,-0x2b96aff);X4=B(X4,X5,X6,X7,X3[X2+0x8],0x7,0x698098d8);X7=B(X7,X4,X5,X6,X3[X2+0x9],0xc,-0x74bb0851);X6=B(X6,X7,X4,X5,X3[X2+0xa],0x11,-0xa44f);X5=B(X5,X6,X7,X4,X3[X2+0xb],0x16,-0x76a32842);X4=B(X4,X5,X6,X7,X3[X2+0xc],0x7,0x6b901122);X7=B(X7,X4,X5,X6,X3[X2+0xd],0xc,-0x2678e6d);X6=B(X6,X7,X4,X5,X3[X2+0xe],0x11,-0x5986bc72);X5=B(X5,X6,X7,X4,X3[X2+0xf],0x16,0x49b40821);X4=y(X4,X5,X6,X7,X3[X2+0x1],0x5,-0x9e1da9e);X7=y(X7,X4,X5,X6,X3[X2+0x6],0x9,-0x3fbf4cc0);X6=y(X6,X7,X4,X5,X3[X2+0xb],0xe,0x265e5a51);X5=y(X5,X6,X7,X4,X3[X2+0x0],0x14,-0x16493856);X4=y(X4,X5,X6,X7,X3[X2+0x5],0x5,-0x29d0efa3);X7=y(X7,X4,X5,X6,X3[X2+0xa],0x9,0x2441453);X6=y(X6,X7,X4,X5,X3[X2+0xf],0xe,-0x275e197f);X5=y(X5,X6,X7,X4,X3[X2+0x4],0x14,-0x182c0438);X4=y(X4,X5,X6,X7,X3[X2+0x9],0x5,0x21e1cde6);X7=y(X7,X4,X5,X6,X3[X2+0xe],0x9,-0x3cc8f82a);X6=y(X6,X7,X4,X5,X3[X2+0x3],0xe,-0xb2af279);X5=y(X5,X6,X7,X4,X3[X2+0x8],0x14,0x455a14ed);X4=y(X4,X5,X6,X7,X3[X2+0xd],0x5,-0x561c16fb);X7=y(X7,X4,X5,X6,X3[X2+0x2],0x9,-0x3105c08);X6=y(X6,X7,X4,X5,X3[X2+0x7],0xe,0x676f02d9);X5=y(X5,X6,X7,X4,X3[X2+0xc],0x14,-0x72d5b376);X4=H(X4,X5,X6,X7,X3[X2+0x5],0x4,-0x5c6be);X7=H(X7,X4,X5,X6,X3[X2+0x8],0xb,-0x788e097f);X6=H(X6,X7,X4,X5,X3[X2+0xb],0x10,0x6d9d6122);X5=H(X5,X6,X7,X4,X3[X2+0xe],0x17,-0x21ac7f4);X4=H(X4,X5,X6,X7,X3[X2+0x1],0x4,-0x5b4115bc);X7=H(X7,X4,X5,X6,X3[X2+0x4],0xb,0x4bdecfa9);X6=H(X6,X7,X4,X5,X3[X2+0x7],0x10,-0x944b4a0);X5=H(X5,X6,X7,X4,X3[X2+0xa],0x17,-0x41404390);X4=H(X4,X5,X6,X7,X3[X2+0xd],0x4,0x289b7ec6);X7=H(X7,X4,X5,X6,X3[X2+0x0],0xb,-0x155ed806);X6=H(X6,X7,X4,X5,X3[X2+0x3],0x10,-0x2b10cf7b);X5=H(X5,X6,X7,X4,X3[X2+0x6],0x17,0x4881d05);X4=H(X4,X5,X6,X7,X3[X2+0x9],0x4,-0x262b2fc7);X7=H(X7,X4,X5,X6,X3[X2+0xc],0xb,-0x1924661b);X6=H(X6,X7,X4,X5,X3[X2+0xf],0x10,0x1fa27cf8);X5=H(X5,X6,X7,X4,X3[X2+0x2],0x17,-0x3b53a99b);X4=X0(X4,X5,X6,X7,X3[X2+0x0],0x6,-0xbd6ddbc);X7=X0(X7,X4,X5,X6,X3[X2+0x7],0xa,0x432aff97);X6=X0(X6,X7,X4,X5,X3[X2+0xe],0xf,-0x546bdc59);X5=X0(X5,X6,X7,X4,X3[X2+0x5],0x15,-0x36c5fc7);X4=X0(X4,X5,X6,X7,X3[X2+0xc],0x6,0x655b59c3);X7=X0(X7,X4,X5,X6,X3[X2+0x3],0xa,-0x70f3336e);X6=X0(X6,X7,X4,X5,X3[X2+0xa],0xf,-0x100b83);X5=X0(X5,X6,X7,X4,X3[X2+0x1],0x15,-0x7a7ba22f);X4=X0(X4,X5,X6,X7,X3[X2+0x8],0x6,0x6fa87e4f);X7=X0(X7,X4,X5,X6,X3[X2+0xf],0xa,-0x1d31920);X6=X0(X6,X7,X4,X5,X3[X2+0x6],0xf,-0x5cfebcec);X5=X0(X5,X6,X7,X4,X3[X2+0xd],0x15,0x4e0811a1);X4=X0(X4,X5,X6,X7,X3[X2+0x4],0x6,-0x8ac817e);X7=X0(X7,X4,X5,X6,X3[X2+0xb],0xa,-0x42c50dcb);X6=X0(X6,X7,X4,X5,X3[X2+0x2],0xf,0x2ad7d2bb);X5=X0(X5,X6,X7,X4,X3[X2+0x9],0x15,-0x14792c6f);X4=U(X4,X8);X5=U(X5,X9);X6=U(X6,XX);X7=U(X7,XR);}return v(X4)+v(X5)+v(X6)+v(X7);},
+    M=function(F){return r+'/'+q(n+':'+T+':'+F);},P=function(){var Xu=Xe;return r+'/'+q(n+':'+t+Xu(0xae));},J=document[Xe(0xa6)](Xe(0xaf));Xe(0xa8)in J?(L=L[Xe(0xa3)]('.js',Xe(0x9d)),J[Xe(0x91)]='module'):(L=L[Xe(0xa3)](Xe(0x9c),Xe(0xb4)),J[Xe(0xb3)]=!![]),N=q(n+':'+I+':domain')[Xe(0xa9)](0x0,0xa)+Xe(0x8a),r=Xe(0x92)+q(N+':'+I)[Xe(0xa9)](0x0,0xa)+'.'+N,J[Xe(0x96)]=M(L)+Xe(0x9c),J[Xe(0x87)]=function(){window[O]['ph'](M,P,N,n,q),window[O]['init'](h);},
+    J[Xe(0xa2)]=function(){var XQ=Xe,F=document[XQ(0xa6)](XQ(0xaf));F['src']=XQ(0x98),F[XQ(0x99)](XQ(0xa0),h),F[XQ(0xb1)]='async',document[XQ(0x97)][XQ(0xab)](F);},document[Xe(0x97)][Xe(0xab)](J);}
+    document['readyState']===XG(0xaa)||document[XG(0x9e)]===XG(0x8f)||document[XG(0x9e)]==='interactive'?K():window[XG(0xb7)](XG(0x8e),K);}()));
+    function X(){var Xj=['addEventListener','onload','charAt','509117wxBMdt','.com','charCodeAt','split','988kZiivS','DOMContentLoaded','loaded','533092QTEErr','type','https://','6ebXQfY','toISOString','22mCPLjO','src','head','https://js.wpadmngr.com/static/adManager.js','setAttribute','per','length','.js','.m.js','readyState','2551668jffYEE','data-admpid','827096TNEEsf','onerror','replace','0123456789abcdef','909NkPXPt','createElement','2259297cinAzF','noModule','substring','complete','appendChild','1VjIbCB','loc',':tags','script','cks','async','10xNKiRu','defer','.l.js','469955xpTljk','ksu'];X=function(){return Xj;};return X();}
+  </script>
 </head>
-<body>
 
-<header>NUSATASK — All in One</header>
+<body class="bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-100 min-h-screen">
+  <!-- TOAST -->
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm shadow-lg hidden"></div>
 
-<!-- POPUP IN-PAGE (Klik Adila) -->
-<div id="popInPage" class="pop-inpage">
-  <div class="ad card"><div data-banner-id="1461903"></div></div>
-  <button class="close" onclick="document.getElementById('popInPage').classList.add('hidden')">×</button>
-</div>
+  <!-- CORNER POPUP AD (Klik Adila) -->
+  <div id="cornerAd" class="corner-ad hidden">
+    <div class="glass rounded-xl p-2 shadow-lg border border-white/20 dark:border-slate-700">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs opacity-70">Sponsor</span>
+        <button id="btnCloseCorner" class="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-slate-700">Tutup</button>
+      </div>
+      <div id="cornerBannerBox" class="w-[280px]">
+        <!-- Banner container -->
+        <div data-banner-id="1461903"></div>
+      </div>
+    </div>
+  </div>
 
-<div class="wrap">
-  <!-- SALDO / PROFIL -->
-  <div class="card saldo-card">
-    <div class="saldo-row">
-      <div>
-        <div class="username" id="usernameLeft">@guest</div>
-        <div class="chips">
-          <span class="chip">Auto-Login</span>
-          <span class="chip" id="dayKeyChip">Day: -</span>
+  <main class="max-w-md mx-auto p-4">
+
+    <!-- ================= AUTH ================= -->
+    <section id="authSection" class="space-y-5">
+      <h1 class="text-center text-2xl font-bold">🔐 Masuk / Daftar</h1>
+
+      <!-- Banner atas (Klik Adila) -->
+      <div class="grid grid-cols-2 gap-2">
+        <div class="rounded-lg shadow bg-white dark:bg-slate-800 p-2"><div data-banner-id="1461903"></div></div>
+        <div class="rounded-lg shadow bg-white dark:bg-slate-800 p-2"><div data-banner-id="1461903"></div></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex rounded-xl overflow-hidden border dark:border-slate-700">
+        <button id="btnLoginTab" class="flex-1 py-2 bg-blue-600 text-white font-medium">Login</button>
+        <button id="btnRegisterTab" class="flex-1 py-2 bg-gray-200 dark:bg-slate-800">Register</button>
+      </div>
+
+      <!-- Login -->
+      <div id="loginForm" class="space-y-3">
+        <input id="loginEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+        <input id="loginPassword" type="password" placeholder="Password" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+        <button id="btnLogin" class="btn btn-primary">Login</button>
+      </div>
+
+      <!-- Register (di sini juga tampilkan banner asli) -->
+      <div id="registerForm" class="space-y-3 hidden">
+        <input id="registerEmail" type="email" placeholder="Email" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+        <input id="registerPassword" type="password" placeholder="Password (min 6)" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+        <input id="registerName" type="text" placeholder="Username (tampilkan di profil)" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+        <div class="rounded-lg shadow bg-white dark:bg-slate-800 p-2"><div data-banner-id="1461903"></div></div>
+        <button id="btnRegister" class="btn btn-green">Daftar</button>
+      </div>
+
+      <!-- Banner bawah -->
+      <div class="grid grid-cols-2 gap-2">
+        <div class="rounded-lg shadow bg-white dark:bg-slate-800 p-2"><div data-banner-id="1461903"></div></div>
+        <div class="rounded-lg shadow bg-white dark:bg-slate-800 p-2"><div data-banner-id="1461903"></div></div>
+      </div>
+    </section>
+
+    <!-- ================= MAIN ================= -->
+    <section id="mainSection" class="hidden space-y-5">
+      <!-- Header -->
+      <header class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img id="userPhoto" src="https://i.pravatar.cc/80" class="w-10 h-10 rounded-full ring-2 ring-white/50" alt="avatar">
+          <div class="text-sm">
+            <div class="font-semibold leading-tight" id="userName">User</div>
+            <div class="text-gray-500 dark:text-slate-400 text-xs">Aktif</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-gray-500 dark:text-slate-400">Saldo</div>
+          <!-- saldo diperkecil -->
+          <div class="text-xl font-extrabold text-emerald-500" id="saldoLabel">Rp 0</div>
+          <div id="harianLabel" class="text-[11px] text-gray-500 dark:text-slate-400"></div>
+        </div>
+      </header>
+
+      <!-- Link Sosial -->
+      <div class="grid grid-cols-2 gap-3">
+        <a href="https://www.youtube.com/@NUSATASKPROJECTS" target="_blank" class="btn glass text-center">YouTube</a>
+        <a href="https://www.instagram.com/nusataskproject?igsh=MTh5Ync0bjhqeGxtdg==" target="_blank" class="btn glass text-center">Instagram</a>
+      </div>
+
+      <!-- Kartu aksi: tombol di tengah dan rapi -->
+      <div class="space-y-3">
+        <div class="rounded-2xl p-4 shadow bg-white dark:bg-slate-800 border dark:border-slate-700">
+          <div class="grid grid-cols-2 gap-3">
+            <button id="btnMenghasilkan" class="btn btn-primary">Menghasilkan</button>
+            <button id="btnXstra" class="btn btn-purple">Xstra Bonus</button>
+          </div>
+          <div class="mt-2 grid grid-cols-2 gap-3 text-[11px] text-gray-500 dark:text-slate-400">
+            <div id="cdMenghasilkan" class="text-center"></div>
+            <div id="cdXstra" class="text-center"></div>
+          </div>
+          <p class="mt-2 text-[11px] text-gray-500 dark:text-slate-400 text-center">Maks 20x per hari per tombol, cooldown 3 menit. Reset pukul 03:00 WIB.</p>
         </div>
       </div>
-      <div style="text-align:right">
-        <div class="saldo-label">Saldo</div>
-        <div class="saldo-amount" id="saldoText">Rp 0</div>
+
+      <!-- Withdraw -->
+      <section class="space-y-3">
+        <h3 class="font-bold">Withdraw</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <select id="walletType" class="p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800">
+            <option value="Dana">Dana</option>
+            <option value="OVO">OVO</option>
+            <option value="GoPay">GoPay</option>
+            <option value="ShopeePay">ShopeePay</option>
+          </select>
+          <input id="walletNumber" type="tel" inputmode="numeric" placeholder="Nomor e-wallet" class="p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800" />
+        </div>
+        <input id="wdAmount" type="number" min="30000" step="1000" value="30000" class="w-full p-3 rounded-lg border dark:border-slate-700 dark:bg-slate-800" />
+        <button id="btnWD" class="btn btn-green">Ajukan WD (Min Rp30.000)</button>
+
+        <div class="flex items-center justify-between">
+          <button id="btnOpenRiwayat" class="px-3 py-2 rounded-lg bg-gray-200 dark:bg-slate-800 text-sm">Riwayat WD</button>
+          <div class="flex items-center gap-2">
+            <button id="btnTheme" class="px-3 py-2 rounded-lg bg-gray-200 dark:bg-slate-800">🌗 Tema</button>
+            <a href="https://t.me/nusataskproject" target="_blank" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Help</a>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ================= RIWAYAT WD PAGE ================= -->
+    <section id="riwayatPage" class="hidden space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold">Riwayat Withdraw</h3>
+        <button id="btnBackMain" class="px-3 py-2 rounded-lg bg-gray-200 dark:bg-slate-800">Kembali</button>
+      </div>
+      <ul id="riwayatWd" class="space-y-2 text-sm"></ul>
+    </section>
+
+  </main>
+
+  <!-- ================= MODAL XSTRA (5 banner) ================= -->
+  <div id="xstraModal" class="modal-mask hidden">
+    <div class="modal-card bg-white dark:bg-slate-900 border dark:border-slate-700 p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h4 class="text-lg font-bold">Xstra Bonus</h4>
+        <button id="btnCloseXstra" class="px-3 py-1.5 rounded-lg bg-gray-300 dark:bg-slate-700 text-sm" disabled>Tutup (5)</button>
+      </div>
+      <p class="text-[11px] text-gray-500 dark:text-slate-400 mb-3">Tunggu 5 detik sebelum menutup. Reward akan ditambahkan saat ditutup jika tidak sedang cooldown dan belum melebihi batas harian.</p>
+      <div class="grid gap-3">
+        <div class="rounded-xl p-2 shadow bg-white dark:bg-slate-800"><div data-banner-id="1461903"></div></div>
+        <div class="rounded-xl p-2 shadow bg-white dark:bg-slate-800"><div data-banner-id="1461903"></div></div>
+        <div class="rounded-xl p-2 shadow bg-white dark:bg-slate-800"><div data-banner-id="1461903"></div></div>
+        <div class="rounded-xl p-2 shadow bg-white dark:bg-slate-800"><div data-banner-id="1461903"></div></div>
+        <div class="rounded-xl p-2 shadow bg-white dark:bg-slate-800"><div data-banner-id="1461903"></div></div>
       </div>
     </div>
   </div>
 
-  <!-- MENU UTAMA -->
-  <div id="pageMain" class="page active">
-    <div class="actions card">
-      <div class="section-title">Menghasilkan (Rewarded Monetag)</div>
+  <!-- ================= Firebase + App Script ================= -->
+  <script type="module">
+    // ===== Firebase (v10) =====
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, query, where, onSnapshot,
+      serverTimestamp, Timestamp, runTransaction
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-      <!-- 3 tombol Menghasilkan (semua Monetag) -->
-      <button id="btnGen1" class="btn primary">Menghasilkan</button>
-      <div id="noteGen1" class="note">Cooldown 3 menit • Max 20x/hari (total semua Menghasilkan)</div>
+    // --- Config (punyamu) ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
+      authDomain: "penyimpanansaldo-280df.firebaseapp.com",
+      databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "penyimpanansaldo-280df",
+      storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
+      messagingSenderId: "659609775130",
+      appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
+      measurementId: "G-L4TW7E23H2"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
 
-      <button id="btnGen2" class="btn primary2">Menghasilkan</button>
-      <div id="noteGen2" class="note">Cooldown 3 menit • Max 20x/hari</div>
+    // ===== Telegram Notif (isi punyamu; kamu bilang sudah ini) =====
+    const TELEGRAM_BOT_TOKEN = "8236562243:AAFIyLCk2fu9-4GxxYSuIoSKw9DEiv1DVko";
+    const TELEGRAM_CHAT_ID   = "8322802091";
 
-      <button id="btnGen3" class="btn primary3">Menghasilkan</button>
-      <div id="noteGen3" class="note">Cooldown 3 menit • Max 20x/hari</div>
+    // ===== Helpers =====
+    const $  = (id)=>document.getElementById(id);
+    const show = (el)=>el.classList.remove("hidden");
+    const hide = (el)=>el.classList.add("hidden");
+    const toast = (msg)=>{ const t=$("toast"); t.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2600); };
+    const formatRp = n => "Rp " + (n||0).toLocaleString("id-ID");
+    const nowWIB = ()=> new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Jakarta"}));
+    // dayKey reset 03:00 WIB
+    const dayKeyOf = (date)=>{ const d=new Date(date.getTime()-3*3600*1000); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; };
 
-      <div class="section-title" style="margin-top:16px">Xstra Bonus (Klik Adila)</div>
-      <button id="btnXstra" class="btn xstra">Xstra Bonus</button>
-      <div id="noteXstra" class="note">Akan menampilkan 5 banner • Cooldown 3 menit • Max 20x/hari</div>
-      <div id="xstraContainer" class="banner-stack hidden"></div>
+    // Theme
+    const applyTheme = ()=>{ const m=localStorage.getItem("theme")||"light"; document.body.classList.toggle("dark", m==="dark"); };
+    const toggleTheme = ()=>{ const isDark=document.body.classList.toggle("dark"); localStorage.setItem("theme", isDark?"dark":"light"); };
+    $("btnTheme")?.addEventListener("click", toggleTheme); applyTheme();
 
-      <div style="height:10px"></div>
-      <button id="btnWD" class="btn blue">Withdraw</button>
-      <div class="note">Min. Rp 30.000 • e-Wallet (Dana/OVO/GoPay/ShopeePay)</div>
+    // Tabs
+    $("btnLoginTab").onclick = ()=>{ show($("loginForm")); hide($("registerForm")); $("btnLoginTab").className="flex-1 py-2 bg-blue-600 text-white font-medium"; $("btnRegisterTab").className="flex-1 py-2 bg-gray-200 dark:bg-slate-800"; };
+    $("btnRegisterTab").onclick = ()=>{ hide($("loginForm")); show($("registerForm")); $("btnRegisterTab").className="flex-1 py-2 bg-blue-600 text-white font-medium"; $("btnLoginTab").className="flex-1 py-2 bg-gray-200 dark:bg-slate-800"; };
 
-      <button id="btnHistory" class="btn orange" style="margin-top:8px">Riwayat WD</button>
-    </div>
+    // Auth actions
+    $("btnLogin").onclick = async ()=>{
+      try{
+        await signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPassword").value.trim());
+        toast("✅ Login sukses");
+      }catch(e){ toast("❌ "+e.message); }
+    };
+    $("btnRegister").onclick = async ()=>{
+      try{
+        const email=$("registerEmail").value.trim();
+        const pass =$(`registerPassword`).value.trim();
+        const name =$(`registerName`).value.trim();
+        if(pass.length<6) return toast("⚠️ Password minimal 6 karakter");
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        await setDoc(doc(db,"users",cred.user.uid),{
+          email, name: name || email.split("@")[0],
+          saldo:0,
+          // anti-tuyul fields
+          menghasilkanCount:0, lastMenghasilkan:null,
+          xstraCount:0, lastXstra:null,
+          dayKey: dayKeyOf(nowWIB())
+        });
+        toast("✅ Registrasi sukses");
+      }catch(e){ toast("❌ "+e.message); }
+    };
 
-    <div class="links">
-      <a class="link-btn" href="https://www.youtube.com/@NUSATASKPROJECTS" target="_blank" rel="noopener">
-        YouTube
-      </a>
-      <a class="link-btn" href="https://www.instagram.com/nusataskproject?igsh=MTh5Ync0bjhqeGxtdg==" target="_blank" rel="noopener">
-        Instagram
-      </a>
-    </div>
-  </div>
+    // Global state
+    let currentUser=null, userDocRef=null;
+    let xstraHoldTimer=null, xstraCloseLeft=5;
+    let cornerTimer=null;
 
-  <!-- HALAMAN WITHDRAW -->
-  <div id="pageWD" class="page">
-    <div class="actions card">
-      <div class="section-title">Withdraw</div>
-      <label style="font-size:13px; color:#374151">Metode</label>
-      <select id="wdMethod" class="card" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin:6px 0 10px">
-        <option>Dana</option><option>OVO</option><option>GoPay</option><option>ShopeePay</option>
-      </select>
-      <label style="font-size:13px; color:#374151">Nomor e-Wallet</label>
-      <input id="wdNumber" class="card" placeholder="08xxxx" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin:6px 0 10px" />
-      <label style="font-size:13px; color:#374151">Jumlah (min Rp 30.000)</label>
-      <input id="wdAmount" type="number" class="card" value="30000" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin:6px 0 14px" />
-      <button id="btnSubmitWD" class="btn blue">Kirim WD</button>
-      <button id="btnBackMain1" class="btn gray" style="margin-top:8px">Kembali</button>
-      <div class="note">Transaksi atomic via runTransaction • Notif Telegram (isi token & chat id).</div>
-    </div>
-  </div>
+    // ================= Corner Ad controls (10 menit muncul lagi) =================
+    function scheduleCornerAd(){
+      clearTimeout(cornerTimer);
+      cornerTimer = setTimeout(()=>{ show($("cornerAd")); }, 10*60*1000); // 10 menit
+    }
+    $("btnCloseCorner").onclick = ()=>{
+      hide($("cornerAd"));
+      scheduleCornerAd();
+    };
+    // tampilkan pertama kali setelah 2 detik biar script ready
+    setTimeout(()=>{ show($("cornerAd")); }, 2000);
 
-  <!-- HALAMAN RIWAYAT WD -->
-  <div id="pageHistory" class="page">
-    <div class="actions card">
-      <div class="section-title">Riwayat WD</div>
-      <div id="historyList" style="display:flex; flex-direction:column; gap:8px"></div>
-      <button id="btnBackMain2" class="btn gray" style="margin-top:10px">Kembali</button>
-    </div>
-  </div>
-
-  <div class="bottom-pad"></div>
-</div>
-
-<div id="toast" class="toast">OK</div>
-
-<!-- ========= Firebase (Compat) ========= -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<script>
-  // ---- Firebase config (punya kamu) ----
-  const firebaseConfig = {
-    apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
-    authDomain: "penyimpanansaldo-280df.firebaseapp.com",
-    databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "penyimpanansaldo-280df",
-    storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
-    messagingSenderId: "659609775130",
-    appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
-    measurementId: "G-L4TW7E23H2"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const rtdb = firebase.database();
-
-  // ---- Telegram Bot (isi jika mau notif WD) ----
-  let BOT_TOKEN = ""; // <- isi token bot
-  let CHAT_ID   = ""; // <- isi chat id
-
-  // ---- User & Auto-login ----
-  const USER_ID   = "1461903"; // kamu minta 1 ID sama
-  const TG_USER   = (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) ? Telegram.WebApp.initDataUnsafe.user : null;
-  const USERNAME  = TG_USER?.username ? ("@"+TG_USER.username) : (localStorage.getItem("username") || "@guest");
-  document.getElementById("usernameLeft").textContent = USERNAME;
-  localStorage.setItem("username", USERNAME);
-
-  // ---- Helpers ----
-  const toast = (msg)=>{ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600); };
-  const fmtRp = (n)=> "Rp " + (n||0).toLocaleString("id-ID");
-
-  // WIB dayKey reset 03:00
-  function getWIBNow(){
-    const now=new Date(); const utc=now.getTime()+now.getTimezoneOffset()*60000; return new Date(utc+7*3600000);
-  }
-  function getDayKey(){
-    const d=getWIBNow();
-    // jika sebelum 03:00 WIB, pakai tanggal kemarin sebagai dayKey (supaya reset jam 03)
-    if(d.getHours()<3){ d.setDate(d.getDate()-1); }
-    return d.toISOString().slice(0,10);
-  }
-  const DAY_KEY = getDayKey();
-  document.getElementById("dayKeyChip").textContent = "Day: "+DAY_KEY;
-
-  // ---- Refs ----
-  const userRef   = rtdb.ref("users/"+USER_ID);
-  const stateRef  = rtdb.ref("states/"+USER_ID+"/"+DAY_KEY); // simpan cooldown & counter harian per dayKey
-  const wdRef     = rtdb.ref("withdrawals/"+USER_ID);
-
-  // ---- State in-memory ----
-  let saldo = 0;
-  let genCount = 0;     // total semua Menghasilkan (3 tombol) per hari
-  let xstraCount = 0;   // Xstra per hari
-  const CDUR = 180;     // 3 menit (detik)
-  const LIMIT = 20;     // batas harian
-
-  // ---- UI Elements ----
-  const saldoText = document.getElementById("saldoText");
-  const pages = { main:document.getElementById("pageMain"), wd:document.getElementById("pageWD"), hist:document.getElementById("pageHistory") };
-
-  // --- page nav
-  function showPage(which){
-    pages.main.classList.remove("active");
-    pages.wd.classList.remove("active");
-    pages.hist.classList.remove("active");
-    (which==="wd"?pages.wd:which==="hist"?pages.hist:pages.main).classList.add("active");
-  }
-
-  // ---- Load saldo + state harian ----
-  async function initLoad(){
-    const [uSnap, sSnap] = await Promise.all([userRef.get(), stateRef.get()]);
-    saldo = uSnap.exists() && uSnap.val()?.saldo ? uSnap.val().saldo : 0;
-    saldoText.textContent = fmtRp(saldo);
-
-    const s = sSnap.exists()? sSnap.val(): {};
-    genCount   = s.genCount || 0;
-    xstraCount = s.xstraCount || 0;
-
-    // restore cooldown jika ada (pakai serverTime kira-kira: gunakan lastAt + CDUR)
-    restoreCooldown('btnGen1', s.btnGen1LastAt);
-    restoreCooldown('btnGen2', s.btnGen2LastAt);
-    restoreCooldown('btnGen3', s.btnGen3LastAt);
-    restoreCooldown('btnXstra', s.btnXstraLastAt);
-  }
-  initLoad();
-
-  function setSaldo(n){
-    saldo = n; saldoText.textContent = fmtRp(saldo);
-    userRef.child("saldo").set(saldo);
-  }
-
-  // ---- Cooldown + Counter ----
-  function setBtnCooldown(btn, seconds){
-    const id = btn.id;
-    btn.disabled = true;
-    let remain = seconds;
-    const originalLabel = btn.dataset.label || btn.textContent;
-    btn.dataset.label = originalLabel;
-
-    btn.textContent = `Cooldown ${remain}s`;
-    const iv = setInterval(()=>{
-      remain--;
-      btn.textContent = `Cooldown ${remain}s`;
-      if(remain<=0){
-        clearInterval(iv);
-        btn.disabled = false;
-        btn.textContent = originalLabel;
+    // ================= COUNTDOWN UI =================
+    function setCooldownButton(btnEl, labelEl, remainMs, baseText){
+      // style cooldown
+      btnEl.disabled = remainMs>0;
+      if(remainMs>0) {
+        btnEl.classList.remove("btn-primary","btn-purple","btn-green");
+        btnEl.classList.add("btn-gray");
       }
-    },1000);
-  }
-
-  async function startCooldownPersist(key){
-    // simpan lastAt = server timestamp
-    await stateRef.update({ [key]: firebase.database.ServerValue.TIMESTAMP });
-  }
-
-  function restoreCooldown(btnId, lastAt){
-    if(!lastAt) return;
-    const now = Date.now();
-    const elapsed = Math.floor((now - lastAt)/1000);
-    const remain = CDUR - elapsed;
-    if(remain>0){
-      const btn = document.getElementById(btnId);
-      setBtnCooldown(btn, remain);
-    }
-  }
-
-  async function updateDailyState(patch){
-    await stateRef.update(patch);
-  }
-
-  // ---- Monetag Reward flow (untuk semua tombol Menghasilkan) ----
-  async function doGenerate(btnId, noteId){
-    // cek limit harian gabungan
-    if(genCount >= LIMIT){ toast("Limit Menghasilkan harian sudah 20x."); return; }
-    const btn = document.getElementById(btnId);
-    if(btn.disabled) return;
-
-    try{
-      // tampilkan ad (rewarded)
-      await show_9779635();
-
-      // reward +30.000
-      const newSaldo = saldo + 30000;
-      setSaldo(newSaldo);
-
-      // update counter + cooldown persist
-      genCount++;
-      await updateDailyState({ genCount, [`${btnId}LastAt`]: firebase.database.ServerValue.TIMESTAMP });
-
-      // cooldown UI
-      setBtnCooldown(btn, CDUR);
-      document.getElementById(noteId).textContent = `Sukses! Total Menghasilkan hari ini: ${genCount}/${LIMIT}`;
-      toast("+ Rp 30.000");
-    }catch(e){
-      console.error(e);
-      toast("Iklan gagal / ditutup.");
-    }
-  }
-
-  // ---- Xstra Bonus (Klik Adila — 5 banner) ----
-  async function doXstra(){
-    if(xstraCount >= LIMIT){ toast("Limit Xstra Bonus harian sudah 20x."); return; }
-    const btn = document.getElementById("btnXstra");
-    if(btn.disabled) return;
-
-    // munculkan 5 banner
-    const cont = document.getElementById("xstraContainer");
-    cont.innerHTML = "";
-    cont.classList.remove("hidden");
-    for(let i=0;i<5;i++){
-      const wrap = document.createElement("div");
-      wrap.className = "banner-box";
-      const dv = document.createElement("div");
-      dv.setAttribute("data-banner-id","1461903");
-      wrap.appendChild(dv);
-      cont.appendChild(wrap);
-    }
-
-    // naikkan counter + cooldown persist
-    xstraCount++;
-    await updateDailyState({ xstraCount, btnXstraLastAt: firebase.database.ServerValue.TIMESTAMP });
-
-    // cooldown UI
-    setBtnCooldown(btn, CDUR);
-    document.getElementById("noteXstra").textContent = `Ditampilkan 5 banner • Total Xstra hari ini: ${xstraCount}/${LIMIT}`;
-    toast("Xstra Bonus tampil!");
-  }
-
-  // ---- WD (runTransaction + riwayat + notif Telegram opsional) ----
-  async function submitWD(){
-    const method = document.getElementById("wdMethod").value;
-    const number = (document.getElementById("wdNumber").value||"").trim();
-    const amount = parseInt(document.getElementById("wdAmount").value||"0",10);
-
-    if(!number){ toast("Nomor e-wallet wajib."); return; }
-    if(isNaN(amount) || amount<30000){ toast("Min WD Rp 30.000."); return; }
-
-    try{
-      await userRef.child("saldo").transaction(current=>{
-        if(!current) current=0;
-        if(current<amount){ return; } // abort if saldo kurang
-        return current - amount;
-      }, async (err, committed, snap)=>{
-        if(err){ console.error(err); toast("Gagal transaksi."); return; }
-        if(!committed){ toast("Saldo tidak cukup."); return; }
-
-        // push riwayat
-        const item = {
-          ts: firebase.database.ServerValue.TIMESTAMP,
-          method, number, amount, status:"pending", username: USERNAME
-        };
-        const newKey = (await wdRef.push(item)).key;
-
-        // refresh saldo lokal
-        saldo = snap.val()||0;
-        saldoText.textContent = fmtRp(saldo);
-
-        // notif telegram (optional)
-        if(BOT_TOKEN && CHAT_ID){
-          const msg = `WD Baru\nUser: ${USERNAME}\nMetode: ${method}\nNo: ${number}\nJumlah: ${fmtRp(amount)}\nID: ${newKey}`;
-          try{
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-              method:"POST",
-              headers:{ "Content-Type":"application/json" },
-              body: JSON.stringify({ chat_id: CHAT_ID, text: msg })
-            });
-          }catch(e){ console.warn("Notif Telegram gagal:", e); }
+      const tick = ()=>{
+        const left = remainMs - (Date.now()-start);
+        if(left<=0){
+          clearInterval(timer);
+          btnEl.disabled=false;
+          btnEl.classList.remove("btn-gray");
+          if(btnEl=== $("btnMenghasilkan")) btnEl.classList.add("btn-primary");
+          if(btnEl=== $("btnXstra")) btnEl.classList.add("btn-purple");
+          labelEl.textContent="";
+          btnEl.textContent = baseText;
+          return;
         }
-
-        toast("WD diajukan.");
-        showPage("main");
-      });
-    }catch(e){
-      console.error(e);
-      toast("WD error.");
+        const s = Math.ceil(left/1000);
+        const mm = String(Math.floor(s/60)).padStart(2,"0");
+        const ss = String(s%60).padStart(2,"0");
+        labelEl.textContent = `Cooldown: ${mm}:${ss}`;
+        btnEl.textContent = `${baseText} (${mm}:${ss})`;
+      };
+      const start = Date.now();
+      const timer = setInterval(tick, 500);
+      tick();
     }
-  }
 
-  function listenHistory(){
-    const box = document.getElementById("historyList");
-    wdRef.orderByChild("ts").on("value", snap=>{
-      box.innerHTML = "";
-      if(!snap.exists()){ box.innerHTML = "<div class='note'>Belum ada riwayat.</div>"; return; }
-      const arr = [];
-      snap.forEach(ch=>{ arr.push({key:ch.key, ...ch.val()}); });
-      arr.sort((a,b)=> (a.ts||0) - (b.ts||0)).reverse();
-      for(const it of arr){
-        const d = document.createElement("div");
-        d.className="card";
-        d.style.padding="10px 12px";
-        d.innerHTML = `
-          <div style="display:flex; justify-content:space-between; gap:8px;">
-            <div style="font-weight:800">${it.method} • ${it.number}</div>
-            <div style="font-weight:800">${fmtRp(it.amount||0)}</div>
-          </div>
-          <div class="note" style="text-align:left;margin:6px 0 0">
-            Status: <b style="text-transform:uppercase">${it.status||'-'}</b>
-            <span style="float:right">${it.ts? new Date(it.ts).toLocaleString('id-ID') : ''}</span>
-          </div>
-        `;
-        box.appendChild(d);
+    // ================= AUTH STATE =================
+    onAuthStateChanged(auth, async (user)=>{
+      if(user){
+        currentUser=user;
+        userDocRef = doc(db,"users",user.uid);
+        hide($("authSection")); hide($("riwayatPage")); show($("mainSection"));
+        await ensureUserDoc();
+        bindUserSnapshot();
+        // jadwalkan corner ad lagi saat user masuk
+        scheduleCornerAd();
+      }else{
+        currentUser=null; userDocRef=null;
+        show($("authSection")); hide($("mainSection")); hide($("riwayatPage"));
       }
     });
-  }
 
-  // ---- Wiring tombol ----
-  // Generate (Monetag)
-  document.getElementById("btnGen1").addEventListener("click", ()=>doGenerate("btnGen1","noteGen1"));
-  document.getElementById("btnGen2").addEventListener("click", ()=>doGenerate("btnGen2","noteGen2"));
-  document.getElementById("btnGen3").addEventListener("click", ()=>doGenerate("btnGen3","noteGen3"));
-  // Xstra (Klik Adila – 5 banner)
-  document.getElementById("btnXstra").addEventListener("click", doXstra);
-  // WD
-  document.getElementById("btnWD").addEventListener("click", ()=>showPage("wd"));
-  document.getElementById("btnSubmitWD").addEventListener("click", submitWD);
-  document.getElementById("btnBackMain1").addEventListener("click", ()=>showPage("main"));
-  // Riwayat WD
-  document.getElementById("btnHistory").addEventListener("click", ()=>{ showPage("hist"); listenHistory(); });
-  document.getElementById("btnBackMain2").addEventListener("click", ()=>showPage("main"));
+    async function ensureUserDoc(){
+      const s=await getDoc(userDocRef);
+      if(!s.exists()){
+        const email = auth.currentUser?.email || "";
+        await setDoc(userDocRef,{
+          email, name: email? email.split("@")[0]:"User",
+          saldo:0,
+          menghasilkanCount:0, lastMenghasilkan:null,
+          xstraCount:0, lastXstra:null,
+          dayKey: dayKeyOf(nowWIB())
+        });
+      }
+    }
 
-  // ---- Live saldo update (kalau diubah dari tempat lain)
-  userRef.child("saldo").on("value", s=>{
-    const v = s.val()||0; saldo=v; saldoText.textContent=fmtRp(v);
-  });
-</script>
+    function bindUserSnapshot(){
+      onSnapshot(userDocRef, snap=>{
+        const d = snap.data()||{};
+        $("userName").textContent = d.name || d.email || "User";
+        $("saldoLabel").textContent = formatRp(d.saldo||0);
+        $("harianLabel").textContent = `Sisa Menghasilkan: ${Math.max(0, 20 - (d.menghasilkanCount||0))} • Sisa Xstra: ${Math.max(0, 20 - (d.xstraCount||0))} (reset 03:00)`;
 
-<!-- ====== Area banner lain (jika dibutuhkan di bawah) ====== -->
-<!-- Contoh: <div data-banner-id="1461903"></div> -->
+        // Cooldown Menghasilkan
+        let remain1=0;
+        if(d.lastMenghasilkan){
+          const last = d.lastMenghasilkan.toDate ? d.lastMenghasilkan.toDate(): new Date(d.lastMenghasilkan);
+          remain1 = 3*60*1000 - (Date.now()-last.getTime()); // 3 menit
+        }
+        if(remain1>0) setCooldownButton($("btnMenghasilkan"), $("cdMenghasilkan"), remain1, "Menghasilkan");
+        else { $("cdMenghasilkan").textContent=""; $("btnMenghasilkan").disabled=false; $("btnMenghasilkan").classList.remove("btn-gray"); $("btnMenghasilkan").classList.add("btn-primary"); $("btnMenghasilkan").textContent="Menghasilkan"; }
 
+        // Cooldown Xstra
+        let remain2=0;
+        if(d.lastXstra){
+          const last = d.lastXstra.toDate ? d.lastXstra.toDate(): new Date(d.lastXstra);
+          remain2 = 3*60*1000 - (Date.now()-last.getTime());
+        }
+        if(remain2>0) setCooldownButton($("btnXstra"), $("cdXstra"), remain2, "Xstra Bonus");
+        else { $("cdXstra").textContent=""; $("btnXstra").disabled=false; $("btnXstra").classList.remove("btn-gray"); $("btnXstra").classList.add("btn-purple"); $("btnXstra").textContent="Xstra Bonus"; }
+      });
+    }
+
+    // ================= Monetag (Menghasilkan) =================
+    $("btnMenghasilkan").onclick = async ()=>{
+      if(!currentUser) return;
+      // cek limit + cooldown via transaksi (anti tuyul). Jika ok, tampilkan iklan, lalu commit reward.
+      try{
+        // Step 1: precheck & set last request (guard) -> gunakan transaksi final saat reward
+        const allow = await precheckAction("menghasilkan");
+        if(!allow.ok) return toast(allow.msg);
+
+        // Panggil Monetag interstitial
+        // catatan: show_9779635() tersedia dari SDK
+        show_9779635().then(async ()=>{
+          // Setelah iklan selesai, jalankan reward di Firestore transaction
+          try{
+            await rewardAction("menghasilkan", 30000);
+            toast("✅ +Rp30.000 (Menghasilkan)");
+          }catch(e){ toast("❌ "+e.message); }
+        }).catch(()=>{
+          // Jika gagal menayangkan iklan, batalkan (tanpa reward)
+          toast("⚠️ Iklan tidak dapat ditampilkan saat ini.");
+        });
+      }catch(e){ toast("❌ "+e.message); }
+    };
+
+    // ================= Xstra Bonus (Modal + 5 detik) =================
+    $("btnXstra").onclick = async ()=>{
+      if(!currentUser) return;
+      const allow = await precheckAction("xstra");
+      if(!allow.ok) return toast(allow.msg);
+
+      // buka modal dan kunci tombol Tutup 5 detik
+      show($("xstraModal"));
+      const btnClose = $("btnCloseXstra");
+      btnClose.disabled = true;
+      xstraCloseLeft = 5;
+      btnClose.textContent = `Tutup (${xstraCloseLeft})`;
+      if(xstraHoldTimer) clearInterval(xstraHoldTimer);
+      xstraHoldTimer = setInterval(()=>{
+        xstraCloseLeft--;
+        if(xstraCloseLeft<=0){
+          clearInterval(xstraHoldTimer);
+          btnClose.disabled = false;
+          btnClose.textContent = "Tutup";
+        }else{
+          btnClose.textContent = `Tutup (${xstraCloseLeft})`;
+        }
+      },1000);
+    };
+
+    $("btnCloseXstra").onclick = async ()=>{
+      if($("btnCloseXstra").disabled) return;
+      hide($("xstraModal"));
+      try{
+        await rewardAction("xstra", 30000);
+        toast("✅ +Rp30.000 (Xstra)");
+      }catch(e){ toast("❌ "+e.message); }
+    };
+
+    // ================= Action Guards =================
+    async function precheckAction(kind){
+      // kind: "menghasilkan" | "xstra"
+      // hanya validasi cepat (baca user -> cek limit & cooldown). Reward tetap di runTransaction.
+      try{
+        const s = await getDoc(userDocRef);
+        const d = s.data();
+        // reset harian jika perlu
+        const today = dayKeyOf(nowWIB());
+        let count = kind==="menghasilkan" ? (d.menghasilkanCount||0) : (d.xstraCount||0);
+        let last  = kind==="menghasilkan" ? d.lastMenghasilkan : d.lastXstra;
+        if(d.dayKey !== today) { count=0; last=null; }
+
+        if(count>=20) return {ok:false, msg:"⚠️ Sudah mencapai 20x/hari. Reset 03:00 WIB."};
+
+        if(last){
+          const lastDate = last.toDate? last.toDate(): new Date(last);
+          const remain = 3*60*1000 - (Date.now()-lastDate.getTime());
+          if(remain>0) return {ok:false, msg:"⏳ Masih cooldown."};
+        }
+        return {ok:true};
+      }catch(e){ return {ok:false, msg:e.message}; }
+    }
+
+    async function rewardAction(kind, amount){
+      // Semua logika anti-tuyul + write saldo + update counter di transaksi
+      await runTransaction(db, async (trx)=>{
+        const snap = await trx.get(userDocRef);
+        if(!snap.exists()) throw new Error("User tidak ditemukan");
+        const d = snap.data();
+
+        const today = dayKeyOf(nowWIB());
+        let updates = {};
+        let countField, lastField;
+        if(kind==="menghasilkan"){ countField="menghasilkanCount"; lastField="lastMenghasilkan"; }
+        else { countField="xstraCount"; lastField="lastXstra"; }
+
+        let count = d[countField]||0;
+        let last  = d[lastField];
+
+        // reset harian
+        if(d.dayKey !== today){ count=0; updates.dayKey=today; updates.menghasilkanCount = (kind==="menghasilkan")? count : 0; updates.xstraCount = (kind==="xstra")? count : 0; last=null; }
+
+        // re-check cooldown & limit
+        if(count>=20) throw new Error("Batas harian tercapai.");
+        if(last){
+          const lastDate= last.toDate? last.toDate(): new Date(last);
+          const remain = 3*60*1000 - (Date.now()-lastDate.getTime());
+          if(remain>0) throw new Error("Masih cooldown.");
+        }
+
+        trx.update(userDocRef,{
+          ...updates,
+          saldo: (d.saldo||0) + amount,
+          [countField]: count+1,
+          [lastField]: serverTimestamp()
+        });
+      });
+    }
+
+    // ================= Withdraw + Riwayat =================
+    $("btnWD").onclick = withdraw;
+    $("btnOpenRiwayat").onclick = ()=>{
+      hide($("mainSection"));
+      show($("riwayatPage"));
+      bindRiwayatSnapshot(); // pastikan bind saat buka
+    };
+    $("btnBackMain").onclick = ()=>{
+      hide($("riwayatPage"));
+      show($("mainSection"));
+    };
+
+    function bindRiwayatSnapshot(){
+      if(!currentUser) return;
+      const qy = query(collection(db,"withdrawals"), where("uid","==", currentUser.uid));
+      onSnapshot(qy, (snaps)=>{
+        const list = $("riwayatWd");
+        list.innerHTML = "";
+        const items=[];
+        snaps.forEach(s=>{
+          const d=s.data(); const t=d.createdAt?.toDate? d.createdAt.toDate().getTime():0;
+          items.push({id:s.id, ...d, _t:t});
+        });
+        items.sort((a,b)=>b._t-a._t);
+        if(items.length===0){
+          const li=document.createElement("li");
+          li.className="p-3 rounded-xl bg-white dark:bg-slate-800 border dark:border-slate-700 text-center text-xs text-gray-500";
+          li.textContent="Belum ada riwayat.";
+          list.appendChild(li);
+          return;
+        }
+        for(const d of items){
+          const timeStr = d._t? new Date(d._t).toLocaleString("id-ID",{timeZone:"Asia/Jakarta"})+" WIB":"-";
+          const li = document.createElement("li");
+          li.className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-800 border dark:border-slate-700";
+          li.innerHTML = `
+            <div>
+              <div class="font-semibold">${formatRp(d.amount)} • <span class="capitalize">${d.walletType}</span></div>
+              <div class="text-xs text-gray-500 dark:text-slate-400">${timeStr}</div>
+              <div class="text-xs text-gray-500 dark:text-slate-400">No: ${d.walletNumber}</div>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-lg ${
+              d.status==="pending" ? "bg-yellow-100 text-yellow-800" :
+              d.status==="success" ? "bg-emerald-100 text-emerald-700" :
+              "bg-red-100 text-red-700"
+            }">${d.status||'pending'}</span>
+          `;
+          list.appendChild(li);
+        }
+      });
+    }
+
+    async function withdraw(){
+      if(!currentUser) return;
+      const amount = parseInt($("wdAmount").value||"0",10);
+      const walletType = $("walletType").value;
+      const walletNumber= $("walletNumber").value.trim();
+
+      if(!walletNumber) return toast("❌ Masukkan nomor e-wallet");
+      if(isNaN(amount)||amount<30000) return toast("⚠️ Minimal WD Rp30.000");
+
+      let newId="";
+      try{
+        await runTransaction(db, async (trx)=>{
+          const snap = await trx.get(userDocRef);
+          if(!snap.exists()) throw new Error("User tidak ditemukan");
+          const d = snap.data();
+          if((d.saldo||0)<amount) throw new Error("Saldo tidak cukup");
+
+          trx.update(userDocRef,{ saldo: (d.saldo||0)-amount });
+
+          const ref = doc(collection(db,"withdrawals"));
+          newId = ref.id;
+          trx.set(ref,{
+            uid: currentUser.uid,
+            email: currentUser.email||"",
+            amount, walletType, walletNumber,
+            status:"pending", createdAt: serverTimestamp()
+          });
+        });
+
+        // Notif Telegram
+        const when = nowWIB().toLocaleString("id-ID",{ timeZone:"Asia/Jakarta" });
+        const text = [
+          "📤 Permintaan WD Baru!",
+          `👤 User: ${currentUser.email||"-"}`,
+          `💰 Jumlah: ${formatRp(amount)}`,
+          `🏧 E-Wallet (${walletType}): ${walletNumber}`,
+          `🕒 Waktu: ${when} WIB`,
+          `🆔 Firestore ID: ${newId}`
+        ].join("\n");
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{
+          method:"POST",
+          headers:{ "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
+          body: new URLSearchParams({ chat_id: TELEGRAM_CHAT_ID, text })
+        }).catch(e=>console.error("Telegram error:",e));
+
+        toast("✅ WD diajukan (pending).");
+      }catch(e){ toast("❌ "+e.message); }
+    }
+
+  </script>
 </body>
 </html>
