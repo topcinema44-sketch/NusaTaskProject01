@@ -26,15 +26,15 @@
     <div id="adContent" class="bg-gray-900 p-6 rounded-2xl shadow-2xl text-center w-80 zoom-in border border-purple-600">
       <h2 id="adTitle" class="text-xl font-bold mb-4 text-purple-400">Iklan Test</h2>
       <p id="adDesc" class="text-gray-300 mb-4">Simulasi iklan ...</p>
-      <button onclick="closeAd()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">Tutup</button>
+      <button id="adClose" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">Tutup</button>
     </div>
   </div>
 
   <!-- 🔹 Login Page -->
   <div id="loginPage" class="w-full max-w-sm bg-gray-900 border border-gray-700 p-6 rounded-2xl shadow-xl fade-in">
     <h1 class="text-2xl font-bold text-center text-purple-400 mb-6">NusaTask - Earning</h1>
-    <input id="email" type="email" placeholder="Email" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 mb-3 focus:outline-purple-500 text-gray-200" />
-    <input id="password" type="password" placeholder="Password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 mb-4 focus:outline-purple-500 text-gray-200" />
+    <input id="email" type="email" placeholder="Email" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 mb-3 text-gray-200" />
+    <input id="password" type="password" placeholder="Password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 mb-4 text-gray-200" />
     <button onclick="login()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg mb-2 transition">Login</button>
     <button onclick="register()" class="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 py-2 rounded-lg transition">Daftar</button>
   </div>
@@ -69,7 +69,7 @@
   </div>
 
   <script>
-    // Firebase Config
+    // 🔹 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
       authDomain: "penyimpanansaldo-280df.firebaseapp.com",
@@ -95,35 +95,34 @@
       setTimeout(() => notif.classList.add("hidden"), 2500);
     }
 
-    // 🔹 Modal Dummy Ads
+    // 🔹 Modal Dummy Ads (fix callback)
     function showAd(title, desc, duration=3000, callback=null) {
       const modal = document.getElementById("adModal");
       document.getElementById("adTitle").innerText = title;
       document.getElementById("adDesc").innerText = desc;
       modal.classList.remove("hidden");
-      setTimeout(() => {
+
+      const timer = setTimeout(() => {
         closeAd();
         if(callback) callback();
       }, duration);
+
+      document.getElementById("adClose").onclick = () => {
+        clearTimeout(timer);
+        closeAd();
+        if(callback) callback();
+      };
     }
     function closeAd() {
       document.getElementById("adModal").classList.add("hidden");
     }
 
-    // 🔹 Auto Login + Anti Blokir
+    // 🔹 Auto Login
     auth.onAuthStateChanged(user => {
       if(user){
         currentUser=user;
-        db.ref("users/"+user.uid+"/status").get().then(snap=>{
-          if(snap.val()==="blocked"){
-            auth.signOut();
-            showNotif("Akun anda diblokir karena pelanggaran IP!","error");
-          } else {
-            checkIP(user.uid);
-            showDashboard();
-            loadSaldo();
-          }
-        });
+        showDashboard();
+        loadSaldo();
       } else showLogin();
     });
     function showLogin(){ loginPage.classList.remove("hidden"); dashboard.classList.add("hidden"); }
@@ -133,40 +132,12 @@
     function login(){ auth.signInWithEmailAndPassword(email.value,password.value).then(()=>showNotif("Login sukses","success")).catch(e=>showNotif(e.message)); }
     function register(){
       auth.createUserWithEmailAndPassword(email.value,password.value).then(()=>{
-        fetch("https://api.ipify.org?format=json").then(r=>r.json()).then(d=>{
-          db.ref("users/"+auth.currentUser.uid).set({
-            saldo:0,
-            device:navigator.userAgent,
-            ip:d.ip,
-            status:"active",
-            createdAt:Date.now()
-          });
-        });
+        db.ref("users/"+auth.currentUser.uid).set({ saldo:0, createdAt:Date.now(), status:"active" });
         showNotif("Akun dibuat","success");
       }).catch(e=>showNotif(e.message));
     }
 
-    // 🔹 Cek IP unik (blokir otomatis)
-    function checkIP(uid){
-      fetch("https://api.ipify.org?format=json").then(r=>r.json()).then(d=>{
-        const myIp=d.ip;
-        db.ref("users").once("value",snap=>{
-          let conflict=false;
-          snap.forEach(child=>{
-            if(child.key!==uid && child.val().ip===myIp){
-              conflict=true;
-            }
-          });
-          if(conflict){
-            db.ref("users/"+uid+"/status").set("blocked"); // 🚫 blokir
-            auth.signOut();
-            showNotif("Akun diblokir: 1 IP hanya boleh 1 akun!","error");
-          }
-        });
-      });
-    }
-
-    // 🔹 Saldo realtime + animasi count up
+    // 🔹 Saldo realtime
     let saldoNow=0;
     function animateSaldo(target){
       const step=(target-saldoNow)/30;
@@ -188,7 +159,9 @@
       btn.disabled=true; 
       btn.classList.remove("bg-gradient-to-r","from-green-500","to-green-700","from-yellow-400","to-yellow-600");
       btn.classList.add("bg-gray-600","cursor-not-allowed");
-      const text=btn.innerText; let remain=seconds; btn.innerText=`Cooldown (${remain}s)`;
+      const text=btn.getAttribute("data-text") || btn.innerText;
+      btn.setAttribute("data-text",text);
+      let remain=seconds; btn.innerText=`Cooldown (${remain}s)`;
       const timer=setInterval(()=>{
         remain--; btn.innerText=`Cooldown (${remain}s)`;
         if(remain<=0){ clearInterval(timer); btn.disabled=false; btn.innerText=text;
@@ -210,14 +183,23 @@
 
     // 🔹 Earn
     function earn(task,amount,adName){
+      const btn=document.getElementById(task);
+      btn.disabled=true; btn.innerText="Memproses...";
+
       const now=Date.now();
       checkReset(task,key=>{
         const cd=db.ref("cooldowns/"+currentUser.uid+"/"+task);
         const daily=db.ref("daily/"+currentUser.uid+"/"+key+"/"+task);
         cd.get().then(s=>{
-          if(now-(s.val()||0)<120000) return showNotif("Cooldown aktif!","error");
+          if(now-(s.val()||0)<120000){
+            btn.disabled=false; btn.innerText=btn.getAttribute("data-text")||"Menghasilkan";
+            return showNotif("Cooldown aktif!","error");
+          }
           daily.get().then(d=>{
-            if((d.val()||0)>=20) return showNotif("Limit harian tercapai!","error");
+            if((d.val()||0)>=20){
+              btn.disabled=false; btn.innerText=btn.getAttribute("data-text")||"Menghasilkan";
+              return showNotif("Limit harian tercapai!","error");
+            }
             showAd("Iklan "+adName,"Simulasi tampil selama 3 detik",3000,()=>{
               db.ref("users/"+currentUser.uid+"/saldo").transaction(v=>(v||0)+amount);
               cd.set(now); daily.set((d.val()||0)+1);
@@ -230,14 +212,23 @@
 
     // 🔹 Bonus
     function bonus(task,amount){
+      const btn=document.getElementById(task);
+      btn.disabled=true; btn.innerText="Memproses...";
+
       const now=Date.now();
       checkReset(task,key=>{
         const cd=db.ref("cooldowns/"+currentUser.uid+"/"+task);
         const daily=db.ref("daily/"+currentUser.uid+"/"+key+"/"+task);
         cd.get().then(s=>{
-          if(now-(s.val()||0)<120000) return showNotif("Cooldown aktif!","error");
+          if(now-(s.val()||0)<120000){
+            btn.disabled=false; btn.innerText=btn.getAttribute("data-text")||"Bonus";
+            return showNotif("Cooldown aktif!","error");
+          }
           daily.get().then(d=>{
-            if((d.val()||0)>=20) return showNotif("Limit harian tercapai!","error");
+            if((d.val()||0)>=20){
+              btn.disabled=false; btn.innerText=btn.getAttribute("data-text")||"Bonus";
+              return showNotif("Limit harian tercapai!","error");
+            }
             showAd("KlikAdilla Inpage","Simulasi inpage 4 detik",4000,()=>{
               showAd("KlikAdilla Popunder","Simulasi popunder 2 detik",2000,()=>{
                 db.ref("users/"+currentUser.uid+"/saldo").transaction(v=>(v||0)+amount);
