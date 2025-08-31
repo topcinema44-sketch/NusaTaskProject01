@@ -8,48 +8,68 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    body { background: linear-gradient(to right, #0f0f0f, #1a1a1a); }
+    .fade-in { animation: fadeIn .3s ease-in-out; }
+    .zoom-in { animation: zoomIn .3s ease-in-out; }
+    @keyframes fadeIn { from {opacity:0} to {opacity:1} }
+    @keyframes zoomIn { from {transform:scale(0.8)} to {transform:scale(1)} }
+  </style>
 </head>
-<body class="bg-gradient-to-r from-purple-50 to-purple-100 min-h-screen flex items-center justify-center">
+<body class="min-h-screen flex items-center justify-center text-gray-200">
 
   <!-- 🔹 Notifikasi -->
-  <div id="notif" class="hidden fixed top-5 right-5 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg transition-opacity duration-500"></div>
+  <div id="notif" class="hidden fixed top-5 right-5 px-4 py-3 rounded-lg shadow-lg transition-all duration-500"></div>
 
-  <!-- 🔹 Login Page -->
-  <div id="loginPage" class="w-full max-w-sm bg-white p-6 rounded-2xl shadow-xl">
-    <h1 class="text-2xl font-bold text-center text-purple-600 mb-6">NusaTask - Earning</h1>
-    <input id="email" type="email" placeholder="Email" class="w-full border rounded-lg px-3 py-2 mb-3 focus:outline-purple-500" />
-    <input id="password" type="password" placeholder="Password" class="w-full border rounded-lg px-3 py-2 mb-4 focus:outline-purple-500" />
-    <button onclick="login()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg mb-2">Login</button>
-    <button onclick="register()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg">Daftar</button>
+  <!-- 🔹 Modal Iklan Dummy -->
+  <div id="adModal" class="hidden fixed inset-0 bg-black bg-opacity-70 backdrop-blur-md flex items-center justify-center z-50 fade-in">
+    <div id="adContent" class="bg-gray-900 p-6 rounded-2xl shadow-2xl text-center w-80 zoom-in border border-purple-600">
+      <h2 id="adTitle" class="text-xl font-bold mb-4 text-purple-400">Iklan Test</h2>
+      <p id="adDesc" class="text-gray-300 mb-4">Simulasi iklan ...</p>
+      <button onclick="closeAd()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">Tutup</button>
+    </div>
   </div>
 
-  <!-- 🔹 Dashboard Earning -->
-  <div id="dashboard" class="hidden w-full max-w-md bg-white p-6 rounded-2xl shadow-xl">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-xl font-bold text-purple-600">Earning</h1>
-    </div>
+  <!-- 🔹 Login Page -->
+  <div id="loginPage" class="w-full max-w-sm bg-gray-900 border border-gray-700 p-6 rounded-2xl shadow-xl fade-in">
+    <h1 class="text-2xl font-bold text-center text-purple-400 mb-6">NusaTask - Earning</h1>
+    <input id="email" type="email" placeholder="Email" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 mb-3 focus:outline-purple-500 text-gray-200" />
+    <input id="password" type="password" placeholder="Password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 mb-4 focus:outline-purple-500 text-gray-200" />
+    <button onclick="login()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg mb-2 transition">Login</button>
+    <button onclick="register()" class="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 py-2 rounded-lg transition">Daftar</button>
+  </div>
+
+  <!-- 🔹 Dashboard -->
+  <div id="dashboard" class="hidden w-full max-w-md bg-gray-900 border border-gray-800 p-6 rounded-2xl shadow-xl fade-in">
+    <h1 class="text-xl font-bold text-purple-400 mb-4">NusaTask</h1>
 
     <!-- Saldo -->
-    <div class="bg-purple-600 p-6 rounded-xl text-center text-white mb-6 shadow">
-      <p class="text-sm">Saldo Anda</p>
+    <div class="bg-gradient-to-r from-purple-700 to-purple-900 p-6 rounded-xl text-center text-white mb-6 shadow-lg border border-purple-500">
+      <p class="text-sm text-purple-200">Saldo Anda</p>
       <p id="saldo" class="text-3xl font-bold">Rp0</p>
     </div>
 
     <!-- Tombol Menghasilkan -->
-    <h2 class="font-semibold mb-3">Tugas Harian</h2>
-    <button id="earn1" onclick="earn('earn1', 200)" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg mb-3">Menghasilkan 1 (Rp200)</button>
-    <button id="earn2" onclick="earn('earn2', 200)" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg mb-3">Menghasilkan 2 (Rp200)</button>
+    <h2 class="font-semibold mb-3 text-gray-300">Tugas Harian</h2>
+    <button id="earn1" onclick="earn('earn1', 200, 'Monetag Test')" class="w-full bg-gradient-to-r from-green-500 to-green-700 hover:opacity-90 text-white py-3 rounded-xl mb-3 transition">Menghasilkan 1 (Rp200)</button>
+    <button id="earn2" onclick="earn('earn2', 200, 'Monetag Test')" class="w-full bg-gradient-to-r from-green-500 to-green-700 hover:opacity-90 text-white py-3 rounded-xl mb-3 transition">Menghasilkan 2 (Rp200)</button>
 
     <!-- Tombol Bonus -->
-    <h2 class="font-semibold mt-6 mb-3">Bonus</h2>
-    <button id="bonus1" onclick="bonus('bonus1', 500)" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg mb-3">Xstra Bonus 1 (Rp500)</button>
-    <button id="bonus2" onclick="bonus('bonus2', 500)" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg mb-3">Xstra Bonus 2 (Rp500)</button>
+    <h2 class="font-semibold mt-6 mb-3 text-gray-300">Bonus</h2>
+    <button id="bonus1" onclick="bonus('bonus1', 500)" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 hover:opacity-90 text-black font-semibold py-3 rounded-xl mb-3 transition">Xstra Bonus 1 (Rp500)</button>
+    <button id="bonus2" onclick="bonus('bonus2', 500)" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 hover:opacity-90 text-black font-semibold py-3 rounded-xl mb-3 transition">Xstra Bonus 2 (Rp500)</button>
 
-    <p class="text-xs text-gray-500">*Cooldown 2 menit, limit 20x per tombol per hari (reset jam 03:00 WIB)</p>
+    <!-- Peringatan -->
+    <p class="text-xs text-yellow-400 mt-4">
+      ⚠️ Peringatan: 1 IP hanya boleh digunakan untuk 1 akun. Pelanggaran akan diblokir otomatis.
+    </p>
+    <p class="text-xs text-gray-500 mt-2">
+      *Cooldown 2 menit, limit 20x per tombol, reset jam 03:00 WIB
+    </p>
   </div>
 
   <script>
-    // 🔹 Firebase Config
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
       authDomain: "penyimpanansaldo-280df.firebaseapp.com",
@@ -63,180 +83,169 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
-
     let currentUser = null;
-    let currentSaldo = 0;
 
     // 🔹 Notifikasi
     function showNotif(message, type = "error") {
       const notif = document.getElementById("notif");
-      notif.className = "fixed top-5 right-5 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg transition-opacity duration-500";
-      if (type === "error") notif.classList.add("bg-red-500","text-white");
-      if (type === "success") notif.classList.add("bg-green-500","text-white");
-      if (type === "info") notif.classList.add("bg-blue-500","text-white");
+      notif.className = "fixed top-5 right-5 px-4 py-3 rounded-lg shadow-lg fade-in";
+      notif.classList.add(type==="success"?"bg-green-500 text-white": type==="info"?"bg-blue-500 text-white":"bg-red-500 text-white");
       notif.innerHTML = message;
       notif.classList.remove("hidden");
-      notif.style.opacity = "1";
-      setTimeout(() => { notif.style.opacity = "0"; setTimeout(() => notif.classList.add("hidden"), 500); }, 3000);
+      setTimeout(() => notif.classList.add("hidden"), 2500);
     }
 
-    // 🔹 Auto Login
+    // 🔹 Modal Dummy Ads
+    function showAd(title, desc, duration=3000, callback=null) {
+      const modal = document.getElementById("adModal");
+      document.getElementById("adTitle").innerText = title;
+      document.getElementById("adDesc").innerText = desc;
+      modal.classList.remove("hidden");
+      setTimeout(() => {
+        closeAd();
+        if(callback) callback();
+      }, duration);
+    }
+    function closeAd() {
+      document.getElementById("adModal").classList.add("hidden");
+    }
+
+    // 🔹 Auto Login + Anti Blokir
     auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        showDashboard();
-        loadSaldo();
-      } else {
-        showLogin();
-      }
+      if(user){
+        currentUser=user;
+        db.ref("users/"+user.uid+"/status").get().then(snap=>{
+          if(snap.val()==="blocked"){
+            auth.signOut();
+            showNotif("Akun anda diblokir karena pelanggaran IP!","error");
+          } else {
+            checkIP(user.uid);
+            showDashboard();
+            loadSaldo();
+          }
+        });
+      } else showLogin();
     });
-
-    function showLogin() {
-      document.getElementById("loginPage").classList.remove("hidden");
-      document.getElementById("dashboard").classList.add("hidden");
-    }
-
-    function showDashboard() {
-      document.getElementById("loginPage").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
-    }
+    function showLogin(){ loginPage.classList.remove("hidden"); dashboard.classList.add("hidden"); }
+    function showDashboard(){ loginPage.classList.add("hidden"); dashboard.classList.remove("hidden"); }
 
     // 🔹 Auth
-    function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => showNotif("Login berhasil!", "success"))
-        .catch(err => showNotif(err.message, "error"));
+    function login(){ auth.signInWithEmailAndPassword(email.value,password.value).then(()=>showNotif("Login sukses","success")).catch(e=>showNotif(e.message)); }
+    function register(){
+      auth.createUserWithEmailAndPassword(email.value,password.value).then(()=>{
+        fetch("https://api.ipify.org?format=json").then(r=>r.json()).then(d=>{
+          db.ref("users/"+auth.currentUser.uid).set({
+            saldo:0,
+            device:navigator.userAgent,
+            ip:d.ip,
+            status:"active",
+            createdAt:Date.now()
+          });
+        });
+        showNotif("Akun dibuat","success");
+      }).catch(e=>showNotif(e.message));
     }
 
-    function register() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(() => {
-          fetch("https://api.ipify.org?format=json")
-            .then(res => res.json())
-            .then(data => {
-              db.ref("users/" + auth.currentUser.uid).set({
-                saldo: 0,
-                device: navigator.userAgent,
-                ip: data.ip,
-                createdAt: Date.now()
-              });
-            });
-          showNotif("Akun berhasil dibuat!", "success");
-        })
-        .catch(err => showNotif(err.message, "error"));
-    }
-
-    // 🔹 Saldo realtime
-    function loadSaldo() {
-      db.ref("users/" + currentUser.uid + "/saldo").on("value", snap => {
-        currentSaldo = snap.val() || 0;
-        document.getElementById("saldo").textContent = "Rp" + currentSaldo.toLocaleString();
-      });
-    }
-
-    // 🔹 Set Cooldown UI
-    function setCooldown(btnId, seconds) {
-      const btn = document.getElementById(btnId);
-      btn.disabled = true;
-      btn.classList.remove("bg-green-600","bg-yellow-500","hover:bg-green-700","hover:bg-yellow-600");
-      btn.classList.add("bg-gray-400","cursor-not-allowed");
-
-      let remaining = seconds;
-      const originalText = btn.innerText;
-      btn.innerText = `Cooldown (${remaining}s)`;
-
-      const timer = setInterval(() => {
-        remaining--;
-        btn.innerText = `Cooldown (${remaining}s)`;
-        if (remaining <= 0) {
-          clearInterval(timer);
-          btn.disabled = false;
-          btn.innerText = originalText;
-          btn.classList.remove("bg-gray-400","cursor-not-allowed");
-          if (btnId.startsWith("earn")) btn.classList.add("bg-green-600","hover:bg-green-700");
-          else btn.classList.add("bg-yellow-500","hover:bg-yellow-600");
-        }
-      }, 1000);
-    }
-
-    // 🔹 Check Reset Jam 03:00
-    function checkReset(task, callback) {
-      const today = new Date();
-      const resetTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 3, 0, 0); // jam 03:00
-      if (today < resetTime) resetTime.setDate(resetTime.getDate() - 1); 
-      const resetKey = resetTime.toISOString().split("T")[0]; // YYYY-MM-DD
-
-      const resetRef = db.ref("daily/" + currentUser.uid + "/lastReset");
-      resetRef.get().then(snap => {
-        let lastReset = snap.val();
-        if (lastReset !== resetKey) {
-          db.ref("daily/" + currentUser.uid).set({ lastReset: resetKey });
-        }
-        callback(resetKey);
-      });
-    }
-
-    // 🔹 Earn
-    function earn(task, amount) {
-      const now = Date.now();
-      checkReset(task, resetKey => {
-        const cdRef = db.ref("cooldowns/" + currentUser.uid + "/" + task);
-        const dailyRef = db.ref("daily/" + currentUser.uid + "/" + resetKey + "/" + task);
-        cdRef.get().then(snap => {
-          let last = snap.val() || 0;
-          if (now - last < 120 * 1000) {
-            showNotif("Tunggu cooldown sebelum klaim lagi!", "error");
-          } else {
-            dailyRef.get().then(dSnap => {
-              let total = dSnap.val() || 0;
-              if (total >= 20) {
-                showNotif("Limit harian untuk tombol ini sudah tercapai!", "error");
-              } else {
-                db.ref("users/" + currentUser.uid + "/saldo").transaction(saldo => (saldo || 0) + amount);
-                cdRef.set(now);
-                dailyRef.set(total + 1);
-                showNotif("Berhasil klaim Rp" + amount, "success");
-                setCooldown(task, 120);
-                // TODO: pasang script iklan Monetag
-              }
-            });
+    // 🔹 Cek IP unik (blokir otomatis)
+    function checkIP(uid){
+      fetch("https://api.ipify.org?format=json").then(r=>r.json()).then(d=>{
+        const myIp=d.ip;
+        db.ref("users").once("value",snap=>{
+          let conflict=false;
+          snap.forEach(child=>{
+            if(child.key!==uid && child.val().ip===myIp){
+              conflict=true;
+            }
+          });
+          if(conflict){
+            db.ref("users/"+uid+"/status").set("blocked"); // 🚫 blokir
+            auth.signOut();
+            showNotif("Akun diblokir: 1 IP hanya boleh 1 akun!","error");
           }
         });
       });
     }
 
-    // 🔹 Bonus
-    function bonus(task, amount) {
-      const now = Date.now();
-      checkReset(task, resetKey => {
-        const cdRef = db.ref("cooldowns/" + currentUser.uid + "/" + task);
-        const dailyRef = db.ref("daily/" + currentUser.uid + "/" + resetKey + "/" + task);
-        cdRef.get().then(snap => {
-          let last = snap.val() || 0;
-          if (now - last < 120 * 1000) {
-            showNotif("Tunggu cooldown sebelum klaim bonus!", "error");
-          } else {
-            dailyRef.get().then(dSnap => {
-              let total = dSnap.val() || 0;
-              if (total >= 20) {
-                showNotif("Limit harian Bonus sudah tercapai!", "error");
-              } else {
-                showNotif("Iklan Inpage tampil... tunggu 4 detik", "info");
-                setTimeout(() => {
-                  db.ref("users/" + currentUser.uid + "/saldo").transaction(saldo => (saldo || 0) + amount);
-                  cdRef.set(now);
-                  dailyRef.set(total + 1);
-                  showNotif("Bonus berhasil klaim Rp" + amount, "success");
-                  setCooldown(task, 120);
-                  // TODO: pasang script iklan KlikAdilla (Inpage + Popunder)
-                }, 4000);
-              }
+    // 🔹 Saldo realtime + animasi count up
+    let saldoNow=0;
+    function animateSaldo(target){
+      const step=(target-saldoNow)/30;
+      let count=0;
+      const timer=setInterval(()=>{
+        saldoNow+=step; count++;
+        saldo.textContent="Rp"+Math.floor(saldoNow).toLocaleString();
+        if(count>=30){ clearInterval(timer); saldoNow=target; saldo.textContent="Rp"+saldoNow.toLocaleString(); }
+      },30);
+    }
+    function loadSaldo(){ db.ref("users/"+currentUser.uid+"/saldo").on("value",snap=>{
+      const newVal=snap.val()||0;
+      animateSaldo(newVal);
+    }); }
+
+    // 🔹 Cooldown
+    function setCooldown(btnId,seconds){
+      const btn=document.getElementById(btnId);
+      btn.disabled=true; 
+      btn.classList.remove("bg-gradient-to-r","from-green-500","to-green-700","from-yellow-400","to-yellow-600");
+      btn.classList.add("bg-gray-600","cursor-not-allowed");
+      const text=btn.innerText; let remain=seconds; btn.innerText=`Cooldown (${remain}s)`;
+      const timer=setInterval(()=>{
+        remain--; btn.innerText=`Cooldown (${remain}s)`;
+        if(remain<=0){ clearInterval(timer); btn.disabled=false; btn.innerText=text;
+          btn.classList.remove("bg-gray-600","cursor-not-allowed");
+          if(btnId.startsWith("earn")) btn.classList.add("bg-gradient-to-r","from-green-500","to-green-700");
+          else btn.classList.add("bg-gradient-to-r","from-yellow-400","to-yellow-600");
+        }
+      },1000);
+    }
+
+    // 🔹 Reset jam 03:00
+    function checkReset(task,callback){
+      const now=new Date(); const reset=new Date(now.getFullYear(),now.getMonth(),now.getDate(),3,0,0);
+      if(now<reset) reset.setDate(reset.getDate()-1);
+      const key=reset.toISOString().split("T")[0];
+      const ref=db.ref("daily/"+currentUser.uid+"/lastReset");
+      ref.get().then(s=>{ if(s.val()!==key) db.ref("daily/"+currentUser.uid).set({lastReset:key}); callback(key); });
+    }
+
+    // 🔹 Earn
+    function earn(task,amount,adName){
+      const now=Date.now();
+      checkReset(task,key=>{
+        const cd=db.ref("cooldowns/"+currentUser.uid+"/"+task);
+        const daily=db.ref("daily/"+currentUser.uid+"/"+key+"/"+task);
+        cd.get().then(s=>{
+          if(now-(s.val()||0)<120000) return showNotif("Cooldown aktif!","error");
+          daily.get().then(d=>{
+            if((d.val()||0)>=20) return showNotif("Limit harian tercapai!","error");
+            showAd("Iklan "+adName,"Simulasi tampil selama 3 detik",3000,()=>{
+              db.ref("users/"+currentUser.uid+"/saldo").transaction(v=>(v||0)+amount);
+              cd.set(now); daily.set((d.val()||0)+1);
+              showNotif("Berhasil klaim Rp"+amount,"success"); setCooldown(task,120);
             });
-          }
+          });
+        });
+      });
+    }
+
+    // 🔹 Bonus
+    function bonus(task,amount){
+      const now=Date.now();
+      checkReset(task,key=>{
+        const cd=db.ref("cooldowns/"+currentUser.uid+"/"+task);
+        const daily=db.ref("daily/"+currentUser.uid+"/"+key+"/"+task);
+        cd.get().then(s=>{
+          if(now-(s.val()||0)<120000) return showNotif("Cooldown aktif!","error");
+          daily.get().then(d=>{
+            if((d.val()||0)>=20) return showNotif("Limit harian tercapai!","error");
+            showAd("KlikAdilla Inpage","Simulasi inpage 4 detik",4000,()=>{
+              showAd("KlikAdilla Popunder","Simulasi popunder 2 detik",2000,()=>{
+                db.ref("users/"+currentUser.uid+"/saldo").transaction(v=>(v||0)+amount);
+                cd.set(now); daily.set((d.val()||0)+1);
+                showNotif("Bonus berhasil Rp"+amount,"success"); setCooldown(task,120);
+              });
+            });
+          });
         });
       });
     }
