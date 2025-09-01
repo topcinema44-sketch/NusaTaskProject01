@@ -14,7 +14,6 @@
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen">
@@ -30,9 +29,9 @@
     <!-- Tugas harian -->
     <h2 class="text-xl font-semibold mb-2">Tugas Harian</h2>
     <button onclick="ambilBonus('task1')" 
-      class="w-full bg-green-500 hover:bg-green-600 py-3 rounded-xl mb-3 font-semibold transition">Ambil Bonus 1</button>
+      class="w-full bg-green-500 hover:bg-green-600 py-3 rounded-xl mb-3 font-semibold transition">Ambil Reward 1</button>
     <button onclick="ambilBonus('task2')" 
-      class="w-full bg-green-500 hover:bg-green-600 py-3 rounded-xl mb-6 font-semibold transition">Ambil Bonus 2</button>
+      class="w-full bg-green-500 hover:bg-green-600 py-3 rounded-xl mb-6 font-semibold transition">Ambil Reward 2</button>
 
     <!-- Bonus -->
     <h2 class="text-xl font-semibold mb-2">Bonus</h2>
@@ -50,7 +49,7 @@
   </div>
 
   <script>
-    // Init Firebase
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
       authDomain: "penyimpanansaldo-280df.firebaseapp.com",
@@ -70,7 +69,7 @@
       position: { x: 'right', y: 'top' }
     });
 
-    // Dummy UID (diganti dengan auth login beneran)
+    // Dummy UID sementara (nanti diganti pakai auth login beneran)
     const uid = "demoUID123";
 
     // Ambil saldo realtime
@@ -79,7 +78,7 @@
       document.getElementById("saldo").innerText = "Rp" + (snap.val() || 0).toLocaleString();
     });
 
-    // Fungsi ambil bonus
+    // Fungsi ambil bonus/reward
     function ambilBonus(taskId) {
       const now = Date.now();
       const cooldownRef = db.ref("cooldowns/" + uid + "/" + taskId);
@@ -91,13 +90,12 @@
           return;
         }
 
-        // Tambah saldo
         saldoRef.transaction(saldo => (saldo || 0) + 200, (err, committed) => {
           if (committed) {
-            notyf.success("✅ Bonus berhasil ditambahkan +Rp200");
+            notyf.success("✅ Berhasil! +Rp200 ditambahkan.");
             cooldownRef.set(now);
           } else {
-            notyf.error("❌ Gagal, coba lagi nanti.");
+            notyf.error("❌ Gagal menambahkan reward.");
           }
         });
       });
