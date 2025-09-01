@@ -1,164 +1,271 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NusaTask – Earning</title>
-
-  <!-- Tailwind (CDN) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Notyf (toast notif profesional) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-
-  <!-- Firebase compat -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NusaTask - Earning</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    body { background:#0d1117; color:#fff }
-    .card { background:#161b22; border-radius:20px; padding:20px; margin:22px auto; max-width:420px;
-            box-shadow:0 12px 28px rgba(0,0,0,.45); animation:fadeIn .6s ease }
-    .saldo-box { background:linear-gradient(135deg,#7928CA,#FF0080); padding:26px; border-radius:16px }
-    .btn { display:block;width:100%;padding:14px;border-radius:12px;border:0;font-weight:700;
-           transition:transform .2s,opacity .3s }
-    .btn:active{transform:scale(.97);opacity:.9}
-    .btn-green{background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff}
-    .btn-yellow{background:linear-gradient(90deg,#facc15,#eab308);color:#111}
-    .btn-disabled{filter:grayscale(100%);opacity:.6;cursor:not-allowed}
-    .mini{font-size:.78rem;color:#a3a3a3}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #121212;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px 10px;
+    }
+    .card {
+      background: #1e1e2f;
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+    }
+    .saldo {
+      background: linear-gradient(135deg, #a445ff, #ff0080);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .saldo small {
+      font-size: 14px;
+      display: block;
+      font-weight: normal;
+    }
+    h2 {
+      margin: 15px 0 10px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      margin: 8px 0;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-green {
+      background: linear-gradient(135deg, #00c853, #64dd17);
+      color: #fff;
+    }
+    .btn-yellow {
+      background: linear-gradient(135deg, #ffb300, #ff6f00);
+      color: #fff;
+    }
+    .btn.disabled {
+      background: #555 !important;
+      cursor: not-allowed;
+    }
+    .warning {
+      font-size: 13px;
+      margin-top: 15px;
+      color: #ffcc80;
+    }
+    #bannedBox {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      background: #2b1d1d;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+    #bannedBox h3 { color: #ff4444; }
+    #bannedBox a {
+      display:inline-block; margin-top:10px; padding:10px 15px;
+      background:#0088cc; color:#fff; border-radius:8px; text-decoration:none;
+    }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
-
-  <div class="card w-11/12">
-    <h1 class="text-2xl font-extrabold text-purple-400 text-center mb-3">NusaTask</h1>
-
-    <div class="saldo-box text-center mb-5">
-      <div class="text-sm opacity-90">Saldo Anda</div>
-      <div id="saldo" class="text-3xl font-extrabold mt-1">Rp0</div>
+<body>
+  <div class="card">
+    <div class="saldo">
+      <small>Saldo Anda</small>
+      <div id="saldo">Rp0</div>
     </div>
 
-    <h2 class="text-lg font-semibold mb-2">Tugas Harian</h2>
-    <button id="btnTask1" class="btn btn-green mb-3">Ambil Reward 1</button>
-    <button id="btnTask2" class="btn btn-green mb-6">Ambil Reward 2</button>
+    <h2>Tugas Harian</h2>
+    <button class="btn btn-green" data-id="reward1">Ambil Reward 1</button>
+    <button class="btn btn-green" data-id="reward2">Ambil Reward 2</button>
 
-    <h2 class="text-lg font-semibold mb-2">Xstra Bonus</h2>
-    <button id="btnBonus1" class="btn btn-yellow mb-3">Ambil Bonus 3</button>
-    <button id="btnBonus2" class="btn btn-yellow">Ambil Bonus 4</button>
+    <h2>Xstra Bonus</h2>
+    <button class="btn btn-yellow" data-id="bonus3">Ambil Bonus 3</button>
+    <button class="btn btn-yellow" data-id="bonus4">Ambil Bonus 4</button>
 
-    <p class="mini mt-6 text-center">
-      ⚠️ 1 IP & 1 device hanya untuk 1 akun. Pelanggaran diblokir otomatis.<br/>
+    <div class="warning">
+      ⚠️ 1 IP & 1 device hanya untuk 1 akun.<br>
       ⏳ Cooldown 2 menit · Limit 20x/hari · Reset 03:00 WIB
-    </p>
+    </div>
+
+    <div id="bannedBox">
+      <h3>🚫 Akun Diblokir</h3>
+      <p>Terdeteksi penggunaan ganda (IP / device berbeda).</p>
+      <p>Jika ini kesalahan, silakan hubungi admin:</p>
+      <a href="https://t.me/nusataskproject" target="_blank">Hubungi Admin</a>
+    </div>
   </div>
 
-  <script>
-    // ==== Config Firebase (GANTI sesuai project masing-masing) ====
-    const firebaseConfig = {
-      apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
-      authDomain: "penyimpanansaldo-280df.firebaseapp.com",
-      databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "penyimpanansaldo-280df",
-      storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
-      messagingSenderId: "659609775130",
-      appId: "1:659609775130:web:bdd088ca5a877498c5b5a3"
-    };
+<script>
+  // 🔥 Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
+    authDomain: "penyimpanansaldo-280df.firebaseapp.com",
+    databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "penyimpanansaldo-280df",
+    storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
+    messagingSenderId: "659609775130",
+    appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
+    measurementId: "G-L4TW7E23H2"
+  };
+  firebase.initializeApp(firebaseConfig);
 
-    // ==== Init ====
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db   = firebase.database();
-    const noti = new Notyf({ duration: 2500, position: { x:'right', y:'top' } });
+  firebase.auth().signInAnonymously().catch(console.error);
 
-    // ==== Setting ====
-    const BTN_MAP = [
-      {id:'btnTask1', reward:200},
-      {id:'btnTask2', reward:200},
-      {id:'btnBonus1',reward:300},
-      {id:'btnBonus2',reward:300},
-    ];
-    const COOLDOWN_MS = 2 * 60 * 1000;
-    const LIMIT_HARI  = 20;
+  const cooldowns = {};
+  const LIMIT = 20;
+  const COOLDOWN_MS = 120000;
 
-    let UID=null, DEVICE_ID=null, IP_ADDR=null;
-
-    // ===== Helper =====
-    function getDeviceId(){
-      const key='nt_device_id';
-      let id=localStorage.getItem(key);
-      if(!id){ id = 'dev-' + Math.random().toString(36).slice(2,10); localStorage.setItem(key,id); }
-      return id;
+  function getHariKey() {
+    const now = new Date();
+    now.setHours(now.getHours() + 7);
+    let key = now.toISOString().split("T")[0];
+    if (now.getHours() < 3) {
+      let d = new Date(now);
+      d.setDate(d.getDate() - 1);
+      key = d.toISOString().split("T")[0];
     }
-    async function getIP(){
-      try{const r=await fetch('https://api.ipify.org?format=json');const j=await r.json();return j.ip;}
-      catch(e){return '0.0.0.0';}
-    }
-    function nowWIB(){ return Date.now() + (7*60*60*1000) - (new Date().getTimezoneOffset()*60000); }
-    function hariKey(){
-      const d=new Date(nowWIB()); const jam=d.getUTCHours();
-      if(jam<3){ d.setUTCDate(d.getUTCDate()-1); }
-      return d.toISOString().split('T')[0];
+    return key;
+  }
+
+  function disableAllButtons() {
+    document.querySelectorAll(".btn").forEach(b => {
+      b.classList.add("disabled");
+      b.disabled = true;
+    });
+  }
+
+  function showBannedUI() {
+    disableAllButtons();
+    document.getElementById("bannedBox").style.display = "block";
+  }
+
+  // 🔒 Anti tuyul
+  async function checkAntiTuyul(user) {
+    const uid = user.uid;
+    const userRef = firebase.database().ref("users/" + uid);
+
+    const ip = await fetch("https://api64.ipify.org?format=json").then(r => r.json()).then(d => d.ip);
+    const deviceId = navigator.userAgent;
+
+    const snapshot = await userRef.once("value");
+    const data = snapshot.val();
+
+    if (!data) {
+      await userRef.set({ saldo: 0, deviceId, ip, status: "active" });
+    } else {
+      if (data.status === "banned") { showBannedUI(); return; }
+      if (data.ip !== ip || data.deviceId !== deviceId) {
+        await userRef.update({ status: "banned" });
+        showBannedUI();
+        return;
+      }
     }
 
-    // ===== Start =====
-    (async function boot(){
-      DEVICE_ID=getDeviceId();
-      IP_ADDR=await getIP();
-      await auth.signInAnonymously();
+    // cek multi-akun dengan ip/device sama
+    const allUsers = await firebase.database().ref("users").once("value");
+    allUsers.forEach(child => {
+      if (child.key !== uid) {
+        const u = child.val();
+        if (u.ip === ip || u.deviceId === deviceId) {
+          firebase.database().ref("users/" + uid).update({ status: "banned" });
+          showBannedUI();
+        }
+      }
+    });
+  }
 
-      auth.onAuthStateChanged(async user=>{
-        if(!user) return;
-        UID=user.uid;
-        db.ref(`users/${UID}/saldo`).on('value',snap=>{
-          const v=snap.val()||0;
-          document.getElementById('saldo').innerText='Rp'+Number(v).toLocaleString('id-ID');
-        });
-        await ensureProfile();
-        BTN_MAP.forEach(b=>{
-          document.getElementById(b.id).addEventListener('click',()=>handleClaim(b));
-        });
+  const saldoRef = () => {
+    const uid = firebase.auth().currentUser?.uid;
+    return firebase.database().ref("users/" + uid + "/saldo");
+  };
+
+  firebase.auth().onAuthStateChanged(async user => {
+    if (user) {
+      await checkAntiTuyul(user);
+      saldoRef().on("value", snap => {
+        const saldo = snap.val() || 0;
+        document.getElementById("saldo").textContent = "Rp" + saldo.toLocaleString();
       });
-    })();
+    }
+  });
 
-    async function ensureProfile(){
-      const ref=db.ref(`users/${UID}`);
-      await ref.update({status:'active',deviceId:DEVICE_ID,ip:IP_ADDR,updatedAt:Date.now()});
+  // 🟢 Ambil reward
+  async function ambilReward(btn, rewardId) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const now = Date.now();
+    if (cooldowns[rewardId] && now - cooldowns[rewardId] < COOLDOWN_MS) return;
+
+    const hari = getHariKey();
+    const refCount = firebase.database().ref(`daily/${user.uid}/${hari}/${rewardId}/count`);
+    const snapshot = await refCount.once("value");
+    const count = snapshot.val() || 0;
+    if (count >= LIMIT) {
+      return Swal.fire({ icon: "warning", title: "Limit Harian 🚫", text: "Sudah mencapai 20x hari ini." });
     }
 
-    async function handleClaim(btn){
-      const status=(await db.ref(`users/${UID}/status`).get()).val();
-      if(status!=='active'){ noti.error('Akun diblokir'); return; }
+    cooldowns[rewardId] = now;
+    startCooldown(btn, rewardId);
 
-      const day=hariKey();
-      const base=`daily/${UID}/${day}/${btn.id}`;
-      const lastRef=db.ref(`${base}/last`);
-      const cntRef=db.ref(`${base}/count`);
-      const [lastSnap,cntSnap]=await Promise.all([lastRef.get(),cntRef.get()]);
-      const last=lastSnap.val()||0, cnt=cntSnap.val()||0, now=Date.now();
+    const refSaldo = saldoRef();
+    const saldoSnap = await refSaldo.once("value");
+    let saldo = saldoSnap.val() || 0;
+    saldo += 200;
 
-      if(cnt>=LIMIT_HARI){ noti.open({type:'warning',message:'Limit harian tercapai'}); return; }
-      if(now-last<COOLDOWN_MS){ noti.open({type:'warning',message:'Cooldown, tunggu dulu'}); return; }
+    await refSaldo.set(saldo);
+    await refCount.set(count + 1);
 
-      await db.ref(`users/${UID}/saldo`).transaction(v=>(v||0)+btn.reward);
-      await lastRef.set(now);
-      await cntRef.set(cnt+1);
-      noti.success(`+Rp${btn.reward.toLocaleString('id-ID')} ditambahkan`);
-      startCooldownUI(document.getElementById(btn.id),Math.floor(COOLDOWN_MS/1000));
-    }
+    Swal.fire({ icon: "success", title: "Reward berhasil 🎉", text: `Saldo bertambah Rp200. Saldo baru Rp${saldo.toLocaleString()}` });
+  }
 
-    function startCooldownUI(button,seconds){
-      const original=button.innerText; let left=seconds;
-      button.disabled=true; button.classList.add('btn-disabled');
-      button.innerText=`Cooldown ${left}s`;
-      const t=setInterval(()=>{
-        left--; button.innerText=`Cooldown ${left}s`;
-        if(left<=0){clearInterval(t);button.disabled=false;button.classList.remove('btn-disabled');button.innerText=original;}
-      },1000);
-    }
-  </script>
+  function startCooldown(btn, rewardId) {
+    btn.classList.add("disabled");
+    btn.disabled = true;
+    let sisa = COOLDOWN_MS / 1000;
+    const oriText = btn.textContent;
+    const timer = setInterval(() => {
+      sisa--;
+      btn.textContent = `Cooldown ${sisa}s`;
+      if (sisa <= 0) {
+        clearInterval(timer);
+        btn.classList.remove("disabled");
+        btn.disabled = false;
+        btn.textContent = oriText;
+      }
+    }, 1000);
+  }
+
+  document.querySelectorAll(".btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      ambilReward(btn, btn.dataset.id);
+    });
+  });
+</script>
 </body>
 </html>
