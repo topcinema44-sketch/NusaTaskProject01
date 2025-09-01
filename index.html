@@ -1,88 +1,118 @@
-    Cooldown 2 menit, limit 20x per tombol, reset jam 03:00 WIB</p>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NusaTask - Earning</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Notyf untuk notifikasi -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen">
+
+  <!-- Card saldo -->
+  <div class="w-11/12 max-w-md bg-gray-800 p-6 rounded-2xl shadow-lg text-center animate-fade-in">
+    <h1 class="text-purple-400 text-2xl font-bold mb-2">NusaTask</h1>
+    <div class="bg-purple-600 rounded-xl py-6 mb-4 shadow-md">
+      <p class="text-lg">Saldo Anda</p>
+      <p id="saldo" class="text-3xl font-bold">Rp0</p>
+    </div>
+
+    <!-- Tugas harian -->
+    <h2 class="text-xl font-semibold mb-2">Tugas Harian</h2>
+    <button onclick="ambilBonus('task1')" 
+      class="w-full bg-green-500 hover:bg-green-600 py-3 rounded-xl mb-3 font-semibold transition">Ambil Bonus 1</button>
+    <button onclick="ambilBonus('task2')" 
+      class="w-full bg-green-500 hover:bg-green-600 py-3 rounded-xl mb-6 font-semibold transition">Ambil Bonus 2</button>
+
+    <!-- Bonus -->
+    <h2 class="text-xl font-semibold mb-2">Bonus</h2>
+    <button onclick="ambilBonus('bonus1')" 
+      class="w-full bg-yellow-500 hover:bg-yellow-600 py-3 rounded-xl mb-3 font-semibold transition">Ambil Bonus 3</button>
+    <button onclick="ambilBonus('bonus2')" 
+      class="w-full bg-yellow-500 hover:bg-yellow-600 py-3 rounded-xl font-semibold transition">Ambil Bonus 4</button>
+
+    <!-- Info -->
+    <p class="text-xs text-gray-400 mt-6">
+      ⚠️ 1 IP hanya boleh digunakan untuk 1 akun.<br>
+      Pelanggaran akan diblokir otomatis.<br>
+      ⏳ Cooldown 2 menit, limit 20x per tombol, reset jam 03:00 WIB
+    </p>
   </div>
 
-  <!-- 🔔 Toast -->
-  <div id="toast" class="toast"></div>
-
   <script>
-    // ✅ Firebase Config
+    // Init Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
       authDomain: "penyimpanansaldo-280df.firebaseapp.com",
       databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "penyimpanansaldo-280df",
-      storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
+      storageBucket: "penyimpanansaldo-280df.appspot.com",
       messagingSenderId: "659609775130",
       appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
       measurementId: "G-L4TW7E23H2"
     };
-
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
     const db = firebase.database();
 
-    let userId = null;
-
-    // 🔔 Fungsi Toast
-    function showToast(message) {
-      const toast = document.getElementById("toast");
-      toast.innerText = message;
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 2500);
-    }
-
-    // ✅ Auto Login / Register Guest
-    auth.signInAnonymously().then(userCred => {
-      userId = userCred.user.uid;
-      startListener();
+    // Notifikasi
+    const notyf = new Notyf({
+      duration: 2500,
+      position: { x: 'right', y: 'top' }
     });
 
-    // ✅ Listener Saldo
-    function startListener() {
-      db.ref("users/" + userId + "/saldo").on("value", snap => {
-        const saldo = snap.val() || 0;
-        document.getElementById("saldo").innerText = "Rp" + saldo.toLocaleString("id-ID");
+    // Dummy UID (diganti dengan auth login beneran)
+    const uid = "demoUID123";
+
+    // Ambil saldo realtime
+    const saldoRef = db.ref("users/" + uid + "/saldo");
+    saldoRef.on("value", (snap) => {
+      document.getElementById("saldo").innerText = "Rp" + (snap.val() || 0).toLocaleString();
+    });
+
+    // Fungsi ambil bonus
+    function ambilBonus(taskId) {
+      const now = Date.now();
+      const cooldownRef = db.ref("cooldowns/" + uid + "/" + taskId);
+
+      cooldownRef.once("value").then(snap => {
+        const lastTime = snap.val() || 0;
+        if (now - lastTime < 2 * 60 * 1000) {
+          notyf.open({ type: 'warning', message: "⏳ Masih cooldown, tunggu 2 menit!" });
+          return;
+        }
+
+        // Tambah saldo
+        saldoRef.transaction(saldo => (saldo || 0) + 200, (err, committed) => {
+          if (committed) {
+            notyf.success("✅ Bonus berhasil ditambahkan +Rp200");
+            cooldownRef.set(now);
+          } else {
+            notyf.error("❌ Gagal, coba lagi nanti.");
+          }
+        });
       });
     }
-
-    // ✅ Claim Button
-    const rewards = {
-      task1: 200,
-      task2: 300,
-      bonus1: 500,
-      bonus2: 700
-    };
-
-    async function claim(task) {
-      const ref = db.ref("users/" + userId + "/tasks/" + task);
-      const snap = await ref.get();
-      const now = Date.now();
-
-      let data = snap.val() || { count: 0, last: 0 };
-
-      // cooldown 2 menit
-      if (now - data.last < 120000) {
-        showToast("⏳ Masih cooldown, tunggu 2 menit.");
-        return;
-      }
-
-      // limit 20x
-      if (data.count >= 20) {
-        showToast("❌ Limit harian tercapai untuk tombol ini.");
-        return;
-      }
-
-      // update saldo
-      const saldoRef = db.ref("users/" + userId + "/saldo");
-      const saldoSnap = await saldoRef.get();
-      const saldo = saldoSnap.val() || 0;
-      saldoRef.set(saldo + rewards[task]);
-
-      // update progress task
-      ref.set({ count: data.count + 1, last: now });
-
-      showToast(`✅ +Rp${rewards[task].toLocaleString("id-ID")} ditambahkan!`);
-    }
   </script>
+
+  <!-- Animasi sederhana -->
+  <style>
+    .animate-fade-in {
+      animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </body>
 </html>
