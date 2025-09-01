@@ -1,129 +1,125 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>NusaTask – Earning</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NusaTask — Earning</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <style>
-    :root { color-scheme: dark; }
-    body { min-height:100vh; background: radial-gradient(1200px 600px at 20% -10%, rgba(168,85,247,.25), transparent), radial-gradient(900px 450px at 120% 10%, rgba(59,130,246,.2), transparent), #0b0b0f; }
-    .glass { background: rgba(23,23,28,.7); backdrop-filter: blur(10px); }
-    .card { border:1px solid rgba(148,163,184,.15); }
-    .shine { position:relative; overflow:hidden; }
-    .shine::after{content:""; position:absolute; inset:-150% -50%; background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,.08) 50%, transparent 70%); transform:rotate(12deg); animation:shine 6s linear infinite; }
-    @keyframes shine { from{transform:translateX(-20%) rotate(12deg)} to{transform:translateX(120%) rotate(12deg)} }
-    .fade-in { animation: fade .25s ease-out; } @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
-    .pop { animation: pop .18s ease-out; } @keyframes pop{from{transform:scale(.98)} to{transform:scale(1)}}
-    .btn-disabled { background:#4b5563 !important; cursor:not-allowed !important; }
-    .spinner { width:1rem; height:1rem; border:.18rem solid rgba(255,255,255,.25); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; display:inline-block; vertical-align:-2px; margin-right:.5rem;}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    .pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.02)} 100%{transform:scale(1)} }
+    .fade-in { animation: fadein .5s ease; } @keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .disabled { opacity:.6; cursor:not-allowed; filter:grayscale(1); }
+    .tick { font-variant-numeric: tabular-nums; }
   </style>
 </head>
-<body class="text-slate-200 flex items-center justify-center p-4">
+<body class="bg-slate-50 text-slate-800">
+  <div class="max-w-xl mx-auto p-4 sm:p-6">
+    <!-- Header -->
+    <header class="mb-4 sm:mb-6">
+      <h1 class="text-2xl sm:text-3xl font-bold text-indigo-700">NusaTask</h1>
+      <p class="text-sm text-slate-500">Satu IP per device. Pelanggaran otomatis diblokir.</p>
+    </header>
 
-  <!-- Toast -->
-  <div id="toast" class="fixed top-4 right-4 hidden z-50"></div>
+    <!-- Warning Before Enter -->
+    <div id="gate" class="bg-white rounded-2xl p-5 shadow fade-in">
+      <h2 class="text-lg font-semibold mb-2">Peringatan Anti-Tuyul</h2>
+      <ul class="text-sm text-slate-600 list-disc ml-5 space-y-1">
+        <li>Maksimal 1 akun per IP & per perangkat.</li>
+        <li>Aktivitas emulator/otomasi akan diblokir otomatis.</li>
+        <li>Limit harian reset pukul <strong>03:00 WIB</strong>.</li>
+      </ul>
 
-  <!-- Modal Iklan -->
-  <div id="adModal" class="hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm">
-    <div class="h-full w-full flex items-center justify-center p-4">
-      <div class="glass card w-full max-w-md rounded-2xl p-6 fade-in">
-        <div class="mb-4">
-          <h3 id="adTitle" class="text-xl font-semibold text-violet-300">Iklan</h3>
-          <p id="adDesc" class="text-slate-300 mt-1">Memuat…</p>
+      <!-- Auth -->
+      <div class="mt-4 grid gap-3">
+        <input id="email" type="email" placeholder="Email"
+               class="w-full rounded-xl border p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <input id="password" type="password" placeholder="Kata sandi"
+               class="w-full rounded-xl border p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <div class="flex gap-2">
+          <button id="btnLogin" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl shadow">
+            Masuk / Daftar
+          </button>
+          <button id="btnContinue" class="flex-1 bg-slate-200 hover:bg-slate-300 p-3 rounded-xl">
+            Lanjutkan
+          </button>
         </div>
-        <!-- Tempat slot script iklan produksi -->
-        <div id="adSlot" class="h-36 rounded-lg border border-slate-700/60 flex items-center justify-center text-slate-400 text-sm mb-5">
-          <span>Preview iklan (dummy)</span>
-        </div>
-        <button id="adClose" class="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 transition">
-          Tutup
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Auth Card -->
-  <div id="authCard" class="glass card w-full max-w-md rounded-2xl p-6 fade-in">
-    <div class="flex items-center gap-2 mb-6">
-      <div class="h-9 w-9 rounded-xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4-8 4-8-4 8-4ZM4 12l8 4 8-4M4 17l8 4 8-4" stroke="#c4b5fd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div>
-        <h1 class="text-xl font-semibold">NusaTask</h1>
-        <p class="text-xs text-slate-400 -mt-0.5">Earning Panel</p>
+        <p id="authMsg" class="text-sm text-rose-600"></p>
       </div>
     </div>
 
-    <div class="space-y-3">
-      <input id="email" type="email" placeholder="Email" class="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-violet-600" />
-      <input id="password" type="password" placeholder="Password" class="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-violet-600" />
-      <button id="btnLogin" class="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 transition">Masuk</button>
-      <button id="btnRegister" class="w-full py-2.5 rounded-xl bg-slate-700/60 hover:bg-slate-700 transition">Daftar</button>
-    </div>
-
-    <div class="mt-6 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs">
-      <b>Peringatan:</b> 1 IP hanya boleh untuk 1 akun. Pelanggaran akan diblokir otomatis.
-    </div>
-  </div>
-
-  <!-- Dashboard -->
-  <div id="dash" class="hidden w-full max-w-2xl space-y-5 fade-in">
-    <div class="glass card rounded-2xl p-5 shine pop">
-      <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="#c4b5fd" stroke-width="1.5" stroke-linecap="round"/></svg>
-          </div>
+    <!-- App -->
+    <main id="app" class="hidden fade-in">
+      <!-- Saldo Card -->
+      <section class="bg-white rounded-2xl p-5 shadow mb-4">
+        <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-lg font-semibold">NusaTask</h2>
-            <p class="text-xs text-slate-400">Panel Earning</p>
+            <p class="text-sm text-slate-500">Saldo</p>
+            <p id="saldo" class="text-3xl font-bold text-slate-800">Rp 0</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm text-slate-500">Sisa harian</p>
+            <p class="text-sm">
+              Menghasilkan: <span id="leftMeng" class="font-semibold">20</span> •
+              Xstra: <span id="leftX" class="font-semibold">2</span>
+            </p>
+            <p class="text-xs text-slate-400">Reset 03:00 WIB</p>
           </div>
         </div>
-        <div class="text-right">
-          <p class="text-xs text-slate-400">Saldo Anda</p>
-          <p id="saldoText" class="text-3xl font-bold tracking-tight">Rp0</p>
+      </section>
+
+      <!-- Buttons -->
+      <section class="grid gap-3">
+        <!-- Menghasilkan -->
+        <div class="bg-white rounded-2xl p-5 shadow">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold">Menghasilkan</h3>
+            <span id="cdMeng" class="text-xs tick text-slate-500"></span>
+          </div>
+          <button id="btnMeng"
+                  class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-xl shadow pulse">
+            + Kerjakan (Monetag)
+          </button>
+          <!-- Monetag placeholder -->
+          <div id="monetag-slot" class="mt-3"></div>
         </div>
-      </div>
-    </div>
 
-    <div class="grid md:grid-cols-2 gap-5">
-      <!-- Tugas Harian -->
-      <div class="glass card rounded-2xl p-5">
-        <h3 class="font-semibold mb-3">Tugas Harian (Monetag)</h3>
-        <button id="earn1" class="task-btn w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 hover:opacity-90 transition mb-3">
-          Menghasilkan 1 (Rp200)
-        </button>
-        <button id="earn2" class="task-btn w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 hover:opacity-90 transition">
-          Menghasilkan 2 (Rp200)
-        </button>
-        <p class="text-[11px] text-slate-400 mt-3">*Max 20x per tombol • Cooldown 2 menit</p>
-      </div>
+        <!-- Xstra Bonus -->
+        <div class="bg-white rounded-2xl p-5 shadow">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold">Xstra Bonus</h3>
+            <span id="cdX" class="text-xs tick text-slate-500"></span>
+          </div>
+          <button id="btnX"
+                  class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-xl shadow pulse">
+            + Bonus (Clickadilla)
+          </button>
 
-      <!-- Bonus -->
-      <div class="glass card rounded-2xl p-5">
-        <h3 class="font-semibold mb-3">Xstra Bonus (KlikAdila)</h3>
-        <button id="bonus1" class="task-btn w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 text-black font-semibold hover:opacity-90 transition mb-3">
-          Xstra Bonus 1 (Rp500)
-        </button>
-        <button id="bonus2" class="task-btn w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 text-black font-semibold hover:opacity-90 transition">
-          Xstra Bonus 2 (Rp500)
-        </button>
-        <p class="text-[11px] text-slate-400 mt-3">*Inpage 4 detik → Popunder 2 detik</p>
-      </div>
-    </div>
+          <!-- Clickadilla in-page placeholder -->
+          <div id="clickad-inpage" class="mt-3"></div>
+        </div>
+      </section>
 
-    <div class="text-[11px] text-slate-400 text-center">
-      Reset batas harian otomatis pukul <b>03:00 WIB</b>.
-    </div>
+      <!-- Popunder anchor (Xstra after 4s) -->
+      <iframe id="popunder-frame" class="hidden"></iframe>
+
+      <!-- Status -->
+      <p id="status" class="text-sm text-slate-500 mt-4"></p>
+    </main>
   </div>
 
-  <script>
-    // ================== Firebase ==================
+  <!-- Firebase JS SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import {
+      getAuth, setPersistence, browserLocalPersistence,
+      onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    import {
+      getDatabase, ref, get, set, update, onValue, runTransaction, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    // === Firebase config (punyamu) ===
     const firebaseConfig = {
       apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
       authDomain: "penyimpanansaldo-280df.firebaseapp.com",
@@ -134,253 +130,242 @@
       appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
       measurementId: "G-L4TW7E23H2"
     };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
-    let currentUser = null;
-    let saldoAnim = 0, saldoTimer = null;
 
-    // ================== UI Helpers ==================
-    function toast(msg, type="info"){
-      const el = document.getElementById("toast");
-      el.className = "fixed top-4 right-4 z-50";
-      const color = type==="success"?"bg-emerald-600":type==="error"?"bg-rose-600":"bg-slate-700";
-      el.innerHTML = `<div class="rounded-xl ${color} px-4 py-3 shadow-xl border border-white/10 fade-in">${msg}</div>`;
-      el.classList.remove("hidden");
-      setTimeout(()=> el.classList.add("hidden"), 2500);
-    }
+    // === Init ===
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    await setPersistence(auth, browserLocalPersistence);
 
-    function setBtnLoading(btn, isLoading, baseText){
-      if(isLoading){
-        btn.dataset.base = baseText || btn.textContent.trim();
-        btn.disabled = true;
-        btn.classList.add("btn-disabled");
-        btn.innerHTML = `<span class="spinner"></span>Memproses…`;
-      }else{
-        btn.disabled = false;
-        btn.classList.remove("btn-disabled");
-        btn.textContent = baseText || btn.dataset.base || "Selesai";
+    // === Helpers ===
+    const el = id => document.getElementById(id);
+    const fmtIDR = (n=0) => "Rp " + (n||0).toLocaleString("id-ID");
+    const COOLDOWN_MS = 2 * 60 * 1000; // 2 menit
+    const LIMIT_MENG = 20;
+    const LIMIT_X = 2;
+    const AWARD_MENG = 150; // silakan atur
+    const AWARD_X = 500; // silakan atur
+
+    // Reset cutoff 03:00 WIB
+    function todayResetEpoch() {
+      const now = new Date();
+      // WIB offset +7
+      const utc = now.getTime() + (now.getTimezoneOffset()*60000);
+      const wib = new Date(utc + 7*3600*1000);
+      const reset = new Date(wib);
+      reset.setHours(3,0,0,0);
+      if (wib.getTime() < reset.getTime()) {
+        // sebelum 03:00 hari ini → pakai 03:00 hari ini
+      } else {
+        // sudah lewat → reset besok
+        reset.setDate(reset.getDate()+1);
       }
+      // kembali ke epoch UTC ms
+      return reset.getTime() - 7*3600*1000; // konversi balik dari WIB ke UTC epoch
     }
 
-    function setCooldown(btn, seconds){
-      btn.disabled = true;
-      btn.classList.add("btn-disabled");
-      const label = btn.dataset.base || btn.textContent.trim();
-      let remain = seconds;
-      btn.textContent = `Cooldown (${remain}s)`;
-      const t = setInterval(()=>{
-        remain--;
-        btn.textContent = `Cooldown (${remain}s)`;
-        if(remain<=0){
-          clearInterval(t);
-          btn.disabled = false;
-          btn.classList.remove("btn-disabled");
-          btn.textContent = label;
+    // === Anti Tuyul - simple UA & IP ===
+    async function fetchIP() {
+      try {
+        const r = await fetch("https://api.ipify.org?format=json");
+        const j = await r.json();
+        return j.ip || null;
+      } catch { return null; }
+    }
+    function looksLikeEmulator(ua) {
+      const s = ua.toLowerCase();
+      return /(headless|phantom|bot|crawler|spider)/.test(s);
+    }
+
+    // === Auth UI ===
+    const gate = el("gate");
+    const appView = el("app");
+    const authMsg = el("authMsg");
+    el("btnLogin").addEventListener("click", async () => {
+      const email = el("email").value.trim();
+      const password = el("password").value;
+      if (!email || !password) { authMsg.textContent = "Email & kata sandi wajib."; return; }
+      authMsg.textContent = "";
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (e) {
+        if (e.code === "auth/user-not-found") {
+          await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+          authMsg.textContent = e.message;
         }
-      },1000);
-    }
-
-    function animateSaldo(toVal){
-      clearInterval(saldoTimer);
-      const steps = 24;
-      let i = 0;
-      const from = saldoAnim;
-      const diff = toVal - from;
-      saldoTimer = setInterval(()=>{
-        i++;
-        const v = Math.round(from + diff * (i/steps));
-        saldoAnim = v;
-        document.getElementById("saldoText").textContent = "Rp" + (v).toLocaleString("id-ID");
-        if(i>=steps) clearInterval(saldoTimer);
-      }, 20);
-    }
-
-    // ================== Auth & Init ==================
-    function initUserData(user){
-      const ref = db.ref("users/"+user.uid);
-      ref.once("value").then(s=>{
-        if(!s.exists()){
-          return ref.set({ saldo:0, createdAt: Date.now(), status:"active" });
-        }
-      });
-    }
-
-    function bindSaldo(user){
-      db.ref("users/"+user.uid+"/saldo").on("value", snap=>{
-        animateSaldo((snap.val()||0));
-      });
-    }
-
-    auth.onAuthStateChanged(u=>{
-      if(u){
-        currentUser = u;
-        document.getElementById("authCard").classList.add("hidden");
-        document.getElementById("dash").classList.remove("hidden");
-        initUserData(u);
-        bindSaldo(u);
-      }else{
-        currentUser = null;
-        document.getElementById("dash").classList.add("hidden");
-        document.getElementById("authCard").classList.remove("hidden");
       }
     });
+    el("btnContinue").addEventListener("click", () => {
+      // jika sudah login, masuk; kalau belum, info
+      if (!auth.currentUser) authMsg.textContent = "Silakan login/daftar dulu.";
+    });
 
-    document.getElementById("btnLogin").onclick = ()=>{
-      const email = document.getElementById("email").value.trim();
-      const pass  = document.getElementById("password").value.trim();
-      auth.signInWithEmailAndPassword(email, pass)
-        .then(()=> toast("Login sukses","success"))
-        .catch(e=> toast(e.message,"error"));
-    };
+    // === Main state ===
+    let currentUID = null;
+    let userRef, dailyRef, cdRef;
 
-    document.getElementById("btnRegister").onclick = ()=>{
-      const email = document.getElementById("email").value.trim();
-      const pass  = document.getElementById("password").value.trim();
-      auth.createUserWithEmailAndPassword(email, pass)
-        .then(()=> { initUserData(auth.currentUser); toast("Akun dibuat","success"); })
-        .catch(e=> toast(e.message,"error"));
-    };
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { gate.classList.remove("hidden"); appView.classList.add("hidden"); return; }
+      currentUID = user.uid;
+      userRef = ref(db, `users/${currentUID}`);
+      dailyRef = ref(db, `users/${currentUID}/daily`);
+      cdRef = ref(db, `users/${currentUID}/cooldowns`);
 
-    // ================== Reset Harian 03:00 WIB ==================
-    function getResetKeyWIB(now=new Date()){
-      // WIB = UTC+7; hitung tanggal berdasarkan WIB
-      const utc = now.getTime() + now.getTimezoneOffset()*60000;
-      const wib = new Date(utc + 7*3600000);
-      const reset = new Date(wib.getFullYear(), wib.getMonth(), wib.getDate(), 3, 0, 0); // 03:00 WIB
-      if(wib < reset) reset.setDate(reset.getDate()-1);
-      // key harian pakai tanggal reset berikutnya (YYYY-MM-DD)
-      return reset.toISOString().split("T")[0];
-    }
+      // Anti tuyul: set IP & UA, index IP
+      const ua = navigator.userAgent || "unknown";
+      const ip = await fetchIP();
+      const updates = {
+        userAgent: ua,
+        ip: ip || "unknown",
+        status: looksLikeEmulator(ua) ? "banned" : "active",
+        createdAt: Date.now(),
+        daily: { menghasilkan: 0, xstra: 0, lastReset: Date.now() },
+        cooldowns: { menghasilkan: 0, xstra: 0 },
+        saldo: 0
+      };
+      // Inisialisasi hanya jika belum ada
+      const snap = await get(userRef);
+      if (!snap.exists()) await set(userRef, updates);
 
-    function ensureDaily(uid){
-      const key = getResetKeyWIB();
-      const ref = db.ref(`daily/${uid}/lastReset`);
-      return ref.get().then(s=>{
-        if(s.val() !== key){
-          return db.ref(`daily/${uid}`).set({ lastReset: key });
-        }
-      }).then(()=> key);
-    }
+      // Tambahkan indeks IP (lihat rules ip_index di atas)
+      if (ip) {
+        await set(ref(db, `ip_index/${ip}/${currentUID}`), true);
+      }
 
-    // ================== Modal Iklan ==================
-    function showAd({title, desc, duration=3000}, cb){
-      const modal = document.getElementById("adModal");
-      const adTitle = document.getElementById("adTitle");
-      const adDesc  = document.getElementById("adDesc");
-      const adSlot  = document.getElementById("adSlot");
-      if(!modal || !adTitle || !adDesc){ console.warn("Modal tidak ditemukan"); cb && cb(); return; }
+      // Jika status banned → blok
+      const userData = (await get(userRef)).val();
+      if (userData?.status === "banned") {
+        authMsg.textContent = "Akun diblokir (anti-tuyul). Hubungi admin.";
+        gate.classList.remove("hidden"); appView.classList.add("hidden"); return;
+      }
 
-      adTitle.textContent = title;
-      adDesc.textContent  = desc;
+      // Tampilkan app
+      gate.classList.add("hidden");
+      appView.classList.remove("hidden");
+      bindRealtime();
+    });
 
-      // TODO: pasang script Monetag / KlikAdila di sini (produksi)
-      adSlot.innerHTML = `<span>Preview iklan (dummy)</span>`;
+    function bindRealtime() {
+      // Saldo + daily + cooldown + sisa
+      onValue(userRef, (s) => {
+        const v = s.val() || {};
+        el("saldo").textContent = fmtIDR(v.saldo || 0);
 
-      modal.classList.remove("hidden");
-      const timer = setTimeout(()=>{ closeAd(); cb && cb(); }, duration);
-      document.getElementById("adClose").onclick = ()=>{ clearTimeout(timer); closeAd(); cb && cb(); };
-    }
-    function closeAd(){ document.getElementById("adModal").classList.add("hidden"); }
+        let meng = v.daily?.menghasilkan || 0;
+        let x = v.daily?.xstra || 0;
+        el("leftMeng").textContent = Math.max(0, LIMIT_MENG - meng);
+        el("leftX").textContent = Math.max(0, LIMIT_X - x);
 
-    // ================== Core Earning Logic ==================
-    const LIMIT_PER_BUTTON = 20;
-    const COOLDOWN_SEC = 120;
+        drawCooldown("menghasilkan", v.cooldowns?.menghasilkan || 0, el("btnMeng"), el("cdMeng"));
+        drawCooldown("xstra", v.cooldowns?.xstra || 0, el("btnX"), el("cdX"));
 
-    function addSaldo(uid, amount){
-      return db.ref(`users/${uid}/saldo`).transaction(v => (v||0) + amount);
-    }
-
-    function handleTask(btnId, amount, adFlow){
-      const btn = document.getElementById(btnId);
-      if(!currentUser){ toast("Harus login dulu!","error"); return; }
-
-      setBtnLoading(btn, true, btn.textContent.trim());
-
-      ensureDaily(currentUser.uid).then(key=>{
-        const cdRef   = db.ref(`cooldowns/${currentUser.uid}/${btnId}`);
-        const dailyRef= db.ref(`daily/${currentUser.uid}/${key}/${btnId}`);
-
+        // Reset harian bila melewati 03:00 WIB
+        const nextReset = todayResetEpoch();
         const now = Date.now();
-        return cdRef.get().then(cd=>{
-          const last = cd.val() || 0;
-          if(now - last < COOLDOWN_SEC*1000){
-            setBtnLoading(btn, false);
-            const s = Math.ceil((COOLDOWN_SEC*1000 - (now-last))/1000);
-            toast(`Cooldown aktif ${s}s`, "error");
-            return Promise.reject("cooldown");
-          }
-          return dailyRef.get().then(d=>{
-            const cnt = d.val() || 0;
-            if(cnt >= LIMIT_PER_BUTTON){
-              setBtnLoading(btn, false);
-              toast("Limit harian tombol ini sudah tercapai", "error");
-              return Promise.reject("limit");
-            }
-
-            // Jalankan flow iklan
-            const runAdFlow = () => new Promise(resolve=>{
-              // adFlow: array langkah iklan {title, desc, duration}
-              const steps = [...adFlow];
-              const next = ()=>{
-                if(steps.length === 0) return resolve();
-                const step = steps.shift();
-                showAd(step, next);
-              };
-              next();
-            });
-
-            return runAdFlow().then(()=>{
-              return addSaldo(currentUser.uid, amount).then(()=>{
-                cdRef.set(now);
-                dailyRef.set(cnt+1);
-                toast(`+Rp${amount.toLocaleString("id-ID")} berhasil`, "success");
-                setBtnLoading(btn, false);
-                setCooldown(btn, COOLDOWN_SEC);
-              });
-            });
-          });
-        });
-      }).catch(err=>{
-        if(err!=="cooldown" && err!=="limit"){
-          console.error(err);
-          setBtnLoading(btn, false);
-          toast("Terjadi kesalahan, coba lagi", "error");
+        const lastReset = v.daily?.lastReset || 0;
+        if (now > nextReset && lastReset < nextReset) {
+          // reset counters
+          update(userRef, { daily: { menghasilkan: 0, xstra: 0, lastReset: nextReset }});
         }
       });
     }
 
-    // ================== Bind Buttons ==================
-    document.getElementById("earn1").onclick = ()=> handleTask(
-      "earn1",
-      200,
-      [
-        { title:"Monetag – Inpage", desc:"Tunggu 3 detik", duration:3000 }
-      ]
-    );
-    document.getElementById("earn2").onclick = ()=> handleTask(
-      "earn2",
-      200,
-      [
-        { title:"Monetag – Inpage", desc:"Tunggu 3 detik", duration:3000 }
-      ]
-    );
-    document.getElementById("bonus1").onclick = ()=> handleTask(
-      "bonus1",
-      500,
-      [
-        { title:"KlikAdila – Inpage", desc:"Tunggu 4 detik", duration:4000 },
-        { title:"KlikAdila – Popunder", desc:"Tunggu 2 detik", duration:2000 }
-      ]
-    );
-    document.getElementById("bonus2").onclick = ()=> handleTask(
-      "bonus2",
-      500,
-      [
-        { title:"KlikAdila – Inpage", desc:"Tunggu 4 detik", duration:4000 },
-        { title:"KlikAdila – Popunder", desc:"Tunggu 2 detik", duration:2000 }
-      ]
-    );
+    // === Cooldown renderer ===
+    let timers = {};
+    function drawCooldown(key, lastTs, btn, label) {
+      const remain = COOLDOWN_MS - (Date.now() - (lastTs||0));
+      if (remain > 0) {
+        btn.classList.add("disabled"); btn.disabled = true;
+        const endAt = Date.now() + remain;
+        clearInterval(timers[key]);
+        timers[key] = setInterval(() => {
+          const left = Math.max(0, endAt - Date.now());
+          label.textContent = "Cooldown " + Math.ceil(left/1000) + " dtk";
+          if (left <= 0) { clearInterval(timers[key]); btn.classList.remove("disabled"); btn.disabled = false; label.textContent = ""; }
+        }, 250);
+      } else {
+        btn.classList.remove("disabled"); btn.disabled = false; label.textContent = "";
+      }
+    }
+
+    // === Core earning actions ===
+    async function applyClick(kind) {
+      if (!currentUID) return;
+
+      // Ambil snapshot terbaru
+      const uSnap = await get(userRef);
+      const u = uSnap.val() || {};
+      if (u.status === "banned") { el("status").textContent = "Akun diblokir."; return; }
+
+      const now = Date.now();
+      const cdKey = kind === "menghasilkan" ? "menghasilkan" : "xstra";
+      const dailyKey = cdKey;
+
+      const last = u.cooldowns?.[cdKey] || 0;
+      if (now - last < COOLDOWN_MS) {
+        el("status").textContent = "Masih cooldown...";
+        return;
+      }
+
+      // Limit harian
+      const currentCount = u.daily?.[dailyKey] || 0;
+      const limit = cdKey === "menghasilkan" ? LIMIT_MENG : LIMIT_X;
+      if (currentCount >= limit) {
+        el("status").textContent = "Sudah mencapai batas harian.";
+        return;
+      }
+
+      // Simple extra anti-tuyul: block suspicious UA
+      if (looksLikeEmulator(u.userAgent || "")) {
+        await update(userRef, { status: "banned" });
+        el("status").textContent = "Akun terdeteksi tidak valid dan diblokir.";
+        return;
+      }
+
+      // Transaction-like updates
+      const award = cdKey === "menghasilkan" ? AWARD_MENG : AWARD_X;
+      await update(userRef, {
+        saldo: (u.saldo || 0) + award,
+        [`cooldowns/${cdKey}`]: now,
+        [`daily/${dailyKey}`]: currentCount + 1
+      });
+
+      // Trigger ads depending on button
+      if (cdKey === "menghasilkan") {
+        showMonetag();
+      } else {
+        await showClickadillaSequence();
+      }
+
+      el("status").textContent = `+${fmtIDR(award)} ditambahkan.`;
+    }
+
+    // === Bind buttons ===
+    el("btnMeng").addEventListener("click", () => applyClick("menghasilkan"));
+    el("btnX").addEventListener("click", () => applyClick("xstra"));
+
+    // === ADS placeholders ===
+    function showMonetag() {
+      // TODO: tempelkan script Monetag kamu di sini
+      // Contoh:
+      // const s = document.createElement('script');
+      // s.src = 'https://...monetag.js'; document.getElementById('monetag-slot').appendChild(s);
+    }
+
+    async function showClickadillaSequence() {
+      // 1) In-page
+      // TODO: tempelkan script Clickadilla in-page kamu di sini
+      // const s = document.createElement('script');
+      // s.src = 'https://...clickadilla-inpage.js'; document.getElementById('clickad-inpage').appendChild(s);
+
+      // 2) 4 detik kemudian → popunder
+      await new Promise(r => setTimeout(r, 4000));
+      // TODO: ganti ke URL/skrip popunder kamu
+      // Contoh trigger popunder via redirect di iframe agar tidak mengganggu tab aktif:
+      // const frame = document.getElementById('popunder-frame');
+      // frame.src = 'https://your-popunder-url.example.com';
+    }
   </script>
 </body>
 </html>
