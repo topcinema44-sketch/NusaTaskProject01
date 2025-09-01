@@ -23,7 +23,7 @@
 
   <!-- 🔹 Modal Iklan Dummy -->
   <div id="adModal" class="hidden fixed inset-0 bg-black bg-opacity-70 backdrop-blur-md flex items-center justify-center z-50 fade-in">
-    <div id="adContent" class="bg-gray-900 p-6 rounded-2xl shadow-2xl text-center w-80 zoom-in border border-purple-600">
+    <div class="bg-gray-900 p-6 rounded-2xl shadow-2xl text-center w-80 zoom-in border border-purple-600">
       <h2 id="adTitle" class="text-xl font-bold mb-4 text-purple-400">Iklan Test</h2>
       <p id="adDesc" class="text-gray-300 mb-4">Simulasi iklan ...</p>
       <button id="adClose" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">Tutup</button>
@@ -51,13 +51,13 @@
 
     <!-- Tombol Menghasilkan -->
     <h2 class="font-semibold mb-3 text-gray-300">Tugas Harian</h2>
-    <button id="earn1" onclick="earn('earn1', 200, 'Monetag Test')" class="w-full bg-gradient-to-r from-green-500 to-green-700 hover:opacity-90 text-white py-3 rounded-xl mb-3 transition">Menghasilkan 1 (Rp200)</button>
-    <button id="earn2" onclick="earn('earn2', 200, 'Monetag Test')" class="w-full bg-gradient-to-r from-green-500 to-green-700 hover:opacity-90 text-white py-3 rounded-xl mb-3 transition">Menghasilkan 2 (Rp200)</button>
+    <button id="earn1" onclick="earn('earn1',200,'Monetag Test')" class="w-full bg-gradient-to-r from-green-500 to-green-700 hover:opacity-90 text-white py-3 rounded-xl mb-3 transition">Menghasilkan 1 (Rp200)</button>
+    <button id="earn2" onclick="earn('earn2',200,'Monetag Test')" class="w-full bg-gradient-to-r from-green-500 to-green-700 hover:opacity-90 text-white py-3 rounded-xl mb-3 transition">Menghasilkan 2 (Rp200)</button>
 
     <!-- Tombol Bonus -->
     <h2 class="font-semibold mt-6 mb-3 text-gray-300">Bonus</h2>
-    <button id="bonus1" onclick="bonus('bonus1', 500)" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 hover:opacity-90 text-black font-semibold py-3 rounded-xl mb-3 transition">Xstra Bonus 1 (Rp500)</button>
-    <button id="bonus2" onclick="bonus('bonus2', 500)" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 hover:opacity-90 text-black font-semibold py-3 rounded-xl mb-3 transition">Xstra Bonus 2 (Rp500)</button>
+    <button id="bonus1" onclick="bonus('bonus1',500)" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 hover:opacity-90 text-black font-semibold py-3 rounded-xl mb-3 transition">Xstra Bonus 1 (Rp500)</button>
+    <button id="bonus2" onclick="bonus('bonus2',500)" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 hover:opacity-90 text-black font-semibold py-3 rounded-xl mb-3 transition">Xstra Bonus 2 (Rp500)</button>
 
     <!-- Peringatan -->
     <p class="text-xs text-yellow-400 mt-4">
@@ -98,8 +98,16 @@
     // 🔹 Modal Dummy Ads (fix callback)
     function showAd(title, desc, duration=3000, callback=null) {
       const modal = document.getElementById("adModal");
-      document.getElementById("adTitle").innerText = title;
-      document.getElementById("adDesc").innerText = desc;
+      const adTitle = document.getElementById("adTitle");
+      const adDesc = document.getElementById("adDesc");
+      if(!modal || !adTitle || !adDesc){
+        console.error("Modal iklan tidak ditemukan!");
+        if(callback) callback();
+        return;
+      }
+
+      adTitle.innerText = title;
+      adDesc.innerText = desc;
       modal.classList.remove("hidden");
 
       const timer = setTimeout(() => {
@@ -129,7 +137,11 @@
     function showDashboard(){ loginPage.classList.add("hidden"); dashboard.classList.remove("hidden"); }
 
     // 🔹 Auth
-    function login(){ auth.signInWithEmailAndPassword(email.value,password.value).then(()=>showNotif("Login sukses","success")).catch(e=>showNotif(e.message)); }
+    function login(){ 
+      auth.signInWithEmailAndPassword(email.value,password.value)
+        .then(()=>showNotif("Login sukses","success"))
+        .catch(e=>showNotif(e.message)); 
+    }
     function register(){
       auth.createUserWithEmailAndPassword(email.value,password.value).then(()=>{
         db.ref("users/"+auth.currentUser.uid).set({ saldo:0, createdAt:Date.now(), status:"active" });
@@ -148,10 +160,12 @@
         if(count>=30){ clearInterval(timer); saldoNow=target; saldo.textContent="Rp"+saldoNow.toLocaleString(); }
       },30);
     }
-    function loadSaldo(){ db.ref("users/"+currentUser.uid+"/saldo").on("value",snap=>{
-      const newVal=snap.val()||0;
-      animateSaldo(newVal);
-    }); }
+    function loadSaldo(){ 
+      db.ref("users/"+currentUser.uid+"/saldo").on("value",snap=>{
+        const newVal=snap.val()||0;
+        animateSaldo(newVal);
+      }); 
+    }
 
     // 🔹 Cooldown
     function setCooldown(btnId,seconds){
@@ -174,15 +188,26 @@
 
     // 🔹 Reset jam 03:00
     function checkReset(task,callback){
-      const now=new Date(); const reset=new Date(now.getFullYear(),now.getMonth(),now.getDate(),3,0,0);
+      const now=new Date(); 
+      const reset=new Date(now.getFullYear(),now.getMonth(),now.getDate(),3,0,0);
       if(now<reset) reset.setDate(reset.getDate()-1);
       const key=reset.toISOString().split("T")[0];
+
       const ref=db.ref("daily/"+currentUser.uid+"/lastReset");
-      ref.get().then(s=>{ if(s.val()!==key) db.ref("daily/"+currentUser.uid).set({lastReset:key}); callback(key); });
+      ref.get().then(s=>{
+        if(s.val()!==key){
+          db.ref("daily/"+currentUser.uid).set({lastReset:key});
+        }
+        callback(key);
+      }).catch(err=>{
+        console.error("checkReset error:",err);
+        callback(key);
+      });
     }
 
     // 🔹 Earn
     function earn(task,amount,adName){
+      if(!currentUser){ return showNotif("Harus login dulu!","error"); }
       const btn=document.getElementById(task);
       btn.disabled=true; btn.innerText="Memproses...";
 
@@ -190,20 +215,22 @@
       checkReset(task,key=>{
         const cd=db.ref("cooldowns/"+currentUser.uid+"/"+task);
         const daily=db.ref("daily/"+currentUser.uid+"/"+key+"/"+task);
+
         cd.get().then(s=>{
           if(now-(s.val()||0)<120000){
-            btn.disabled=false; btn.innerText=btn.getAttribute("data-text")||"Menghasilkan";
+            btn.disabled=false; btn.innerText="Menghasilkan";
             return showNotif("Cooldown aktif!","error");
           }
           daily.get().then(d=>{
             if((d.val()||0)>=20){
-              btn.disabled=false; btn.innerText=btn.getAttribute("data-text")||"Menghasilkan";
+              btn.disabled=false; btn.innerText="Menghasilkan";
               return showNotif("Limit harian tercapai!","error");
             }
-            showAd("Iklan "+adName,"Simulasi tampil selama 3 detik",3000,()=>{
+            showAd("Iklan "+adName,"Simulasi tampil 3 detik",3000,()=>{
               db.ref("users/"+currentUser.uid+"/saldo").transaction(v=>(v||0)+amount);
               cd.set(now); daily.set((d.val()||0)+1);
-              showNotif("Berhasil klaim Rp"+amount,"success"); setCooldown(task,120);
+              showNotif("Berhasil klaim Rp"+amount,"success"); 
+              setCooldown(task,120);
             });
           });
         });
@@ -212,6 +239,7 @@
 
     // 🔹 Bonus
     function bonus(task,amount){
+      if(!currentUser){ return showNotif("Harus login dulu!","error"); }
       const btn=document.getElementById(task);
       btn.disabled=true; btn.innerText="Memproses...";
 
@@ -219,21 +247,23 @@
       checkReset(task,key=>{
         const cd=db.ref("cooldowns/"+currentUser.uid+"/"+task);
         const daily=db.ref("daily/"+currentUser.uid+"/"+key+"/"+task);
+
         cd.get().then(s=>{
           if(now-(s.val()||0)<120000){
-            btn.disabled=false; btn.innerText=btn.getAttribute("data-text")||"Bonus";
+            btn.disabled=false; btn.innerText="Xstra Bonus";
             return showNotif("Cooldown aktif!","error");
           }
           daily.get().then(d=>{
             if((d.val()||0)>=20){
-              btn.disabled=false; btn.innerText=btn.getAttribute("data-text")||"Bonus";
+              btn.disabled=false; btn.innerText="Xstra Bonus";
               return showNotif("Limit harian tercapai!","error");
             }
             showAd("KlikAdilla Inpage","Simulasi inpage 4 detik",4000,()=>{
               showAd("KlikAdilla Popunder","Simulasi popunder 2 detik",2000,()=>{
                 db.ref("users/"+currentUser.uid+"/saldo").transaction(v=>(v||0)+amount);
                 cd.set(now); daily.set((d.val()||0)+1);
-                showNotif("Bonus berhasil Rp"+amount,"success"); setCooldown(task,120);
+                showNotif("Bonus berhasil Rp"+amount,"success"); 
+                setCooldown(task,120);
               });
             });
           });
