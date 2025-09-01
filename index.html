@@ -4,164 +4,190 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NusaTask - Earning</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
-    body { background: #0e1220; font-family: 'Poppins', sans-serif; color: white; }
-    .card { max-width: 420px; margin: 20px auto; padding: 20px; border-radius: 20px; background: #151b2b; box-shadow: 0 4px 15px rgba(0,0,0,0.5); animation: fadeIn 1s ease; }
-    .saldo-box { background: linear-gradient(135deg, #8e2de2, #4a00e0); border-radius: 15px; text-align: center; padding: 30px 20px; margin-bottom: 20px; animation: slideDown 0.8s ease; }
-    .saldo-box h2 { font-size: 1rem; font-weight: 400; }
-    .saldo-box h1 { font-size: 2rem; margin-top: 5px; font-weight: 600; }
-    .section-title { font-size: 1.1rem; margin: 10px 0; font-weight: 600; }
-    .btn { display: block; width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: none; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform .2s ease, opacity .2s ease; }
-    .btn:hover { transform: scale(1.03); opacity: .9; }
-    .btn-green { background: linear-gradient(135deg, #11998e, #38ef7d); color: white; }
-    .btn-yellow { background: linear-gradient(135deg, #f7971e, #ffd200); color: #111; }
-    .btn-disabled { background: #555 !important; cursor: not-allowed; }
-    .warning { font-size: .8rem; color: #ffcc00; margin-top: 15px; text-align: center; animation: blink 2s infinite; }
-    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-    @keyframes slideDown { from {transform:translateY(-20px); opacity:0;} to {transform:translateY(0); opacity:1;} }
-    @keyframes blink { 0%,100% {opacity:1;} 50% {opacity:.5;} }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #0d1117;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .card {
+      background: #161b22;
+      border-radius: 20px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 400px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      animation: fadeIn 0.6s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .saldo-box {
+      background: linear-gradient(135deg, #7928CA, #FF0080);
+      padding: 25px;
+      border-radius: 16px;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.3s;
+    }
+    .btn:active {
+      transform: scale(0.96);
+      opacity: 0.85;
+    }
+    .btn-green { background: linear-gradient(90deg, #16a34a, #22c55e); color: white; }
+    .btn-yellow { background: linear-gradient(90deg, #facc15, #eab308); color: black; }
+    .warning {
+      font-size: 0.8rem;
+      color: #facc15;
+      margin-top: 10px;
+    }
+
+    /* 🔔 Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #222;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s ease;
+      z-index: 9999;
+    }
+    .toast.show {
+      opacity: 1;
+      bottom: 40px;
+    }
   </style>
 </head>
 <body>
-
   <div class="card">
+    <h2>NusaTask</h2>
     <div class="saldo-box">
-      <h2>Saldo Anda</h2>
-      <h1 id="saldo">Rp0</h1>
+      Saldo Anda <br>
+      <span id="saldo">Rp0</span>
     </div>
 
-    <div class="section-title">Tugas Harian</div>
-    <button id="btnTask1" class="btn btn-green">Kerjakan Tugas 1</button>
-    <button id="btnTask2" class="btn btn-green">Kerjakan Tugas 2</button>
+    <h3>Tugas Harian</h3>
+    <button class="btn btn-green" onclick="claim('task1')">Ambil Tugas 1</button>
+    <button class="btn btn-green" onclick="claim('task2')">Ambil Tugas 2</button>
 
-    <div class="section-title">Bonus</div>
-    <button id="btnBonus1" class="btn btn-yellow">Ambil Bonus 1</button>
-    <button id="btnBonus2" class="btn btn-yellow">Ambil Bonus 2</button>
+    <h3>Bonus</h3>
+    <button class="btn btn-yellow" onclick="claim('bonus1')">Ambil Bonus 1</button>
+    <button class="btn btn-yellow" onclick="claim('bonus2')">Ambil Bonus 2</button>
 
-    <p class="warning">⚠️ 1 IP hanya boleh digunakan untuk 1 akun. Pelanggaran akan diblokir otomatis.<br>
-      Cooldown 2 menit, limit 20x per tombol, reset jam 03:00 WIB
-    </p>
+    <p class="warning">⚠️ 1 IP hanya boleh digunakan untuk 1 akun.<br>
+    Cooldown 2 menit, limit 20x per tombol, reset jam 03:00 WIB</p>
   </div>
 
-  <!-- Firebase SDK v10 -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import { getDatabase, ref, onValue, runTransaction, get, set } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+  <!-- 🔔 Toast -->
+  <div id="toast" class="toast"></div>
 
-    // 🔹 Config Firebase
+  <script>
+    // ✅ Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
       authDomain: "penyimpanansaldo-280df.firebaseapp.com",
       databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "penyimpanansaldo-280df",
-      storageBucket: "penyimpanansaldo-280df.appspot.com",
+      storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
       messagingSenderId: "659609775130",
       appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
       measurementId: "G-L4TW7E23H2"
     };
 
-    // Init
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-    // 🔹 Auto login anonymous
-    signInAnonymously(auth).catch(err => console.error("Login gagal:", err));
+    let userId = null;
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const uid = user.uid;
-        console.log("Login sebagai UID:", uid);
+    // 🔔 Fungsi Toast
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.innerText = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2500);
+    }
 
-        const saldoRef = ref(db, "users/" + uid + "/saldo");
-        const dailyRef = ref(db, "daily/" + uid);
-
-        // Listener saldo realtime
-        onValue(saldoRef, (snap) => {
-          const saldo = snap.exists() ? snap.val() : 0;
-          document.getElementById("saldo").innerText = "Rp" + saldo.toLocaleString("id-ID");
-        });
-
-        // 🔹 Reset daily jam 03:00 WIB
-        function checkResetDaily() {
-          const now = new Date();
-          const resetTime = new Date();
-          resetTime.setHours(3, 0, 0, 0);
-          if (now > resetTime) resetTime.setDate(resetTime.getDate() + 1);
-          const msUntilReset = resetTime - now;
-          setTimeout(() => {
-            set(dailyRef, {}); // reset semua hitungan harian
-            checkResetDaily();
-          }, msUntilReset);
-        }
-        checkResetDaily();
-
-        // 🔹 Setup tombol
-        const buttons = [
-          { id: "btnTask1", reward: 500 },
-          { id: "btnTask2", reward: 500 },
-          { id: "btnBonus1", reward: 700 },
-          { id: "btnBonus2", reward: 700 },
-        ];
-
-        buttons.forEach(btn => {
-          const el = document.getElementById(btn.id);
-          el.addEventListener("click", async () => {
-            const dailySnap = await get(dailyRef);
-            const dailyData = dailySnap.exists() ? dailySnap.val() : {};
-            const count = dailyData[btn.id]?.count || 0;
-            const last = dailyData[btn.id]?.last || 0;
-            const now = Date.now();
-
-            // Limit harian 20x
-            if (count >= 20) {
-              alert("❌ Limit harian tercapai untuk tombol ini.");
-              return;
-            }
-
-            // Cooldown 2 menit
-            if (now - last < 120000) {
-              alert("⏳ Masih cooldown, tunggu 2 menit.");
-              return;
-            }
-
-            // Update saldo
-            runTransaction(saldoRef, (saldo) => (saldo || 0) + btn.reward);
-
-            // Update daily
-            set(ref(db, `daily/${uid}/${btn.id}`), {
-              count: count + 1,
-              last: now
-            });
-
-            // Cooldown UI
-            startCooldown(el, 120);
-          });
-        });
-
-        // 🔹 Fungsi cooldown UI
-        function startCooldown(button, seconds) {
-          button.disabled = true;
-          button.classList.add("btn-disabled");
-          let remaining = seconds;
-          const original = button.innerText;
-          const interval = setInterval(() => {
-            button.innerText = `Cooldown ${remaining}s`;
-            remaining--;
-            if (remaining < 0) {
-              clearInterval(interval);
-              button.disabled = false;
-              button.classList.remove("btn-disabled");
-              button.innerText = original;
-            }
-          }, 1000);
-        }
-      }
+    // ✅ Auto Login / Register Guest
+    auth.signInAnonymously().then(userCred => {
+      userId = userCred.user.uid;
+      startListener();
     });
-  </script>
 
+    // ✅ Listener Saldo
+    function startListener() {
+      db.ref("users/" + userId + "/saldo").on("value", snap => {
+        const saldo = snap.val() || 0;
+        document.getElementById("saldo").innerText = "Rp" + saldo.toLocaleString("id-ID");
+      });
+    }
+
+    // ✅ Claim Button
+    const rewards = {
+      task1: 200,
+      task2: 300,
+      bonus1: 500,
+      bonus2: 700
+    };
+
+    async function claim(task) {
+      const ref = db.ref("users/" + userId + "/tasks/" + task);
+      const snap = await ref.get();
+      const now = Date.now();
+
+      let data = snap.val() || { count: 0, last: 0 };
+
+      // cooldown 2 menit
+      if (now - data.last < 120000) {
+        showToast("⏳ Masih cooldown, tunggu 2 menit.");
+        return;
+      }
+
+      // limit 20x
+      if (data.count >= 20) {
+        showToast("❌ Limit harian tercapai untuk tombol ini.");
+        return;
+      }
+
+      // update saldo
+      const saldoRef = db.ref("users/" + userId + "/saldo");
+      const saldoSnap = await saldoRef.get();
+      const saldo = saldoSnap.val() || 0;
+      saldoRef.set(saldo + rewards[task]);
+
+      // update progress task
+      ref.set({ count: data.count + 1, last: now });
+
+      showToast(`✅ +Rp${rewards[task].toLocaleString("id-ID")} ditambahkan!`);
+    }
+  </script>
 </body>
 </html>
