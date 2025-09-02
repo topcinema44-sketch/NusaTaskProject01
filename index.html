@@ -71,6 +71,19 @@
       font-size: 22px;
       z-index: 1000;
     }
+    .progress {
+      background: #333;
+      border-radius: 10px;
+      height: 15px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    .progress-bar {
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
     @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
     @keyframes fadeInOut { 0%{opacity:0;} 10%{opacity:1;} 90%{opacity:1;} 100%{opacity:0;} }
     #dashboard { display: none; }
@@ -97,17 +110,19 @@
     <h3>Ambil Reward</h3>
     <button id="reward1" class="reward">Ambil Reward 1</button>
     <button id="reward2" class="reward">Ambil Reward 2</button>
+    <div class="progress"><div id="progressReward" class="progress-bar"></div></div>
 
     <h3>Xstra Bonus</h3>
     <button id="xstra1" class="xstra">Xstra Bonus 1</button>
     <button id="xstra2" class="xstra">Xstra Bonus 2</button>
+    <div class="progress"><div id="progressXstra" class="progress-bar"></div></div>
 
     <div id="notif"></div>
   </div>
 </div>
 
 <script>
-  // 🔑 Firebase Config (sudah diperbaiki storageBucket)
+  // 🔑 Firebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
     authDomain: "penyimpanansaldo-280df.firebaseapp.com",
@@ -162,12 +177,31 @@
         const data = snap.val();
         if (!data) return;
         userStatus = data.status;
+
+        // 🚫 Device check (anti tuyul)
+        const deviceId = navigator.userAgent;
+        if (data.deviceId !== deviceId) {
+          db.ref("users/" + userId + "/status").set("banned");
+          disableAllButtons();
+          saldo.innerText = "Saldo: 🚫 Diblokir";
+          return showNotif("🚫 Device berbeda! Akun dibanned", "red");
+        }
+
+        // ⚠️ IP check (warning saja)
+        fetch("https://api.ipify.org?format=json")
+          .then(res => res.json())
+          .then(ip => {
+            if (data.ip !== ip.ip) {
+              showNotif("⚠️ IP berbeda, akun dipantau", "orange");
+            }
+          });
+
         if (userStatus === "banned") {
           disableAllButtons();
           saldo.innerText = "Saldo: 🚫 Diblokir";
-          showNotif("Akun dibanned, hubungi @nusataskproject", "red");
           return;
         }
+
         // aktif → saldo realtime
         saldo.innerText = "Saldo: Rp" + (data.saldo || 0).toLocaleString();
         enableAllButtons();
@@ -202,9 +236,15 @@
 
       dailyRef.once("value", dSnap => {
         let data = dSnap.val() || { count: 0, lastReset: new Date().toDateString() };
-        if (data.lastReset !== new Date().toDateString()) {
-          data = { count: 0, lastReset: new Date().toDateString() };
+
+        // reset harian jam 3 pagi
+        const today = new Date();
+        if (today.getHours() >= 3) {
+          if (data.lastReset !== today.toDateString()) {
+            data = { count: 0, lastReset: today.toDateString() };
+          }
         }
+
         if (data.count >= 20) {
           return showNotif("⚠️ Limit harian tercapai", "red");
         }
@@ -220,6 +260,7 @@
 
         showNotif("✅ Klaim Rp" + reward, "green");
         startCooldown(btn, 120);
+        updateProgress(type, data.count + 1);
       });
     });
   }
@@ -236,6 +277,16 @@
         btn.innerText = asli;
       }
     }, 1000);
+  }
+
+  // 📊 Progress bar
+  function updateProgress(type, count) {
+    const persen = (count / 20) * 100;
+    if (type === "reward") {
+      document.getElementById("progressReward").style.width = persen + "%";
+    } else {
+      document.getElementById("progressXstra").style.width = persen + "%";
+    }
   }
 
   // 🔔 Notifikasi
