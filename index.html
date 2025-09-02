@@ -2,171 +2,86 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NusaTask - Earning</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: #121212;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 30px 10px;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1f1c2c, #928DAB);
+      color: white;
+      text-align: center;
+      padding: 30px;
     }
     .card {
-      background: #1e1e2f;
+      background: rgba(0,0,0,0.6);
+      padding: 20px;
       border-radius: 16px;
-      padding: 20px;
-      max-width: 420px;
-      width: 100%;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      animation: fadeIn 1s ease;
     }
-    .saldo {
-      background: linear-gradient(135deg, #a445ff, #ff0080);
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-    .saldo small {
-      font-size: 14px;
-      display: block;
-      font-weight: normal;
-    }
-    h2 {
-      margin: 15px 0 10px;
-      font-size: 18px;
-      font-weight: 600;
-    }
-    .btn {
-      display: block;
-      width: 100%;
-      margin: 8px 0;
-      padding: 12px;
-      font-size: 16px;
-      font-weight: bold;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .btn:active { transform: scale(0.96); }
-    .btn-green {
-      background: linear-gradient(135deg, #00c853, #64dd17);
-      color: #fff;
-    }
-    .btn-yellow {
-      background: linear-gradient(135deg, #ffb300, #ff6f00);
-      color: #fff;
-    }
-    .btn.disabled {
-      background: #555 !important;
-      cursor: not-allowed;
-    }
-    .warning {
-      font-size: 13px;
-      margin-top: 15px;
-      color: #ffcc80;
-    }
-    #bannedBox {
-      display: none;
-      text-align: center;
-      padding: 20px;
-      background: #2b1d1d;
-      border-radius: 12px;
-      margin-top: 20px;
-    }
-    #bannedBox h3 { color: #ff4444; }
-    #bannedBox a {
-      display:inline-block; margin-top:10px; padding:10px 15px;
-      background:#0088cc; color:#fff; border-radius:8px; text-decoration:none;
-    }
-    /* Progress bar */
-    .progress {
-      background: #333;
+    input {
+      margin: 5px;
+      padding: 10px;
+      width: 90%;
       border-radius: 8px;
-      height: 14px;
-      width: 100%;
-      margin: 4px 0 8px;
-      overflow: hidden;
+      border: none;
     }
-    .progress div {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #00c853, #64dd17);
-      box-shadow: 0 0 10px #64dd17, 0 0 20px #00c853;
-      transition: width 0.5s ease;
+    button {
+      margin: 10px;
+      padding: 15px;
+      width: 90%;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
     }
+    button:disabled { background: grey; cursor: not-allowed; }
+    .reward { background: #28a745; color: white; }
+    .xstra { background: #007bff; color: white; }
+    .authBtn { background: #ff9800; color: white; }
+    #notif {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      display: none;
+    }
+    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+    #dashboard { display: none; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="saldo">
-      <small>Saldo Anda</small>
-      <div id="saldo">Rp0</div>
-    </div>
+  <!-- 🔑 FORM LOGIN & REGISTER -->
+  <div class="card" id="authBox">
+    <h2>NusaTask - Login</h2>
+    <input type="email" id="email" placeholder="Email"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button class="authBtn" onclick="register()">Daftar</button>
+    <button class="authBtn" onclick="login()">Login</button>
+  </div>
 
-    <h2>Tugas Harian</h2>
-    <button class="btn btn-green" data-id="reward1">Ambil Reward 1</button>
-    <button class="btn btn-green" data-id="reward2">Ambil Reward 2</button>
+  <!-- 🏆 DASHBOARD -->
+  <div class="card" id="dashboard">
+    <h2>NusaTask - Earning</h2>
+    <p id="saldo">Saldo: Rp0</p>
 
-    <h2>Xstra Bonus</h2>
-    <button class="btn btn-yellow" data-id="bonus3">Ambil Bonus 3</button>
-    <button class="btn btn-yellow" data-id="bonus4">Ambil Bonus 4</button>
+    <h3>Ambil Reward</h3>
+    <button id="reward1" class="reward">Ambil Reward 1</button>
+    <button id="reward2" class="reward">Ambil Reward 2</button>
 
-    <h2>Progress Harian</h2>
-    <div id="progressContainer">
-      <div>
-        <span>Reward 1</span>
-        <div class="progress"><div id="bar-reward1"></div></div>
-        <small id="text-reward1">0/20</small>
-      </div>
-      <div>
-        <span>Reward 2</span>
-        <div class="progress"><div id="bar-reward2"></div></div>
-        <small id="text-reward2">0/20</small>
-      </div>
-      <div>
-        <span>Bonus 3</span>
-        <div class="progress"><div id="bar-bonus3"></div></div>
-        <small id="text-bonus3">0/20</small>
-      </div>
-      <div>
-        <span>Bonus 4</span>
-        <div class="progress"><div id="bar-bonus4"></div></div>
-        <small id="text-bonus4">0/20</small>
-      </div>
-    </div>
+    <h3>Xstra Bonus</h3>
+    <button id="xstra1" class="xstra">Xstra Bonus 1</button>
+    <button id="xstra2" class="xstra">Xstra Bonus 2</button>
 
-    <h2>Aktivitas Hari Ini</h2>
-    <ul id="logActivity" style="font-size:14px; background:#222; padding:10px; border-radius:12px; max-height:200px; overflow-y:auto;">
-      <li>Belum ada aktivitas hari ini</li>
-    </ul>
-
-    <div class="warning">
-      ⚠️ 1 IP & 1 device hanya untuk 1 akun.<br>
-      ⏳ Cooldown 2 menit · Limit 20x/hari · Reset 03:00 WIB
-    </div>
-
-    <div id="bannedBox">
-      <h3>🚫 Akun Diblokir</h3>
-      <p>Terdeteksi penggunaan ganda (IP / device berbeda).</p>
-      <p>Jika ini kesalahan, silakan hubungi admin:</p>
-      <a href="https://t.me/nusataskproject" target="_blank">Hubungi Admin</a>
-    </div>
+    <div id="notif"></div>
   </div>
 
 <script>
-  // 🔥 Firebase Config
+  // 🔑 Config Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
     authDomain: "penyimpanansaldo-280df.firebaseapp.com",
@@ -179,232 +94,159 @@
   };
   firebase.initializeApp(firebaseConfig);
 
-  firebase.auth().signInAnonymously().catch(console.error);
+  const auth = firebase.auth();
+  const db = firebase.database();
+  let userId;
 
-  const LIMIT = 20;
-  const COOLDOWN_MS = 120000; // 2 menit
-
-  function getHariKey() {
-    const now = new Date();
-    now.setHours(now.getHours() + 7);
-    let key = now.toISOString().split("T")[0];
-    if (now.getHours() < 3) {
-      let d = new Date(now);
-      d.setDate(d.getDate() - 1);
-      key = d.toISOString().split("T")[0];
-    }
-    return key;
+  // 🚀 Register
+  function register() {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+    auth.createUserWithEmailAndPassword(email, pass)
+      .then(user => {
+        userId = user.user.uid;
+        const deviceId = navigator.userAgent;
+        fetch("https://api.ipify.org?format=json")
+          .then(res => res.json())
+          .then(data => {
+            db.ref("users/" + userId).set({
+              email: email,
+              saldo: 0,
+              status: "active",
+              createdAt: Date.now(),
+              deviceId: deviceId,
+              ip: data.ip
+            });
+          });
+        showNotif("Registrasi sukses!", "green");
+      })
+      .catch(err => showNotif(err.message, "red"));
   }
 
-  function disableAllButtons() {
-    document.querySelectorAll(".btn").forEach(b => {
-      b.classList.add("disabled");
-      b.disabled = true;
-    });
+  // 🚀 Login
+  function login() {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+    auth.signInWithEmailAndPassword(email, pass)
+      .catch(err => showNotif(err.message, "red"));
   }
 
-  function showBannedUI() {
-    disableAllButtons();
-    document.getElementById("bannedBox").style.display = "block";
-  }
-
-  // 🔒 Anti tuyul
-  async function checkAntiTuyul(user) {
-    const uid = user.uid;
-    const userRef = firebase.database().ref("users/" + uid);
-
-    const ip = await fetch("https://api64.ipify.org?format=json").then(r => r.json()).then(d => d.ip);
-    const deviceId = navigator.userAgent;
-
-    const snapshot = await userRef.once("value");
-    const data = snapshot.val();
-
-    if (!data) {
-      await userRef.set({ saldo: 0, deviceId, ip, status: "active" });
-    } else {
-      if (data.status === "banned") { showBannedUI(); return; }
-      if (data.ip !== ip || data.deviceId !== deviceId) {
-        await userRef.update({ status: "banned" });
-        showBannedUI();
-        return;
-      }
-    }
-
-    // cek multi-akun dengan ip/device sama
-    const allUsers = await firebase.database().ref("users").once("value");
-    allUsers.forEach(child => {
-      if (child.key !== uid) {
-        const u = child.val();
-        if (u.ip === ip || u.deviceId === deviceId) {
-          firebase.database().ref("users/" + uid).update({ status: "banned" });
-          showBannedUI();
-        }
-      }
-    });
-  }
-
-  const saldoRef = () => {
-    const uid = firebase.auth().currentUser?.uid;
-    return firebase.database().ref("users/" + uid + "/saldo");
-  };
-
-  firebase.auth().onAuthStateChanged(async user => {
+  // 🔄 Auto-login cek status
+  auth.onAuthStateChanged(user => {
     if (user) {
-      await checkAntiTuyul(user);
-      restoreCooldowns();
-      loadActivityLog();
-      saldoRef().on("value", snap => {
-        const saldo = snap.val() || 0;
-        document.getElementById("saldo").textContent = "Rp" + saldo.toLocaleString();
+      userId = user.uid;
+      db.ref("users/" + userId).once("value", s => {
+        const data = s.val();
+        if (data.status === "banned") {
+          showNotif("🚫 Akun dibanned. Hubungi @nusataskproject", "red");
+          auth.signOut();
+          return;
+        }
+        // 🚨 Anti tuyul: cek device & ip
+        const nowDevice = navigator.userAgent;
+        fetch("https://api.ipify.org?format=json")
+          .then(res => res.json())
+          .then(ipData => {
+            if (data.deviceId !== nowDevice || data.ip !== ipData.ip) {
+              db.ref("users/" + userId + "/status").set("banned");
+              showNotif("🚫 Akun terdeteksi curang, dibanned!", "red");
+              auth.signOut();
+              return;
+            }
+          });
+
+        document.getElementById("authBox").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        loadSaldo();
       });
+    } else {
+      document.getElementById("authBox").style.display = "block";
+      document.getElementById("dashboard").style.display = "none";
     }
   });
 
-  // 🟢 Ambil reward
-  async function ambilReward(btn, rewardId) {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-
-    const now = Date.now();
-    const hari = getHariKey();
-    const refCooldown = firebase.database().ref(`cooldowns/${user.uid}/${rewardId}`);
-    const cooldownSnap = await refCooldown.once("value");
-    const lastUsed = cooldownSnap.val() || 0;
-
-    if (now - lastUsed < COOLDOWN_MS) {
-      const sisa = Math.ceil((COOLDOWN_MS - (now - lastUsed)) / 1000);
-      return Swal.fire({
-        icon: "warning",
-        title: "Cooldown ⏳",
-        text: `Tunggu ${sisa} detik lagi untuk tombol ini.`
-      });
-    }
-
-    // cek limit harian
-    const refCount = firebase.database().ref(`daily/${user.uid}/${hari}/${rewardId}/count`);
-    const snapshot = await refCount.once("value");
-    const count = snapshot.val() || 0;
-    if (count >= LIMIT) {
-      return Swal.fire({ icon: "warning", title: "Limit Harian 🚫", text: "Sudah mencapai 20x hari ini." });
-    }
-
-    // update cooldown di db
-    await refCooldown.set(now);
-
-    // update saldo
-    const refSaldo = saldoRef();
-    const saldoSnap = await refSaldo.once("value");
-    let saldo = saldoSnap.val() || 0;
-    saldo += 200;
-    await refSaldo.set(saldo);
-    await refCount.set(count + 1);
-
-    startCooldown(btn, rewardId);
-
-    Swal.fire({
-      icon: "success",
-      title: "Reward berhasil 🎉",
-      text: `Saldo bertambah Rp200. Saldo baru Rp${saldo.toLocaleString()}`
+  // 🔄 Load saldo realtime
+  function loadSaldo() {
+    db.ref("users/" + userId + "/saldo").on("value", snap => {
+      const saldo = snap.val() || 0;
+      document.getElementById("saldo").innerText = "Saldo: Rp" + saldo.toLocaleString();
     });
   }
 
-  // ⏳ Mulai cooldown di tombol
-  function startCooldown(btn, rewardId) {
-    btn.classList.add("disabled");
+  // 🚦 Handle klik tombol reward/bonus
+  function handleClick(btnId, type) {
+    const btn = document.getElementById(btnId);
+    const cooldownRef = db.ref("cooldowns/" + userId + "/" + btnId);
+    const dailyRef = db.ref("daily/" + userId + "/" + btnId);
+
+    cooldownRef.once("value", cSnap => {
+      const now = Date.now();
+      const cooldownEnd = cSnap.val() || 0;
+
+      if (now < cooldownEnd) {
+        const sisa = Math.ceil((cooldownEnd - now) / 1000);
+        showNotif("⏳ Tunggu " + sisa + " detik lagi", "orange");
+        return;
+      }
+
+      // ✅ cek limit harian
+      dailyRef.once("value", dSnap => {
+        let data = dSnap.val() || { count: 0, lastReset: new Date().toDateString() };
+        if (data.lastReset !== new Date().toDateString()) {
+          data = { count: 0, lastReset: new Date().toDateString() };
+        }
+        if (data.count >= 20) {
+          showNotif("⚠️ Limit harian tercapai untuk " + btnId, "red");
+          return;
+        }
+
+        // 💰 Tambah saldo
+        const reward = (type === "reward") ? 200 : 500;
+        const saldoRef = db.ref("users/" + userId + "/saldo");
+        saldoRef.transaction(saldo => (saldo || 0) + reward);
+
+        // ⏱️ Simpan cooldown 2 menit
+        cooldownRef.set(Date.now() + 2 * 60 * 1000);
+
+        // 📊 Update harian
+        dailyRef.set({ count: data.count + 1, lastReset: data.lastReset });
+
+        showNotif("✅ Berhasil klaim Rp" + reward, "green");
+        startCooldown(btn, 120);
+      });
+    });
+  }
+
+  // ⏱️ Cooldown tombol
+  function startCooldown(btn, durasi) {
     btn.disabled = true;
-    let sisa = COOLDOWN_MS / 1000;
-    const oriText = btn.textContent;
+    let sisa = durasi;
+    const asli = btn.innerText;
     const timer = setInterval(() => {
+      btn.innerText = "⏳ " + sisa + "s";
       sisa--;
-      btn.textContent = `Cooldown ${sisa}s`;
-      if (sisa <= 0) {
+      if (sisa < 0) {
         clearInterval(timer);
-        btn.classList.remove("disabled");
         btn.disabled = false;
-        btn.textContent = oriText;
+        btn.innerText = asli;
       }
     }, 1000);
   }
 
-  // 🔄 Restore cooldown setelah refresh
-  async function restoreCooldowns() {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-
-    const ref = firebase.database().ref(`cooldowns/${user.uid}`);
-    const snap = await ref.once("value");
-    const data = snap.val() || {};
-
-    document.querySelectorAll(".btn").forEach(btn => {
-      const rewardId = btn.dataset.id;
-      if (data[rewardId]) {
-        const now = Date.now();
-        const lastUsed = data[rewardId];
-        const diff = now - lastUsed;
-        if (diff < COOLDOWN_MS) {
-          let sisa = Math.ceil((COOLDOWN_MS - diff) / 1000);
-          btn.classList.add("disabled");
-          btn.disabled = true;
-          const oriText = btn.textContent;
-          const timer = setInterval(() => {
-            sisa--;
-            btn.textContent = `Cooldown ${sisa}s`;
-            if (sisa <= 0) {
-              clearInterval(timer);
-              btn.classList.remove("disabled");
-              btn.disabled = false;
-              btn.textContent = oriText;
-            }
-          }, 1000);
-        }
-      }
-    });
+  // 🔔 Notifikasi
+  function showNotif(msg, color) {
+    const n = document.getElementById("notif");
+    n.style.display = "block";
+    n.style.background = color;
+    n.innerText = msg;
+    setTimeout(() => { n.style.display = "none"; }, 4000);
   }
 
-  // 🔄 Log aktivitas + progress bar
-  async function loadActivityLog() {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-    const hari = getHariKey();
-
-    const refDaily = firebase.database().ref(`daily/${user.uid}/${hari}`);
-    refDaily.on("value", snap => {
-      const data = snap.val() || {};
-      updateProgressBars(data);
-
-      const logBox = document.getElementById("logActivity");
-      logBox.innerHTML = "";
-      let adaAktivitas = false;
-      for (let key in data) {
-        const count = data[key].count || 0;
-        if (count > 0) {
-          adaAktivitas = true;
-          let namaTombol = key.includes("reward") ? "Reward" : "Xstra Bonus";
-          logBox.innerHTML += `<li>${namaTombol} (${key}): ${count}x</li>`;
-        }
-      }
-      if (!adaAktivitas) {
-        logBox.innerHTML = "<li>Belum ada aktivitas hari ini</li>";
-      }
-    });
-  }
-
-  function updateProgressBars(data) {
-    const tasks = ["reward1", "reward2", "bonus3", "bonus4"];
-    tasks.forEach(task => {
-      const count = data[task]?.count || 0;
-      const percent = Math.min((count / LIMIT) * 100, 100);
-      document.getElementById("bar-" + task).style.width = percent + "%";
-      document.getElementById("text-" + task).textContent = `${count}/${LIMIT}`;
-    });
-  }
-
-  // klik tombol
-  document.querySelectorAll(".btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      ambilReward(btn, btn.dataset.id);
-    });
-  });
+  // 🎯 Event tombol
+  document.getElementById("reward1").onclick = () => handleClick("reward1","reward");
+  document.getElementById("reward2").onclick = () => handleClick("reward2","reward");
+  document.getElementById("xstra1").onclick = () => handleClick("xstra1","xstra");
+  document.getElementById("xstra2").onclick = () => handleClick("xstra2","xstra");
 </script>
 </body>
-  </html>
+</html>
