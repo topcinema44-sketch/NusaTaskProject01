@@ -1,253 +1,173 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>NusaTask — Earning</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>NusaTask — Earning</title>
 
-  <!-- Firebase v8 -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<!-- Firebase v8 (gratis, ringan) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-  <style>
-    :root{
-      --bg1:#0f172a;       /* slate-900 */
-      --bg2:#111827;       /* gray-900 */
-      --card:#0b1220;
-      --muted:#94a3b8;     /* slate-400 */
-      --accent:#22d3ee;    /* cyan-400 */
-      --accent2:#60a5fa;   /* blue-400 */
-      --success:#10b981;   /* emerald-500 */
-      --warn:#f59e0b;      /* amber-500 */
-      --danger:#ef4444;    /* red-500 */
-      --btn:#10b981;
-      --btn-disabled:#6b7280;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      color:#e5e7eb;
-      background:
-        radial-gradient(1200px 600px at 10% -10%, rgba(34,211,238,.15), transparent 60%),
-        radial-gradient(1000px 500px at 110% 10%, rgba(96,165,250,.12), transparent 60%),
-        linear-gradient(180deg, var(--bg1), var(--bg2));
-      overflow-x:hidden;
-    }
-    .wrap{
-      min-height:100%;
-      display:flex; align-items:center; justify-content:center;
-      padding:36px 16px;
-    }
-    .card{
-      width:100%; max-width:460px;
-      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 30%) , var(--card);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.03);
-      padding:22px 22px 26px;
-      animation: fadeIn .7s ease;
-    }
-    .brand{
-      display:flex; align-items:center; gap:12px; margin-bottom:6px;
-    }
-    .logo{
-      width:44px; height:44px; border-radius:12px;
-      background: radial-gradient(80% 80% at 30% 20%, #34d399, transparent 60%),
-                  radial-gradient(80% 80% at 80% 80%, #22d3ee, transparent 60%),
-                  #0b1325;
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 8px 18px rgba(34,211,238,.18), inset 0 0 30px rgba(34,211,238,.12);
-    }
-    h1{
-      font-size:20px; margin:0;
-      font-weight:700; letter-spacing:.3px;
-      background: linear-gradient(90deg, #e5e7eb, #cbd5e1);
-      -webkit-background-clip:text; background-clip:text; color:transparent;
-    }
-    .sub{
-      margin-top:4px; color:var(--muted); font-size:13px;
-    }
+<style>
+:root{
+  --bg1:#0f172a; --bg2:#111827; --card:#0b1220; --muted:#94a3b8;
+  --accent:#22d3ee; --accent2:#60a5fa; --success:#10b981; --warn:#f59e0b;
+  --danger:#ef4444; --btn-disabled:#6b7280;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{
+  margin:0; color:#e5e7eb;
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(34,211,238,.15), transparent 60%),
+    radial-gradient(1000px 500px at 110% 10%, rgba(96,165,250,.12), transparent 60%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+}
+.wrap{min-height:100%; display:flex; align-items:center; justify-content:center; padding:36px 16px}
+.card{
+  width:100%; max-width:480px; padding:22px 22px 26px; border-radius:20px;
+  background:linear-gradient(180deg, rgba(255,255,255,.04), transparent 30%), var(--card);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 10px 30px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.03);
+  animation:fadeIn .6s ease;
+}
+.brand{display:flex; gap:12px; align-items:center}
+.logo{width:44px;height:44px;border-radius:12px;
+  background: radial-gradient(80% 80% at 30% 20%, #34d399, transparent 60%),
+              radial-gradient(80% 80% at 80% 80%, #22d3ee, transparent 60%), #0b1325;
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 8px 18px rgba(34,211,238,.18), inset 0 0 30px rgba(34,211,238,.12);
+}
+h1{margin:0;font-size:20px;font-weight:700;letter-spacing:.3px;
+  background:linear-gradient(90deg,#e5e7eb,#cbd5e1);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin-top:4px;color:var(--muted);font-size:13px}
+.section{margin-top:18px}
+.field{margin:10px 0}
+.row{display:flex;gap:10px}
+input{width:100%;padding:12px 14px;font-size:15px;color:#0f172a;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;outline:none}
+.btn{width:100%;padding:12px 14px;font-size:15px;font-weight:700;color:#fff;border:none;border-radius:12px;cursor:pointer;
+  background:linear-gradient(90deg,#10b981,#12b3c9);box-shadow:0 8px 20px rgba(16,185,129,.25);
+  transition:transform .15s ease, opacity .2s ease, filter .2s ease}
+.btn:disabled{background:var(--btn-disabled);cursor:not-allowed;box-shadow:none;filter:grayscale(.3) brightness(.85)}
+.btn:hover:enabled{transform:translateY(-1px)}
+.btn-secondary{background:linear-gradient(90deg,#1f2937,#111827);color:#e5e7eb;border:1px solid rgba(255,255,255,.08)}
 
-    .section{ margin-top:18px }
-    .field{ margin:10px 0 }
-    .row{ display:flex; gap:10px; }
-    input{
-      width:100%; padding:12px 14px; font-size:15px; color:#0f172a;
-      background:#f8fafc; border:1px solid #e5e7eb; border-radius:12px; outline:none;
-    }
-    .btn{
-      width:100%; padding:12px 14px; font-size:15px; font-weight:600;
-      color:white; border:none; border-radius:12px; cursor:pointer;
-      background: linear-gradient(90deg, var(--success), #12b3c9);
-      transition: transform .15s ease, opacity .2s ease, filter .2s ease;
-      box-shadow: 0 8px 20px rgba(16,185,129,.25);
-    }
-    .btn:disabled{ background:var(--btn-disabled); cursor:not-allowed; box-shadow:none; filter:grayscale(.3) brightness(.85); }
-    .btn:hover:enabled{ transform: translateY(-1px); }
+.pill{display:inline-flex;gap:8px;align-items:center;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:700;
+  background:rgba(34,211,238,.12);color:#a5f3fc;border:1px solid rgba(34,211,238,.25)}
+.balance{display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:14px 16px;margin-top:10px;background:linear-gradient(180deg,rgba(96,165,250,.12),transparent 40%)}
+.balance strong{font-size:22px}
+.hint{color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.cooldown{font-size:12px;color:var(--muted);min-height:16px;margin-top:4px}
+.progress{margin-top:14px;background:#0a1220;border:1px solid rgba(255,255,255,.08);border-radius:12px;height:12px;overflow:hidden}
+.bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 24px rgba(34,211,238,.25);transition:width .5s ease}
 
-    .pill{
-      display:inline-flex; gap:8px; align-items:center;
-      padding:7px 10px; border-radius:999px; font-size:12px; font-weight:600;
-      background: rgba(34,211,238,.12); color:#a5f3fc; border:1px solid rgba(34,211,238,.25);
-    }
+.notice{margin-top:12px;padding:12px 14px;border-radius:12px;font-size:13px;background:rgba(245,158,11,.12);
+  border:1px dashed rgba(245,158,11,.35);color:#fde68a}
 
-    .balance{
-      display:flex; align-items:center; justify-content:space-between;
-      background: linear-gradient(180deg, rgba(96,165,250,.12), transparent 40%);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px; padding:14px 16px; margin-top:10px;
-    }
-    .balance strong{ font-size:22px; letter-spacing:.2px }
-    .hint{ color:var(--muted); font-size:12px }
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;padding:12px 14px;border-radius:12px;font-weight:700;
+  background:#0b1220;color:#e5e7eb;border:1px solid rgba(255,255,255,.08);min-width:240px;text-align:center;display:none;z-index:50;
+  box-shadow:0 10px 26px rgba(0,0,0,.45);animation:fadeIn .2s ease}
+.t-green{border-color:rgba(16,185,129,.35)} .t-red{border-color:rgba(239,68,68,.35)}
+.t-blue{border-color:rgba(59,130,246,.35)} .t-orange{border-color:rgba(245,158,11,.35)}
 
-    .grid{
-      display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;
-    }
-    .btn-secondary{
-      background: linear-gradient(90deg, #1f2937, #111827);
-      color:#e5e7eb; border:1px solid rgba(255,255,255,.08);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
-    }
-    .cooldown{
-      font-size:12px; color:var(--muted); margin-top:4px; min-height:16px;
-    }
+.modal{position:fixed;inset:0;display:none;place-items:center;z-index:60;background:rgba(0,0,0,.55)}
+.modal .box{width:92%;max-width:420px;background:#0b1220;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px;text-align:center;animation:pop .2s ease}
+.box h3{margin:0 0 6px} .box p{color:var(--muted);font-size:14px;margin:0 0 14px} .box .btn{width:100%}
 
-    .progress{
-      margin-top:14px;
-      background:#0a1220; border:1px solid rgba(255,255,255,.08);
-      border-radius:12px; height:12px; overflow:hidden;
-    }
-    .bar{
-      height:100%; width:0%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      box-shadow: 0 0 24px rgba(34,211,238,.25);
-      transition: width .5s ease;
-    }
-
-    .notice{
-      margin-top:12px; padding:12px 14px; border-radius:12px; font-size:13px;
-      background: rgba(245,158,11,.12); border:1px dashed rgba(245,158,11,.35); color:#fde68a;
-    }
-
-    /* toast */
-    .toast{
-      position:fixed; left:50%; transform:translateX(-50%);
-      bottom:22px; padding:12px 14px; border-radius:12px; font-weight:600;
-      background:#0b1220; color:#e5e7eb; border:1px solid rgba(255,255,255,.08);
-      min-width:240px; text-align:center; display:none; z-index:50;
-      box-shadow:0 10px 26px rgba(0,0,0,.45);
-      animation: fadeIn .2s ease;
-    }
-    .t-green{ border-color: rgba(16,185,129,.35) }
-    .t-red{ border-color: rgba(239,68,68,.35) }
-    .t-blue{ border-color: rgba(59,130,246,.35) }
-    .t-orange{ border-color: rgba(245,158,11,.35) }
-
-    /* modal */
-    .modal{ position:fixed; inset:0; display:none; place-items:center; z-index:60; background:rgba(0,0,0,.55); }
-    .modal .box{
-      width:92%; max-width:420px; background:#0b1220; border:1px solid rgba(255,255,255,.08);
-      border-radius:18px; padding:18px; text-align:center; animation: pop .2s ease;
-    }
-    .box h3{ margin:0 0 6px }
-    .box p{ color:var(--muted); font-size:14px; margin:0 0 14px }
-    .box .btn{ width:100% }
-
-    @keyframes fadeIn{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
-    @keyframes pop{from{transform:scale(.96); opacity:.4} to{transform:scale(1); opacity:1}}
-  </style>
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes pop{from{transform:scale(.96);opacity:.4}to{transform:scale(1);opacity:1}}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
+<div class="wrap">
+  <div class="card">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>NusaTask — Earning</h1>
+        <div class="sub">Satu perangkat, satu akun. Reset progres harian 03:00 WIB (waktu server).</div>
+      </div>
+    </div>
+
+    <!-- AUTH -->
+    <div id="auth" class="section">
+      <div class="field"><input id="email" type="email" placeholder="Email" autocomplete="email" /></div>
+      <div class="field"><input id="password" type="password" placeholder="Kata sandi" autocomplete="current-password" /></div>
+      <div class="row">
+        <button class="btn" onclick="register()">Daftar</button>
+        <button class="btn btn-secondary" onclick="login()">Masuk</button>
+      </div>
+      <div class="notice" style="margin-top:12px">
+        ⚠️ Peringatan: 1 perangkat = 1 akun. Penyalahgunaan (multi-akun, emulator/clone, >2 akun/IP/24 jam) akan <b>dibanned otomatis</b>.
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app" class="section" style="display:none">
+      <div class="balance">
         <div>
-          <h1>NusaTask — Earning</h1>
-          <div class="sub">Satu perangkat, satu akun. Reset progres harian: 03:00 WIB (server).</div>
+          <div class="pill">Status: <span id="statusTxt">—</span></div>
+          <div class="hint" id="deviceTxt" style="margin-top:6px">Device verifikasi…</div>
+        </div>
+        <strong id="saldoTxt">Rp0</strong>
+      </div>
+
+      <div style="margin-top:10px" class="hint">Progress Harian</div>
+      <div class="progress" title="Reward (max 20/hari)">
+        <div id="barReward" class="bar"></div>
+      </div>
+      <div class="progress" title="Xstra Bonus (max 20/hari)" style="margin-top:8px">
+        <div id="barBonus" class="bar"></div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <button id="btnReward1" class="btn" onclick="claim('reward1')">Ambil Reward 1</button>
+          <div id="cd-reward1" class="cooldown"></div>
+        </div>
+        <div>
+          <button id="btnReward2" class="btn" onclick="claim('reward2')">Ambil Reward 2</button>
+          <div id="cd-reward2" class="cooldown"></div>
+        </div>
+        <div>
+          <button id="btnBonus1" class="btn" onclick="claim('bonus1')">Xstra Bonus 1</button>
+          <div id="cd-bonus1" class="cooldown"></div>
+        </div>
+        <div>
+          <button id="btnBonus2" class="btn" onclick="claim('bonus2')">Xstra Bonus 2</button>
+          <div id="cd-bonus2" class="cooldown"></div>
         </div>
       </div>
 
-      <!-- AUTH -->
-      <div id="auth" class="section">
-        <div class="field"><input id="email" type="email" placeholder="Email" autocomplete="email"/></div>
-        <div class="field"><input id="password" type="password" placeholder="Kata sandi" autocomplete="current-password"/></div>
-        <div class="row">
-          <button class="btn" onclick="register()">Daftar</button>
-          <button class="btn btn-secondary" onclick="login()">Masuk</button>
-        </div>
-        <div class="notice" style="margin-top:12px">
-          ⚠️ Peringatan: 1 perangkat = 1 akun. Penyalahgunaan (multi-akun, emulator/clone) akan <b>dibanned otomatis</b>.
-        </div>
+      <div class="notice" id="policyNote">
+        ⚠️ Satu IP maksimal 2 akun dalam 24 jam. Pelanggaran akan otomatis dibanned.
       </div>
 
-      <!-- APP -->
-      <div id="app" class="section" style="display:none">
-        <div class="balance">
-          <div>
-            <div class="pill">Status: <span id="statusTxt">—</span></div>
-            <div class="hint" id="deviceTxt" style="margin-top:6px">Device verifikasi…</div>
-          </div>
-          <strong id="saldoTxt">Rp0</strong>
-        </div>
-
-        <div style="margin-top:10px" class="hint">Progress Harian</div>
-        <div class="progress" title="Reward (max 20/hari)">
-          <div id="barReward" class="bar"></div>
-        </div>
-        <div class="progress" title="Xstra Bonus (max 20/hari)" style="margin-top:8px">
-          <div id="barBonus" class="bar"></div>
-        </div>
-
-        <div class="grid">
-          <div>
-            <button id="btnReward1" class="btn" onclick="claim('reward1')">Ambil Reward 1</button>
-            <div id="cd-reward1" class="cooldown"></div>
-          </div>
-          <div>
-            <button id="btnReward2" class="btn" onclick="claim('reward2')">Ambil Reward 2</button>
-            <div id="cd-reward2" class="cooldown"></div>
-          </div>
-          <div>
-            <button id="btnBonus1" class="btn" onclick="claim('bonus1')">Xstra Bonus 1</button>
-            <div id="cd-bonus1" class="cooldown"></div>
-          </div>
-          <div>
-            <button id="btnBonus2" class="btn" onclick="claim('bonus2')">Xstra Bonus 2</button>
-            <div id="cd-bonus2" class="cooldown"></div>
-          </div>
-        </div>
-
-        <div class="notice" id="policyNote">
-          ⚠️ Satu IP maksimal 2 akun dalam 24 jam. Pelanggaran akan otomatis dibanned.
-        </div>
-
-        <div id="bannedBox" class="notice" style="display:none; border-color:rgba(239,68,68,.45); background:rgba(239,68,68,.12); color:#fecaca">
-          🚫 Akun Anda dibanned. Jika menurut Anda ini keliru, hubungi admin <b>@nusataskproject</b>.
-        </div>
+      <div id="bannedBox" class="notice" style="display:none; border-color:rgba(239,68,68,.45); background:rgba(239,68,68,.12); color:#fecaca">
+        🚫 Akun Anda dibanned. Jika menurut Anda ini keliru, hubungi admin <b>@nusataskproject</b>. Admin bisa ubah status Anda ke <b>review</b> agar bisa login kembali.
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Modal Peringatan sesudah registrasi -->
-  <div id="modal" class="modal" role="dialog" aria-modal="true">
-    <div class="box">
-      <h3>⚠️ Peringatan Penting</h3>
-      <p>Satu perangkat hanya boleh memiliki satu akun. Satu IP maksimal 2 akun / 24 jam. Emulator/clone akan otomatis dibanned.</p>
-      <button class="btn" onclick="closeModal()">Mengerti</button>
-    </div>
+<!-- Modal peringatan pasca-registrasi -->
+<div id="modal" class="modal" role="dialog" aria-modal="true">
+  <div class="box">
+    <h3>⚠️ Peringatan Penting</h3>
+    <p>Satu perangkat hanya boleh satu akun. Satu IP maksimal 2 akun / 24 jam. Emulator/clone akan otomatis dibanned.</p>
+    <button class="btn" onclick="closeModal()">Mengerti</button>
   </div>
+</div>
 
-  <!-- Toast -->
-  <div id="toast" class="toast"></div>
+<!-- Toast -->
+<div id="toast" class="toast"></div>
 
 <script>
-/* =========================
-   Firebase Config
-========================= */
+/* ============ Firebase Config ============ */
 const firebaseConfig = {
   apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
   authDomain: "penyimpanansaldo-280df.firebaseapp.com",
@@ -262,12 +182,10 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.database();
 
-/* =========================
-   Globals & Helpers
-========================= */
+/* ============ Globals & Helpers ============ */
 let uid = null;
-let serverOffset = 0; // ms
-const COOLDOWN_MS = 2 * 60 * 1000; // 2 menit
+let serverOffset = 0;
+const COOLDOWN_MS = 2*60*1000;
 const MAX_DAILY_REWARD = 20;
 const MAX_DAILY_BONUS  = 20;
 
@@ -275,363 +193,246 @@ const buttons = {
   reward1: document.getElementById('btnReward1'),
   reward2: document.getElementById('btnReward2'),
   bonus1:  document.getElementById('btnBonus1'),
-  bonus2:  document.getElementById('btnBonus2')
+  bonus2:  document.getElementById('btnBonus2'),
 };
+const cdLabels = {
+  reward1: document.getElementById('cd-reward1'),
+  reward2: document.getElementById('cd-reward2'),
+  bonus1:  document.getElementById('cd-bonus1'),
+  bonus2:  document.getElementById('cd-bonus2'),
+};
+const labelMap = {reward1:'Reward 1',reward2:'Reward 2',bonus1:'Bonus 1',bonus2:'Bonus 2'};
 
-function toast(msg, type='blue'){
-  const t = document.getElementById('toast');
-  t.className = `toast t-${type}`;
-  t.innerText = msg;
-  t.style.display = 'block';
-  clearTimeout(t.__hide);
-  t.__hide = setTimeout(()=> t.style.display='none', 3500);
+function toast(msg,type='blue'){
+  const el=document.getElementById('toast');
+  el.className=`toast t-${type}`; el.textContent=msg; el.style.display='block';
+  clearTimeout(el.__t); el.__t=setTimeout(()=>el.style.display='none',3500);
 }
 function openModal(){ document.getElementById('modal').style.display='grid'; }
 function closeModal(){ document.getElementById('modal').style.display='none'; }
 
-function nowServer(){
-  return Date.now() + serverOffset;
-}
-function todayStrWIB(dateMs = nowServer()){
-  // WIB = UTC+7
-  const d = new Date(dateMs);
-  const utc = d.getTime() + (d.getTimezoneOffset()*60000);
-  const wib = new Date(utc + 7*3600000);
-  return wib.toISOString().slice(0,10); // YYYY-MM-DD
-}
-function hourWIB(dateMs = nowServer()){
-  const d = new Date(dateMs);
-  const utc = d.getTime() + d.getTimezoneOffset()*60000;
-  const wib = new Date(utc + 7*3600000);
-  return wib.getHours();
-}
-function fmtRupiah(n){ return 'Rp' + (n||0).toLocaleString('id-ID'); }
+db.ref('/.info/serverTimeOffset').on('value', s=> serverOffset = s.val()||0);
+function nowServer(){ return Date.now()+serverOffset; }
+function toWIB(ms=nowServer()){ const d=new Date(ms); const utc=d.getTime()+d.getTimezoneOffset()*60000; return new Date(utc+7*3600000); }
+function todayStr(){ return toWIB().toISOString().slice(0,10); }
+function hourWIB(){ return toWIB().getHours(); }
+function fmtRp(n){ return 'Rp'+(n||0).toLocaleString('id-ID'); }
 
-function sha1(str){ // lightweight hash for deviceId
-  // simple js sha1
-  function rotl(n,s){return (n<<s)|(n>>>32-s);}
-  function tohex(n){let s="",v; for(let i=7;i>=0;i--){v=(n>>> (i*4)) & 0x0f; s+=v.toString(16);} return s;}
-  str = unescape(encodeURIComponent(str));
-  const ml = str.length, wa = [];
-  for(let i=0;i<ml;i++){ wa[(i>>2)] |= (str.charCodeAt(i)&0xff) << (24-(i%4)*8); }
-  wa[(ml>>2)] |= 0x80 << (24-(ml%4)*8);
-  wa[(((ml+8)>>6)<<4)+15] = ml*8;
-  let H0=0x67452301, H1=0xEFCDAB89, H2=0x98BADCFE, H3=0x10325476, H4=0xC3D2E1F0;
-  const W = new Array(80);
-  for(let i=0;i<wa.length;i+=16){
-    for(let t=0;t<16;t++) W[t]=wa[i+t]||0;
-    for(let t=16;t<80;t++) W[t]=rotl(W[t-3]^W[t-8]^W[t-14]^W[t-16],1);
-    let a=H0,b=H1,c=H2,d=H3,e=H4,f,k;
-    for(let t=0;t<80;t++){
-      if(t<20){f=(b&c)|((~b)&d);k=0x5A827999}
-      else if(t<40){f=b^c^d;k=0x6ED9EBA1}
-      else if(t<60){f=(b&c)|(b&d)|(c&d);k=0x8F1BBCDC}
-      else{f=b^c^d;k=0xCA62C1D6}
-      const temp=(rotl(a,5)+f+e+k+W[t])>>>0; e=d; d=c; c=rotl(b,30)>>>0; b=a; a=temp;
-    }
-    H0=(H0+a)>>>0; H1=(H1+b)>>>0; H2=(H2+c)>>>0; H3=(H3+d)>>>0; H4=(H4+e)>>>0;
-  }
-  return [H0,H1,H2,H3,H4].map(tohex).join('');
-}
-
-/* =========================
-   Server Time Offset
-========================= */
-db.ref('/.info/serverTimeOffset').on('value', snap=>{
-  serverOffset = snap.val()||0;
-});
-
-/* =========================
-   Anti-Tuyul: Fingerprint & Emulator detection
-========================= */
+/* ============ Fingerprint + Emulator ============ */
+function sha1(str){function r(n,s){return(n<<s)|(n>>>32-s)}function h(n){let s="",v;for(let i=7;i>=0;i--){v=(n>>>(i*4))&0xf;s+=v.toString(16)}return s}
+  str=unescape(encodeURIComponent(str));const ml=str.length,wa=[];for(let i=0;i<ml;i++){wa[(i>>2)]|=(str.charCodeAt(i)&255)<<(24-(i%4)*8)}
+  wa[(ml>>2)]|=128<<(24-(ml%4)*8);wa[(((ml+8)>>6)<<4)+15]=ml*8;let H0=0x67452301,H1=0xEFCDAB89,H2=0x98BADCFE,H3=0x10325476,H4=0xC3D2E1F0,W=new Array(80);
+  for(let i=0;i<wa.length;i+=16){for(let t=0;t<16;t++)W[t]=wa[i+t]||0;for(let t=16;t<80;t++)W[t]=r(W[t-3]^W[t-8]^W[t-14]^W[t-16],1);
+    let a=H0,b=H1,c=H2,d=H3,e=H4,f,k;for(let t=0;t<80;t++){if(t<20){f=(b&c)|((~b)&d);k=0x5A827999}else if(t<40){f=b^c^d;k=0x6ED9EBA1}
+      else if(t<60){f=(b&c)|(b&d)|(c&d);k=0x8F1BBCDC}else{f=b^c^d;k=0xCA62C1D6}
+      const temp=(r(a,5)+f+e+k+W[t])>>>0;e=d;d=c;c=r(b,30)>>>0;b=a;a=temp}H0=(H0+a)>>>0;H1=(H1+b)>>>0;H2=(H2+c)>>>0;H3=(H3+d)>>>0;H4=(H4+e)>>>0}
+  return [H0,H1,H2,H3,H4].map(h).join('')}
 function getDeviceId(){
-  // Persisted local ID + lightweight fingerprint
-  let local = localStorage.getItem('nt_device_id');
-  if(!local){
-    const raw = [
-      navigator.userAgent,
-      navigator.platform,
-      navigator.language,
-      screen.width+'x'+screen.height,
-      (navigator.hardwareConcurrency||'hc')+'c'
-    ].join('|') + '|' + Math.random().toString(36).slice(2);
-    local = sha1(raw);
-    localStorage.setItem('nt_device_id', local);
+  let id=localStorage.getItem('nt_device_id');
+  if(!id){
+    const raw=[navigator.userAgent,navigator.platform,navigator.language,screen.width+'x'+screen.height,(navigator.hardwareConcurrency||'hc')+'c',Math.random()].join('|');
+    id=sha1(raw); localStorage.setItem('nt_device_id',id);
   }
-  return local;
+  return id;
 }
 function looksLikeEmulator(){
-  const ua = navigator.userAgent||'';
-  const vendor = navigator.vendor||'';
-  const webdriver = navigator.webdriver;
-  const plugins = (navigator.plugins||[]).length;
-  const suspicious =
-    webdriver === true ||
-    /Headless|Phantom|Electron|Node|jsdom/i.test(ua) ||
-    /Bluestacks|Nox|Emulator|VirtualBox|Genymotion/i.test(ua) ||
-    vendor === '' || plugins === 0;
-  return suspicious;
+  const ua=navigator.userAgent||'', vendor=navigator.vendor||'', webdriver=navigator.webdriver, plugins=(navigator.plugins||[]).length;
+  return webdriver===true || /Headless|Phantom|Electron|jsdom/i.test(ua) || /Bluestacks|Nox|Emulator|VirtualBox|Genymotion/i.test(ua) || vendor==='' || plugins===0;
 }
-
-/* =========================
-   Public IP (for IP limit 2 akun/24h)
-========================= */
 async function fetchPublicIP(){
-  try{
-    const res = await fetch('https://api.ipify.org?format=json', {cache:'no-store'});
-    const j = await res.json();
-    return j.ip || '0.0.0.0';
-  }catch(e){
-    return '0.0.0.0';
-  }
+  try{ const r=await fetch('https://api.ipify.org?format=json',{cache:'no-store'}); const j=await r.json(); return j.ip||'0.0.0.0'; }
+  catch(e){ return '0.0.0.0'; }
 }
 
-/* =========================
-   Auth Handlers
-========================= */
+/* ============ Auth ============ */
 async function register(){
   const email = document.getElementById('email').value.trim();
   const pass  = document.getElementById('password').value;
-  if(!email || !pass){ return toast('Isi email & kata sandi', 'orange'); }
+  if(!email||!pass) return toast('Isi email & kata sandi','orange');
 
-  const deviceId = getDeviceId();
-  const ip = await fetchPublicIP();
-
-  if(looksLikeEmulator()){
-    toast('Terindikasi emulator/clone. Registrasi ditolak.', 'red');
-    return;
-  }
+  const deviceId=getDeviceId();
+  const ip=await fetchPublicIP();
+  if(looksLikeEmulator()){ toast('Terindikasi emulator/clone. Registrasi ditolak.','red'); return; }
 
   try{
-    const cred = await auth.createUserWithEmailAndPassword(email, pass);
-    const uid = cred.user.uid;
+    const cred=await auth.createUserWithEmailAndPassword(email,pass);
+    const id=cred.user.uid;
 
-    // Cek device duplicate
-    const devSnap = await db.ref('users').orderByChild('deviceId').equalTo(deviceId).once('value');
+    // device lock
+    const devSnap=await db.ref('users').orderByChild('deviceId').equalTo(deviceId).once('value');
     if(devSnap.exists()){
-      await db.ref('users/'+uid).set({
-        email, saldo:0, status:'banned',
-        bannedReason:'duplicate_device', deviceId, ip,
+      await db.ref('users/'+id).set({
+        email, saldo:0, status:'banned', bannedReason:'duplicate_device', deviceId, ip,
         createdAt: firebase.database.ServerValue.TIMESTAMP,
-        daily:{reward:0, bonus:0, lastReset: todayStrWIB()}
+        daily:{reward:0, bonus:0, lastReset: todayStr()}, cooldowns:{}
       });
-      toast('🚫 Device sudah punya akun. Akun baru dibanned.', 'red');
-      await auth.signOut();
-      return;
+      toast('🚫 Device sudah punya akun. Akun baru dibanned.','red'); await auth.signOut(); return;
     }
 
-    // IP limit (max 2 akun / hari)
-    const today = todayStrWIB();
-    const ipRef = db.ref(`ipUsage/${today}/${ip}`);
-    const ipOnce = await ipRef.once('value');
-    let ipData = ipOnce.val() || {count:0};
-    if((ipData.count||0) >= 2){
-      await db.ref('users/'+uid).set({
-        email, saldo:0, status:'banned',
-        bannedReason:'ip_limit', deviceId, ip,
+    // IP limit (max 2 akun / hari, per tanggal WIB)
+    const today=todayStr();
+    const ipRef=db.ref(`ipUsage/${today}/${ip}`);
+    const ipData=(await ipRef.once('value')).val()||{count:0};
+    if((ipData.count||0)>=2){
+      await db.ref('users/'+id).set({
+        email, saldo:0, status:'banned', bannedReason:'ip_limit', deviceId, ip,
         createdAt: firebase.database.ServerValue.TIMESTAMP,
-        daily:{reward:0, bonus:0, lastReset: today}
+        daily:{reward:0, bonus:0, lastReset: today}, cooldowns:{}
       });
-      toast('🚫 Batas akun per IP tercapai. Akun dibanned.', 'red');
-      await auth.signOut();
-      return;
+      toast('🚫 Batas akun per IP tercapai. Akun dibanned.','red'); await auth.signOut(); return;
     }
     await ipRef.update({count:(ipData.count||0)+1});
 
-    // Buat profil user
-    await db.ref('users/'+uid).set({
+    // profil
+    await db.ref('users/'+id).set({
       email, saldo:0, status:'active', deviceId, ip,
       createdAt: firebase.database.ServerValue.TIMESTAMP,
       daily:{reward:0, bonus:0, lastReset: today},
-      cooldowns:{}, // nanti diisi per tombol
+      cooldowns:{}
     });
 
-    openModal();
-    toast('Registrasi berhasil. Selamat datang!', 'green');
-  }catch(err){
-    toast(err.message || 'Gagal registrasi', 'red');
-  }
+    openModal(); toast('Registrasi berhasil. Selamat datang!','green');
+  }catch(e){ toast(e.message||'Gagal registrasi','red'); }
 }
 
 async function login(){
-  const email = document.getElementById('email').value.trim();
-  const pass  = document.getElementById('password').value;
-  if(!email || !pass){ return toast('Isi email & kata sandi', 'orange'); }
-  try{
-    await auth.signInWithEmailAndPassword(email, pass);
-  }catch(err){
-    toast(err.message || 'Gagal login', 'red');
-  }
+  const email=document.getElementById('email').value.trim();
+  const pass =document.getElementById('password').value;
+  if(!email||!pass) return toast('Isi email & kata sandi','orange');
+  try{ await auth.signInWithEmailAndPassword(email,pass); }
+  catch(e){ toast(e.message||'Gagal login','red'); }
 }
 
 auth.onAuthStateChanged(async user=>{
   if(!user){
-    document.getElementById('auth').style.display = '';
-    document.getElementById('app').style.display  = 'none';
-    return;
+    uid=null; document.getElementById('auth').style.display=''; document.getElementById('app').style.display='none'; return;
   }
-  uid = user.uid;
-  document.getElementById('auth').style.display = 'none';
-  document.getElementById('app').style.display  = '';
+  uid=user.uid; document.getElementById('auth').style.display='none'; document.getElementById('app').style.display='';
 
-  // Render header info
-  document.getElementById('deviceTxt').innerText = 'Device terverifikasi: ' + getDeviceId().slice(0,10) + '…';
+  document.getElementById('deviceTxt').innerText='Device: '+getDeviceId().slice(0,10)+'…';
 
-  // Listen user data
-  db.ref('users/'+uid).on('value', snap=>{
-    const data = snap.val()||{};
-    document.getElementById('statusTxt').innerText = data.status||'-';
-    document.getElementById('saldoTxt').innerText  = fmtRupiah(data.saldo||0);
+  db.ref('users/'+uid).on('value', async snap=>{
+    const data=snap.val()||{};
+    document.getElementById('statusTxt').innerText=data.status||'-';
+    document.getElementById('saldoTxt').innerText=fmtRp(data.saldo||0);
 
-    // banned UI
-    const banned = data.status === 'banned';
+    const banned = data.status==='banned';
+    const review = data.status==='review';
     document.getElementById('bannedBox').style.display = banned?'':'none';
     for(const k in buttons){ buttons[k].disabled = banned; }
 
     // progress
-    const rw = (data.daily && data.daily.reward) || 0;
-    const bn = (data.daily && data.daily.bonus)  || 0;
+    const rw=(data.daily&&data.daily.reward)||0;
+    const bn=(data.daily&&data.daily.bonus)||0;
     updateBar('barReward', rw, MAX_DAILY_REWARD);
     updateBar('barBonus',  bn, MAX_DAILY_BONUS);
 
-    // reset harian jam 03:00 WIB berdasar server time
-    checkDailyReset(data.daily);
+    // reset harian 03:00 WIB (server)
+    await checkDailyReset(data.daily);
 
-    // apply cooldowns (persisted)
+    // apply cooldown UI
     applyCooldownUI(data.cooldowns||{});
+
+    // ===== Auto-check hanya untuk ACTIVE =====
+    if(data.status==='active'){
+      const deviceId=getDeviceId();
+      const ip=await fetchPublicIP();
+
+      // emulator/clone
+      if(looksLikeEmulator()){
+        await db.ref('users/'+uid).update({status:'banned', bannedReason:'emulator_detected', ip, deviceId});
+        toast('Akun dibanned (emulator/clone terdeteksi).','red'); return;
+      }
+
+      // device hijack
+      if(data.deviceId && data.deviceId!==deviceId){
+        await db.ref('users/'+uid).update({status:'banned', bannedReason:'device_switch', ip});
+        toast('Akun dibanned (pergantian device terdeteksi).','red'); return;
+      }
+
+      // IP limit (soft check saat login aktif)
+      const today=todayStr();
+      const ipRef=db.ref(`ipUsage/${today}/${ip}`);
+      const ipData=(await ipRef.once('value')).val()||{count:0};
+      // tidak auto-ban saat login karena sudah dihitung saat registrasi; ini monitoring saja
+      if((ipData.count||0)>2){
+        // optional: tandai untuk audit
+        await db.ref(`flags/${today}/${uid}`).set({ip, at:firebase.database.ServerValue.TIMESTAMP, reason:'ip_over_login'});
+      }
+    }
+
+    // ===== Untuk REVIEW: tidak ada auto-ban check. Tetap aman =====
+    if(review){
+      document.getElementById('policyNote').innerHTML = 'ℹ️ Status akun: <b>review</b>. Anda bisa menggunakan aplikasi sementara. Admin akan menilai ulang.';
+    }else{
+      document.getElementById('policyNote').innerHTML = '⚠️ Satu IP maksimal 2 akun dalam 24 jam. Pelanggaran akan otomatis dibanned.';
+    }
   });
 });
 
-/* =========================
-   Progress & Reset (Server Time)
-========================= */
-function updateBar(id, count, max){
-  const pct = Math.min(100, (count/max)*100);
-  document.getElementById(id).style.width = pct+'%';
-}
+/* ============ Progress & Reset ============ */
+function updateBar(id, count, max){ document.getElementById(id).style.width = Math.min(100,(count/max)*100)+'%'; }
 async function checkDailyReset(daily){
-  const today = todayStrWIB();
-  const hour  = hourWIB();
-  const last  = daily?.lastReset || today;
-  if(hour >= 3 && last !== today){
+  const today=todayStr(), hour=hourWIB(); const last=daily?.lastReset||today;
+  if(hour>=3 && last!==today){
     await db.ref(`users/${uid}/daily`).set({reward:0, bonus:0, lastReset: today});
-    // tidak menyentuh saldo & cooldowns (biar klaim yang lagi cooldown tetap menunggu)
-    toast('🔄 Progress harian direset (03:00 WIB).', 'blue');
+    // Tidak reset saldo & cooldowns
+    toast('🔄 Progress harian direset (03:00 WIB).','blue');
   }
 }
 
-/* =========================
-   Cooldown Persist (per tombol)
-========================= */
-const labelMap = {reward1:'Reward 1', reward2:'Reward 2', bonus1:'Bonus 1', bonus2:'Bonus 2'};
-
+/* ============ Cooldown Persist ============ */
 function applyCooldownUI(cds){
-  for(const key of Object.keys(buttons)){
-    const until = cds && cds[key] ? cds[key] : 0;
-    setCooldownUI(key, until);
-  }
+  Object.keys(buttons).forEach(key=> setCooldownUI(key, cds[key]||0));
 }
 function setCooldownUI(key, untilMs){
-  const btn = buttons[key];
-  const cdLabel = document.getElementById('cd-'+key);
-  if(!btn || !cdLabel) return;
-
-  if(untilMs && untilMs > nowServer()){
-    btn.disabled = true;
-    tick();
-  }else{
-    btn.disabled = false;
-    cdLabel.textContent = '';
-  }
-
+  const btn=buttons[key], label=cdLabels[key]; if(!btn||!label) return;
+  if(untilMs>nowServer()){
+    btn.disabled=true; tick();
+  }else{ btn.disabled=false; label.textContent=''; }
   function tick(){
-    const left = untilMs - nowServer();
-    if(left <= 0){
-      btn.disabled = false;
-      cdLabel.textContent = '';
-      return;
-    }
-    const s = Math.ceil(left/1000);
-    cdLabel.textContent = `Cooldown ${labelMap[key]}: ${s}s`;
+    const left=untilMs-nowServer();
+    if(left<=0){ btn.disabled=false; label.textContent=''; return; }
+    label.textContent=`Cooldown ${labelMap[key]}: ${Math.ceil(left/1000)}s`;
     requestAnimationFrame(tick);
   }
 }
 
-/* =========================
-   Claim Logic (Reward/Bonus)
-========================= */
+/* ============ Claim Logic ============ */
 async function claim(key){
-  // key ∈ {reward1,reward2,bonus1,bonus2}
-  const btn = buttons[key];
-  if(!uid || !btn) return;
-
+  if(!uid) return;
   try{
-    const snap = await db.ref('users/'+uid).once('value');
-    const data = snap.val() || {};
-    if(data.status === 'banned'){ toast('Akun dibanned.', 'red'); return; }
+    const snap=await db.ref('users/'+uid).once('value'); const data=snap.val()||{};
+    if(data.status==='banned'){ toast('Akun dibanned.','red'); return; }
+    // NOTE: status 'review' diizinkan klaim (sesuai permintaan unbanned aman)
 
-    // cooldown check
-    const cds = data.cooldowns || {};
-    const until = cds[key] || 0;
-    if(until > nowServer()){
-      return; // UI juga menampilkan countdown
-    }
+    // cooldown
+    const cds=data.cooldowns||{}; const until=cds[key]||0;
+    if(until>nowServer()) return;
 
-    // daily limit check
-    const daily = data.daily || {reward:0, bonus:0, lastReset: todayStrWIB()};
-    const isReward = key.startsWith('reward');
-    if(isReward && daily.reward >= MAX_DAILY_REWARD){ toast('Batas Reward harian habis.', 'orange'); return; }
-    if(!isReward && daily.bonus >= MAX_DAILY_BONUS)   { toast('Batas Bonus harian habis.',  'orange'); return; }
+    // daily limit
+    const daily=data.daily||{reward:0, bonus:0, lastReset: todayStr()};
+    const isReward=key.startsWith('reward');
+    if(isReward && daily.reward>=MAX_DAILY_REWARD){ toast('Batas Reward harian habis.','orange'); return; }
+    if(!isReward && daily.bonus>=MAX_DAILY_BONUS)   { toast('Batas Bonus harian habis.','orange'); return; }
 
-    // monetization hooks (tempatkan script iklan di sini jika perlu)
-    // e.g., show Monetag for Reward, KlikAdila for Bonus
+    // (Tempat script iklan: Monetag utk Reward, KlikAdila utk Bonus. Munculkan inpage → 4 detik → popunder)
 
-    // add saldo
-    let saldo = data.saldo || 0;
+    // tambah saldo
+    let saldo=data.saldo||0;
     saldo += isReward ? 500 : 1000;
 
-    // update counters
-    if(isReward) daily.reward += 1;
-    else daily.bonus += 1;
+    // update daily
+    if(isReward) daily.reward += 1; else daily.bonus += 1;
 
-    // set new cooldown end
-    const next = nowServer() + COOLDOWN_MS;
-    cds[key] = next;
+    // set cooldown
+    const next=nowServer()+COOLDOWN_MS; cds[key]=next;
 
-    // commit atomically
-    await db.ref('users/'+uid).update({ saldo, daily, cooldowns: cds });
-
-    // update UI
-    toast(`✅ Berhasil klaim ${labelMap[key]}`, 'green');
-    setCooldownUI(key, next);
-  }catch(err){
-    toast(err.message||'Gagal klaim', 'red');
-  }
+    await db.ref('users/'+uid).update({saldo, daily, cooldowns:cds});
+    toast(`✅ Berhasil klaim ${labelMap[key]}`,'green');
+    setCooldownUI(key,next);
+  }catch(e){ toast(e.message||'Gagal klaim','red'); }
 }
-
-/* =========================
-   EXTRA SAFETY on Login:
-   - Re-validate device & emulator
-========================= */
-auth.onAuthStateChanged(async user=>{
-  if(!user) return;
-  const deviceId = getDeviceId();
-  const ip = await fetchPublicIP();
-
-  // emulator check
-  if(looksLikeEmulator()){
-    await db.ref('users/'+user.uid).update({status:'banned', bannedReason:'emulator_detected', ip, deviceId});
-    toast('Akun dibanned (emulator/clone terdeteksi).', 'red');
-    return;
-  }
-
-  // device hijack check (akun dipakai device lain)
-  const us = (await db.ref('users/'+user.uid).once('value')).val()||{};
-  if(us.deviceId && us.deviceId !== deviceId){
-    await db.ref('users/'+user.uid).update({status:'banned', bannedReason:'device_switch', ip});
-    toast('Akun dibanned (pergantian device terdeteksi).', 'red');
-  }
-});
 </script>
 </body>
 </html>
