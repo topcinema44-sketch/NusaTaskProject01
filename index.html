@@ -107,7 +107,7 @@
 </div>
 
 <script>
-  // 🔑 Config Firebase
+  // 🔑 Firebase Config (sudah diperbaiki storageBucket)
   const firebaseConfig = {
     apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
     authDomain: "penyimpanansaldo-280df.firebaseapp.com",
@@ -126,7 +126,8 @@
 
   // 🚀 Register
   function register() {
-    const email = emailInput.value, pass = passwordInput.value;
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
     auth.createUserWithEmailAndPassword(email, pass)
       .then(user => {
         userId = user.user.uid;
@@ -147,7 +148,8 @@
 
   // 🚀 Login
   function login() {
-    const email = emailInput.value, pass = passwordInput.value;
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
     auth.signInWithEmailAndPassword(email, pass)
       .catch(err => showNotif(err.message, "red"));
   }
