@@ -8,56 +8,81 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #1f1c2c, #928DAB);
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
       color: white;
       text-align: center;
-      padding: 30px;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
     }
     .card {
-      background: rgba(0,0,0,0.6);
-      padding: 20px;
-      border-radius: 16px;
-      max-width: 400px;
-      margin: auto;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.7);
+      padding: 25px;
+      border-radius: 20px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
       animation: fadeIn 1s ease;
     }
-    input {
-      margin: 5px;
-      padding: 10px;
+    input, button {
+      margin: 8px 0;
+      padding: 12px;
       width: 90%;
-      border-radius: 8px;
+      border-radius: 10px;
       border: none;
-    }
-    button {
-      margin: 10px;
-      padding: 15px;
-      width: 90%;
-      border: none;
-      border-radius: 8px;
       font-size: 16px;
+      outline: none;
+    }
+    input { background: #f1f1f1; color: black; }
+    button {
       cursor: pointer;
       transition: 0.3s;
     }
-    button:disabled { background: grey; cursor: not-allowed; }
+    button:disabled {
+      background: grey !important;
+      cursor: not-allowed;
+    }
+    .authBtn { background: #ff9800; color: white; }
     .reward { background: #28a745; color: white; }
     .xstra { background: #007bff; color: white; }
-    .authBtn { background: #ff9800; color: white; }
+    button:hover:not(:disabled) { transform: scale(1.05); }
     #notif {
       margin-top: 15px;
-      padding: 10px;
-      border-radius: 6px;
+      padding: 12px;
+      border-radius: 8px;
       display: none;
+      animation: fadeInOut 4s ease;
+    }
+    #loading {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 22px;
+      z-index: 1000;
     }
     @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+    @keyframes fadeInOut { 0%{opacity:0;} 10%{opacity:1;} 90%{opacity:1;} 100%{opacity:0;} }
     #dashboard { display: none; }
   </style>
 </head>
 <body>
-  <!-- 🔑 FORM LOGIN & REGISTER -->
+<div id="loading">⏳ Loading...</div>
+
+<div class="container">
+  <!-- 🔑 AUTH BOX -->
   <div class="card" id="authBox">
-    <h2>NusaTask - Login</h2>
+    <h2>Login NusaTask</h2>
     <input type="email" id="email" placeholder="Email"><br>
     <input type="password" id="password" placeholder="Password"><br>
     <button class="authBtn" onclick="register()">Daftar</button>
@@ -79,6 +104,7 @@
 
     <div id="notif"></div>
   </div>
+</div>
 
 <script>
   // 🔑 Config Firebase
@@ -96,26 +122,22 @@
 
   const auth = firebase.auth();
   const db = firebase.database();
-  let userId;
+  let userId, userStatus = "active";
 
   // 🚀 Register
   function register() {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
+    const email = emailInput.value, pass = passwordInput.value;
     auth.createUserWithEmailAndPassword(email, pass)
       .then(user => {
         userId = user.user.uid;
         const deviceId = navigator.userAgent;
         fetch("https://api.ipify.org?format=json")
           .then(res => res.json())
-          .then(data => {
+          .then(ip => {
             db.ref("users/" + userId).set({
-              email: email,
-              saldo: 0,
-              status: "active",
+              email, saldo: 0, status: "active",
               createdAt: Date.now(),
-              deviceId: deviceId,
-              ip: data.ip
+              deviceId, ip: ip.ip
             });
           });
         showNotif("Registrasi sukses!", "green");
@@ -125,56 +147,45 @@
 
   // 🚀 Login
   function login() {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
+    const email = emailInput.value, pass = passwordInput.value;
     auth.signInWithEmailAndPassword(email, pass)
       .catch(err => showNotif(err.message, "red"));
   }
 
-  // 🔄 Auto-login cek status
+  // 🔄 Auto-login & cek status
   auth.onAuthStateChanged(user => {
     if (user) {
       userId = user.uid;
-      db.ref("users/" + userId).once("value", s => {
-        const data = s.val();
-        if (data.status === "banned") {
-          showNotif("🚫 Akun dibanned. Hubungi @nusataskproject", "red");
-          auth.signOut();
+      db.ref("users/" + userId).on("value", snap => {
+        const data = snap.val();
+        if (!data) return;
+        userStatus = data.status;
+        if (userStatus === "banned") {
+          disableAllButtons();
+          saldo.innerText = "Saldo: 🚫 Diblokir";
+          showNotif("Akun dibanned, hubungi @nusataskproject", "red");
           return;
         }
-        // 🚨 Anti tuyul: cek device & ip
-        const nowDevice = navigator.userAgent;
-        fetch("https://api.ipify.org?format=json")
-          .then(res => res.json())
-          .then(ipData => {
-            if (data.deviceId !== nowDevice || data.ip !== ipData.ip) {
-              db.ref("users/" + userId + "/status").set("banned");
-              showNotif("🚫 Akun terdeteksi curang, dibanned!", "red");
-              auth.signOut();
-              return;
-            }
-          });
-
-        document.getElementById("authBox").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
-        loadSaldo();
+        // aktif → saldo realtime
+        saldo.innerText = "Saldo: Rp" + (data.saldo || 0).toLocaleString();
+        enableAllButtons();
       });
+      authBox.style.display = "none";
+      dashboard.style.display = "block";
+      loading.style.display = "none";
     } else {
-      document.getElementById("authBox").style.display = "block";
-      document.getElementById("dashboard").style.display = "none";
+      authBox.style.display = "block";
+      dashboard.style.display = "none";
+      loading.style.display = "none";
     }
   });
 
-  // 🔄 Load saldo realtime
-  function loadSaldo() {
-    db.ref("users/" + userId + "/saldo").on("value", snap => {
-      const saldo = snap.val() || 0;
-      document.getElementById("saldo").innerText = "Saldo: Rp" + saldo.toLocaleString();
-    });
-  }
-
-  // 🚦 Handle klik tombol reward/bonus
+  // 🚦 Tombol reward/bonus
   function handleClick(btnId, type) {
+    if (userStatus === "banned") {
+      showNotif("🚫 Anda dibanned!", "red");
+      return;
+    }
     const btn = document.getElementById(btnId);
     const cooldownRef = db.ref("cooldowns/" + userId + "/" + btnId);
     const dailyRef = db.ref("daily/" + userId + "/" + btnId);
@@ -182,22 +193,18 @@
     cooldownRef.once("value", cSnap => {
       const now = Date.now();
       const cooldownEnd = cSnap.val() || 0;
-
       if (now < cooldownEnd) {
         const sisa = Math.ceil((cooldownEnd - now) / 1000);
-        showNotif("⏳ Tunggu " + sisa + " detik lagi", "orange");
-        return;
+        return showNotif("⏳ Tunggu " + sisa + " detik lagi", "orange");
       }
 
-      // ✅ cek limit harian
       dailyRef.once("value", dSnap => {
         let data = dSnap.val() || { count: 0, lastReset: new Date().toDateString() };
         if (data.lastReset !== new Date().toDateString()) {
           data = { count: 0, lastReset: new Date().toDateString() };
         }
         if (data.count >= 20) {
-          showNotif("⚠️ Limit harian tercapai untuk " + btnId, "red");
-          return;
+          return showNotif("⚠️ Limit harian tercapai", "red");
         }
 
         // 💰 Tambah saldo
@@ -205,13 +212,11 @@
         const saldoRef = db.ref("users/" + userId + "/saldo");
         saldoRef.transaction(saldo => (saldo || 0) + reward);
 
-        // ⏱️ Simpan cooldown 2 menit
-        cooldownRef.set(Date.now() + 2 * 60 * 1000);
-
-        // 📊 Update harian
+        // ⏱️ Cooldown 2 menit
+        cooldownRef.set(Date.now() + 2*60*1000);
         dailyRef.set({ count: data.count + 1, lastReset: data.lastReset });
 
-        showNotif("✅ Berhasil klaim Rp" + reward, "green");
+        showNotif("✅ Klaim Rp" + reward, "green");
         startCooldown(btn, 120);
       });
     });
@@ -220,12 +225,10 @@
   // ⏱️ Cooldown tombol
   function startCooldown(btn, durasi) {
     btn.disabled = true;
-    let sisa = durasi;
-    const asli = btn.innerText;
+    let sisa = durasi, asli = btn.innerText;
     const timer = setInterval(() => {
       btn.innerText = "⏳ " + sisa + "s";
-      sisa--;
-      if (sisa < 0) {
+      if (sisa-- <= 0) {
         clearInterval(timer);
         btn.disabled = false;
         btn.innerText = asli;
@@ -242,11 +245,22 @@
     setTimeout(() => { n.style.display = "none"; }, 4000);
   }
 
+  function disableAllButtons() {
+    ["reward1","reward2","xstra1","xstra2"].forEach(id=>{
+      document.getElementById(id).disabled = true;
+    });
+  }
+  function enableAllButtons() {
+    ["reward1","reward2","xstra1","xstra2"].forEach(id=>{
+      document.getElementById(id).disabled = false;
+    });
+  }
+
   // 🎯 Event tombol
-  document.getElementById("reward1").onclick = () => handleClick("reward1","reward");
-  document.getElementById("reward2").onclick = () => handleClick("reward2","reward");
-  document.getElementById("xstra1").onclick = () => handleClick("xstra1","xstra");
-  document.getElementById("xstra2").onclick = () => handleClick("xstra2","xstra");
+  reward1.onclick = () => handleClick("reward1","reward");
+  reward2.onclick = () => handleClick("reward2","reward");
+  xstra1.onclick = () => handleClick("xstra1","xstra");
+  xstra2.onclick = () => handleClick("xstra2","xstra");
 </script>
 </body>
 </html>
