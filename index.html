@@ -8,11 +8,10 @@
   <style>
     :root{
       --bg:#0b0f1a; --card:#0f172a; --muted:#8ea0c8; --text:#eaf1ff;
-      --primary:#5b8cff; --primary-2:#355bff; --accent:#22d3ee; --danger:#ef4444; --ok:#22c55e;
-      --ring:rgba(91,140,255,.35);
+      --primary:#5b8cff; --primary-2:#355bff; --accent:#22d3ee;
+      --danger:#ef4444; --ok:#22c55e; --ring:rgba(91,140,255,.35);
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
+    *{box-sizing:border-box} html,body{height:100%}
     body{
       margin:0; font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;
       background:
@@ -30,19 +29,17 @@
       animation:float 6s ease-in-out infinite;
     }
     @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-
     .card{
       background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
       border:1px solid rgba(148,163,184,.15);
       border-radius:18px; padding:18px; margin:14px 0;
       backdrop-filter: blur(6px);
       box-shadow: 0 10px 30px rgba(2,6,23,.6);
+      animation:fadeIn .25s ease;
     }
-
-    h1{font-size:20px;margin:0}
-    h2{font-size:18px;margin:0 0 10px}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}}
+    h1{font-size:20px;margin:0} h2{font-size:18px;margin:0 0 10px}
     .muted{color:var(--muted);font-size:14px}
-
     input{
       width:100%; padding:12px 14px; margin:8px 0;
       background:rgba(15,23,42,.7); color:var(--text);
@@ -52,35 +49,22 @@
     input:focus{border-color:var(--primary); box-shadow:0 0 0 6px var(--ring)}
     .row{display:flex;justify-content:space-between;gap:10px;align-items:center}
     .stack>*{display:block;margin:10px 0}
-
     button{
-      position:relative;
-      width:100%; padding:13px 14px; border:0; border-radius:14px;
+      position:relative; width:100%; padding:13px 14px; border:0; border-radius:14px;
       background:linear-gradient(180deg,var(--primary),var(--primary-2));
-      color:#fff; font-weight:700; letter-spacing:.2px;
-      cursor:pointer; transition: transform .08s ease, box-shadow .2s ease, filter .2s ease;
-      box-shadow:0 10px 20px rgba(53,91,255,.35);
-      overflow:hidden; user-select:none;
+      color:#fff; font-weight:700; letter-spacing:.2px; cursor:pointer;
+      transition: transform .08s ease, box-shadow .2s ease, filter .2s ease;
+      box-shadow:0 10px 20px rgba(53,91,255,.35); overflow:hidden; user-select:none;
     }
-    button:active{transform:translateY(1px)}
-    button[disabled]{opacity:.55; cursor:not-allowed; box-shadow:none; filter:grayscale(.2)}
-    .btn-ok{background:linear-gradient(180deg,#22c55e,#16a34a)}
-    .btn-danger{background:linear-gradient(180deg,#ef4444,#dc2626)}
-    .ghost{
-      background:transparent;border:1px dashed rgba(148,163,184,.25);
-      color:var(--muted); box-shadow:none; font-weight:600;
-    }
-    /* Ripple */
-    button:after{
-      content:""; position:absolute; inset:auto; width:0; height:0; border-radius:999px; opacity:.4;
-      background:#fff; transform:translate(-50%,-50%); pointer-events:none;
+    button:active{transform:translateY(1px)} button[disabled]{opacity:.55; cursor:not-allowed; box-shadow:none; filter:grayscale(.2)}
+    .btn-ok{background:linear-gradient(180deg,#22c55e,#16a34a)} .ghost{background:transparent;border:1px dashed rgba(148,163,184,.25);color:var(--muted); box-shadow:none; font-weight:600;}
+    button::after{
+      content:""; position:absolute; left:var(--x,50%); top:var(--y,50%);
+      width:0;height:0;border-radius:999px;background:#fff;opacity:.4;transform:translate(-50%,-50%);
       transition:width .45s ease,height .45s ease,opacity .6s ease;
     }
-    button.animate-ripple:after{width:260px;height:260px;opacity:0}
-
+    button.ripple::after{width:240px;height:240px;opacity:0}
     .pill{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(91,140,255,.15);border:1px solid rgba(91,140,255,.35);}
-
-    /* Toasts */
     .toasts{position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:10px; z-index:50}
     .toast{
       min-width:220px; max-width:320px; padding:12px 14px; border-radius:12px;
@@ -88,12 +72,8 @@
       box-shadow:0 10px 30px rgba(2,6,23,.7);
       transform:translateY(10px); opacity:0; animation:toast-in .18s ease forwards;
     }
-    .toast.ok{border-color:rgba(34,197,94,.45)}
-    .toast.warn{border-color:rgba(234,179,8,.45)}
-    .toast.err{border-color:rgba(239,68,68,.45)}
+    .toast.ok{border-color:rgba(34,197,94,.45)} .toast.warn{border-color:rgba(234,179,8,.45)} .toast.err{border-color:rgba(239,68,68,.45)}
     @keyframes toast-in{to{transform:translateY(0);opacity:1}}
-
-    /* Shimmer balance */
     .balance{
       font-size:26px; font-weight:900;
       background:linear-gradient(90deg,#fff, #9cc2ff, #fff);
@@ -101,11 +81,8 @@
       background-size:200% 100%; animation:shine 2.5s linear infinite;
     }
     @keyframes shine{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-    .ads{
-      display:block;text-align:center;padding:10px;border-radius:12px;border:1px dashed rgba(148,163,184,.25);
-      color:#a7c3ff;text-decoration:none
-    }
+    .ads{display:block;text-align:center;padding:10px;border-radius:12px;border:1px dashed rgba(148,163,184,.25);color:#a7c3ff;text-decoration:none}
+    .warning{background:linear-gradient(180deg, rgba(255,225,0,.06), rgba(255,225,0,.00)); border-color:rgba(234,179,8,.35)}
   </style>
 </head>
 <body>
@@ -114,7 +91,7 @@
       <div class="logo" aria-hidden="true"></div>
       <div>
         <h1>Bot Earning — Pro</h1>
-        <div class="muted">UI modern • Dark • Cooldown persist • Notif profesional</div>
+        <div class="muted">Dark UI • Live saldo • Cooldown persist • Notif profesional</div>
       </div>
     </div>
 
@@ -128,8 +105,20 @@
           <button id="btnLogin" type="submit">Masuk</button>
           <button id="btnRegister" type="button" class="btn-ok">Daftar</button>
         </div>
-        <div class="muted">Sekali daftar → langsung login otomatis.</div>
+        <div class="muted">Sekali daftar → langsung auto-login.</div>
       </form>
+    </div>
+
+    <!-- WARNING (5s before continue) -->
+    <div id="warnCard" class="card warning" style="display:none">
+      <h2>Peringatan</h2>
+      <ul class="muted">
+        <li>Satu akun per pengguna. Aktivitas mencurigakan diblokir.</li>
+        <li>IP saat pendaftaran dicatat (pindah jaringan diperbolehkan).</li>
+        <li>Kecurangan/otomasi tanpa izin akan dibatasi.</li>
+      </ul>
+      <button id="btnContinue" disabled>Continue (5)</button>
+      <div class="muted" style="margin-top:6px">Tunggu 5 detik, lalu lanjut ke dashboard.</div>
     </div>
 
     <!-- DASHBOARD -->
@@ -150,16 +139,14 @@
         <button id="btnLogout" class="ghost" style="width:auto;padding:10px 14px">Keluar</button>
       </div>
 
+      <!-- Buttons vertical -->
       <div class="stack" style="margin-top:10px">
-        <!-- TOMBOL 1: MENGHASILKAN (Monetag) -->
         <button id="btnEarn" data-label="Menghasilkan (+Rp30.000)">Menghasilkan (+Rp30.000)</button>
         <a id="slotMonetag" class="ads" href="#" target="_blank" rel="noopener">[Slot Monetag]</a>
 
-        <!-- TOMBOL 2: XSTRA BONUS 1 (KlikAdilla) -->
         <button id="btnBonus1" data-label="Xstra Bonus 1 (+Rp30.000)">Xstra Bonus 1 (+Rp30.000)</button>
         <a id="slotKlik1" class="ads" href="#" target="_blank" rel="noopener">[Slot KlikAdilla 1]</a>
 
-        <!-- TOMBOL 3: XSTRA BONUS 2 (KlikAdilla) -->
         <button id="btnBonus2" data-label="Xstra Bonus 2 (+Rp30.000)">Xstra Bonus 2 (+Rp30.000)</button>
         <a id="slotKlik2" class="ads" href="#" target="_blank" rel="noopener">[Slot KlikAdilla 2]</a>
       </div>
@@ -168,14 +155,14 @@
     </div>
   </div>
 
-  <!-- Toast container -->
   <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- FIREBASE (modular) -->
+  <!-- FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    import { getDatabase, ref, onValue, get, set, update, runTransaction, child } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
     // === CONFIG KAMU ===
     const firebaseConfig = {
@@ -185,10 +172,11 @@
       storageBucket: "nusataskproject.firebasestorage.app",
       messagingSenderId: "409602188456",
       appId: "1:409602188456:web:6302d3030b763324e28e9d",
-      measurementId: "G-9389QL1WRE"
+      measurementId: "G-9389QL1WRE",
+      databaseURL: "https://nusataskproject-default-rtdb.firebaseio.com"  <!-- pastikan URL RTDB aktif -->
     };
 
-    // === ADS LINKS (GANTI DENGAN LINK IKLANMU) ===
+    // === ADS LINKS (GANTI DENGAN IKLANMU) ===
     const MONETAG_URL = "https://example-monetag.com/campaign"; // GANTI
     const KLIK1_URL  = "https://example-klikadila.com/camp-1";  // GANTI
     const KLIK2_URL  = "https://example-klikadila.com/camp-2";  // GANTI
@@ -197,17 +185,20 @@
     document.getElementById("slotKlik2").href   = KLIK2_URL;
 
     // === CONST ===
-    const REWARD = 30000;            // Rp 30.000 per aksi
-    const COOLDOWN_MS = 3*60*1000;   // 3 menit
-    const fmtIDR = n => new Intl.NumberFormat('id-ID', {style:'currency', currency:'IDR', maximumFractionDigits:0}).format(n);
+    const REWARD = 30000;
+    const COOLDOWN_MS = 3*60*1000; // 3 menit
+    const CONTINUE_WAIT_MS = 5000; // 5 detik
+    const fmtIDR = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n);
 
     // === INIT ===
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db   = getFirestore(app);
+    const fs   = getFirestore(app);
+    const rtdb = getDatabase(app);
 
     // === UI elts ===
     const authCard = document.getElementById('authCard');
+    const warnCard = document.getElementById('warnCard');
     const dashCard = document.getElementById('dashCard');
     const authForm = document.getElementById('authForm');
     const btnLogin = document.getElementById('btnLogin');
@@ -221,171 +212,190 @@
     const btnEarn = document.getElementById('btnEarn');
     const btnBonus1 = document.getElementById('btnBonus1');
     const btnBonus2 = document.getElementById('btnBonus2');
-
+    const btnContinue = document.getElementById('btnContinue');
     const toasts = document.getElementById('toasts');
-    function toast(msg, type='ok'){ // ok | warn | err
+
+    // Toast
+    function toast(msg,type='ok'){
       const t = document.createElement('div');
-      t.className = `toast ${type}`;
-      t.innerHTML = msg;
+      t.className = `toast ${type}`; t.innerHTML = msg;
       toasts.appendChild(t);
       setTimeout(()=>{ t.style.opacity=.0; t.style.transform='translateY(6px)'; }, 2200);
       setTimeout(()=> t.remove(), 2700);
+      if(navigator.vibrate) navigator.vibrate(10);
+    }
+    // Ripple
+    function attachRipple(btn){
+      btn.addEventListener('click', e=>{
+        const rect = btn.getBoundingClientRect();
+        btn.style.setProperty('--x', `${e.clientX-rect.left}px`);
+        btn.style.setProperty('--y', `${e.clientY-rect.top}px`);
+        btn.classList.remove('ripple'); void btn.offsetWidth; btn.classList.add('ripple');
+      });
+    }
+    [btnLogin,btnRegister,btnLogout,btnEarn,btnBonus1,btnBonus2,btnContinue].forEach(b=>b&&attachRipple(b));
+
+    // IP helper
+    async function getPublicIP(){
+      try{ const r=await fetch("https://api.ipify.org?format=json"); const j=await r.json(); return j.ip||"-"; }
+      catch{ return "-"; }
     }
 
-    function ripple(btn){
-      btn.classList.remove('animate-ripple'); // restart animation
-      void btn.offsetWidth; // reflow
-      btn.classList.add('animate-ripple');
-    }
-
+    // Cooldown label
     function setCooldownUI(btn, msLeft){
       const base = btn.dataset.label;
       if(msLeft<=0){ btn.disabled=false; btn.textContent=base; }
       else{
         btn.disabled=true;
-        const s = Math.ceil(msLeft/1000);
-        const m = Math.floor(s/60), r = s%60;
+        const s = Math.ceil(msLeft/1000); const m = Math.floor(s/60), r = s%60;
         btn.textContent = `${base} (tunggu ${m>0? m+"m "+r+"s": r+"s"})`;
       }
     }
 
-    function tickButtons(state){
-      const now = Date.now();
-      setCooldownUI(btnEarn,   state.cooldowns.earn   - now);
-      setCooldownUI(btnBonus1, state.cooldowns.bonus1 - now);
-      setCooldownUI(btnBonus2, state.cooldowns.bonus2 - now);
-      requestAnimationFrame(()=>tickButtons(state));
-    }
-
-    async function getPublicIP(){
-      try{
-        const r = await fetch("https://api.ipify.org?format=json");
-        const j = await r.json();
-        return j.ip || "-";
-      }catch{ return "-"; }
-    }
-
-    async function ensureUserDoc(u){
-      const ref = doc(db,"users",u.uid);
-      const snap = await getDoc(ref);
-      if(!snap.exists()){
-        const ip = await getPublicIP();
-        await setDoc(ref,{
-          email: u.email,
-          balance: 0,
-          role: "user",
-          createdAt: serverTimestamp(),
-          signupIp: ip,
-          lastIp: ip,
-          cooldowns: { earn:0, bonus1:0, bonus2:0 }
-        });
-        return {balance:0, cooldowns:{earn:0,bonus1:0,bonus2:0}, lastIp: ip};
-      }else{
-        const d = snap.data();
-        // update IP log (pindah jaringan boleh)
-        const ip = await getPublicIP();
-        if(d.lastIp !== ip){ await updateDoc(ref,{ lastIp: ip }); }
-        return d;
-      }
-    }
-
-    async function addBalance(u, inc){
-      const ref = doc(db,"users",u.uid);
-      const snap = await getDoc(ref);
-      const curr = (snap.exists() && (snap.data().balance||0)) || 0;
-      await updateDoc(ref,{ balance: curr + inc });
-      // log optional
-      await addDoc(collection(db,"earnings"),{
-        uid: u.uid, amount: inc, createdAt: serverTimestamp(), source: "button"
-      });
-      return curr + inc;
-    }
-
-    async function setCooldown(u, key, until){
-      const ref = doc(db,"users",u.uid);
-      await updateDoc(ref,{ [`cooldowns.${key}`]: until });
-    }
-
-    function showDashboard(u, state){
-      userEmailEl.textContent = u.email;
-      saldoEl.textContent = fmtIDR(state.balance || 0);
-      ipChip.textContent = `IP: ${state.lastIp || "-"}`;
-      authCard.style.display = 'none';
-      dashCard.style.display = 'block';
-      tickButtons(state);
-
-      btnEarn.onclick = async ()=>{
-        ripple(btnEarn);
-        const now = Date.now();
-        if(now < state.cooldowns.earn){ toast("Masih cooldown untuk tombol ini.", "warn"); return; }
-        if(MONETAG_URL?.startsWith("http")) window.open(MONETAG_URL,"_blank","noopener");
-        const nb = await addBalance(auth.currentUser, REWARD);
-        state.balance = nb; saldoEl.textContent = fmtIDR(nb);
-        state.cooldowns.earn = now + COOLDOWN_MS; await setCooldown(auth.currentUser, 'earn', state.cooldowns.earn);
-        toast(`Berhasil +${fmtIDR(REWARD)} 🎉`, "ok");
-      };
-
-      btnBonus1.onclick = async ()=>{
-        ripple(btnBonus1);
-        const now = Date.now();
-        if(now < state.cooldowns.bonus1){ toast("Masih cooldown untuk tombol ini.", "warn"); return; }
-        if(KLIK1_URL?.startsWith("http")) window.open(KLIK1_URL,"_blank","noopener");
-        const nb = await addBalance(auth.currentUser, REWARD);
-        state.balance = nb; saldoEl.textContent = fmtIDR(nb);
-        state.cooldowns.bonus1 = now + COOLDOWN_MS; await setCooldown(auth.currentUser, 'bonus1', state.cooldowns.bonus1);
-        toast(`Bonus masuk +${fmtIDR(REWARD)} ✅`, "ok");
-      };
-
-      btnBonus2.onclick = async ()=>{
-        ripple(btnBonus2);
-        const now = Date.now();
-        if(now < state.cooldowns.bonus2){ toast("Masih cooldown untuk tombol ini.", "warn"); return; }
-        if(KLIK2_URL?.startsWith("http")) window.open(KLIK2_URL,"_blank","noopener");
-        const nb = await addBalance(auth.currentUser, REWARD);
-        state.balance = nb; saldoEl.textContent = fmtIDR(nb);
-        state.cooldowns.bonus2 = now + COOLDOWN_MS; await setCooldown(auth.currentUser, 'bonus2', state.cooldowns.bonus2);
-        toast(`Bonus masuk +${fmtIDR(REWARD)} ✅`, "ok");
-      };
-    }
-
-    // AUTH HANDLERS
+    // Auth handlers
     authForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
       try{
         await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
-        toast("Login berhasil. Selamat datang 👋", "ok");
-      }catch(err){ toast("Login gagal: "+err.message, "err"); }
+        toast("Login berhasil. Selamat datang 👋","ok");
+      }catch(err){ toast("Login gagal: "+err.message,"err"); }
     });
     btnRegister.addEventListener("click", async ()=>{
       try{
         await createUserWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
-        toast("Registrasi sukses. Membuat akun…", "ok");
-      }catch(err){ toast("Registrasi gagal: "+err.message, "err"); }
+        toast("Registrasi sukses. Menyiapkan akun…","ok");
+      }catch(err){ toast("Registrasi gagal: "+err.message,"err"); }
     });
-    btnLogout.addEventListener("click", async ()=>{
-      await signOut(auth); toast("Kamu telah keluar.", "ok");
-    });
+    btnLogout.addEventListener("click", async ()=>{ await signOut(auth); toast("Kamu telah keluar.","ok"); });
 
-    // AUTH STATE
+    // Ensure profile (Firestore) + setup RTDB nodes
+    async function ensureProfile(u){
+      const uref = doc(fs,"users",u.uid);
+      const usnap = await getDoc(uref);
+      const ip = await getPublicIP();
+
+      if(!usnap.exists()){
+        await setDoc(uref,{
+          email: u.email, role:"user", balance:0,
+          createdAt: serverTimestamp(), signupIp: ip, lastIp: ip,
+          warnedOnce:false
+        });
+      }else{
+        const d = usnap.data();
+        if(d.lastIp !== ip) await updateDoc(uref,{ lastIp: ip });
+      }
+
+      // RTDB: balance & cooldown defaults
+      const balRef = ref(rtdb, `balances/${u.uid}`);
+      const cdRef  = ref(rtdb, `cooldowns/${u.uid}`);
+      const balSnap = await get(balRef);
+      if(!balSnap.exists()) await set(balRef, 0);
+      const cdSnap = await get(cdRef);
+      if(!cdSnap.exists()) await set(cdRef, { earn:0, bonus1:0, bonus2:0 });
+
+      return ip;
+    }
+
+    // Show warning (5s)
+    function showWarning(onDone){
+      warnCard.style.display='block'; dashCard.style.display='none';
+      btnContinue.disabled = true;
+      let start = Date.now();
+      const timer = setInterval(()=>{
+        const left = CONTINUE_WAIT_MS - (Date.now()-start);
+        if(left<=0){ btnContinue.textContent="Continue"; btnContinue.disabled=false; clearInterval(timer); }
+        else{ btnContinue.textContent=`Continue (${Math.ceil(left/1000)})`; }
+      }, 200);
+      btnContinue.onclick = onDone;
+    }
+
+    // Dashboard
+    function showDashboard(){
+      authCard.style.display='none'; warnCard.style.display='none'; dashCard.style.display='block';
+    }
+
+    // Keep UI synced (balance + cooldowns)
+    function bindRealtime(u){
+      // Balance
+      onValue(ref(rtdb,`balances/${u.uid}`),(s)=>{
+        const val = s.exists()? s.val():0; saldoEl.textContent = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(val);
+      });
+      // Cooldowns + tick
+      const cstate = { earn:0, bonus1:0, bonus2:0 };
+      onValue(ref(rtdb,`cooldowns/${u.uid}`),(s)=>{
+        const v = s.val()||{earn:0,bonus1:0,bonus2:0}; cstate.earn=v.earn||0; cstate.bonus1=v.bonus1||0; cstate.bonus2=v.bonus2||0;
+      });
+      (function loop(){
+        const now = Date.now();
+        setCooldownUI(btnEarn,   cstate.earn   - now);
+        setCooldownUI(btnBonus1, cstate.bonus1 - now);
+        setCooldownUI(btnBonus2, cstate.bonus2 - now);
+        requestAnimationFrame(loop);
+      })();
+    }
+
+    // Claim handler
+    async function claim(u, key, adUrl){
+      const cdRef = ref(rtdb, `cooldowns/${u.uid}/${key}`);
+      const balRef = ref(rtdb, `balances/${u.uid}`);
+
+      // Check cooldown atomically (two-step, still client-side)
+      const cdSnap = await get(cdRef);
+      const now = Date.now();
+      const nextAt = (cdSnap.exists()? cdSnap.val():0);
+      if(now < nextAt){ toast("Masih cooldown untuk tombol ini.","warn"); return; }
+
+      if(adUrl && adUrl.startsWith("http")) window.open(adUrl, "_blank","noopener");
+
+      // Increment balance atomically via transaction
+      const newBalance = await runTransaction(balRef, (curr)=> (curr||0)+REWARD).then(r=>r.snapshot.val());
+
+      // Write cooldown (client time; untuk anti-manipulasi penuh butuh server)
+      await update(ref(rtdb,`cooldowns/${u.uid}`), { [key]: now + COOLDOWN_MS });
+
+      // Mirror ke Firestore (profile + earnings log)
+      await Promise.all([
+        updateDoc(doc(fs,"users",u.uid), { balance: newBalance }),
+        addDoc(collection(fs,"earnings"), { uid:u.uid, amount:REWARD, source:key, createdAt:serverTimestamp() })
+      ]);
+
+      toast(`Berhasil +${fmtIDR(REWARD)} 🎉`, "ok");
+    }
+
+    // Auth state
     onAuthStateChanged(auth, async (u)=>{
-      if(!u){ authCard.style.display='block'; dashCard.style.display='none'; return; }
+      if(!u){ authCard.style.display='block'; warnCard.style.display='none'; dashCard.style.display='none'; return; }
       try{
-        const data = await ensureUserDoc(u);
-        const state = {
-          balance: data.balance||0,
-          lastIp: data.lastIp||"-",
-          cooldowns: data.cooldowns || { earn:0, bonus1:0, bonus2:0 }
-        };
-        showDashboard(u, state);
+        const ip = await ensureProfile(u);
+        userEmailEl.textContent = u.email; ipChip.textContent = `IP: ${ip}`;
+        // Warning 1x
+        const prof = await getDoc(doc(fs,"users",u.uid));
+        const warned = prof.exists() && prof.data().warnedOnce===true;
+        if(!warned){
+          showWarning(async ()=>{
+            await updateDoc(doc(fs,"users",u.uid), { warnedOnce:true });
+            showDashboard();
+            bindRealtime(u);
+          });
+        }else{
+          showDashboard();
+          bindRealtime(u);
+        }
+
+        // Wire buttons
+        btnEarn.onclick   = ()=> claim(u,'earn',MONETAG_URL);
+        btnBonus1.onclick = ()=> claim(u,'bonus1',KLIK1_URL);
+        btnBonus2.onclick = ()=> claim(u,'bonus2',KLIK2_URL);
+
       }catch(e){
-        toast(e.message || "Terjadi kesalahan.", "err");
+        toast(e.message || "Terjadi kesalahan.","err");
         await signOut(auth);
       }
     });
   </script>
 
-  <!-- ====== TARUH SCRIPT IKLANMU DI SINI (dari Monetag / KlikAdilla) ======
-       Contoh (placeholder): 
+  <!-- ====== TARUH SCRIPT IKLANMU DI SINI (Monetag / KlikAdilla) ======
+       Contoh (placeholder):
        <script src="https://YOUR-MONETAG-SNIPPET.js"></script>
        <script src="https://YOUR-KLIKADILLA-SNIPPET.js"></script>
   -->
