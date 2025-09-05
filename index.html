@@ -1,309 +1,207 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>NusaTask • Bot Earning</title>
 
-  <!-- Firebase v8 (compat dengan Realtime DB) -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-  <!-- Tailwind (CDN) -->
+  <!-- Tailwind -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
 
   <style>
-    :root{--bg:#0f172a;--card:#1e293b;--accent:#6366f1;}
-    body{background:var(--bg);font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;color:#e5e7eb;}
-    .card{background:var(--card);border-radius:1rem;box-shadow:0 10px 30px rgba(0,0,0,.45);}
-    .btn{background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:.9rem;padding:.9rem 1rem;font-weight:700}
+    body{background:#0f172a;font-family:Inter;color:#e5e7eb;}
+    .card{background:#1e293b;border-radius:1rem;box-shadow:0 8px 25px rgba(0,0,0,.45);}
+    .btn{background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:.9rem;padding:.9rem;font-weight:700}
     .btn:disabled{opacity:.55;cursor:not-allowed}
-    .brand{letter-spacing:.3px;background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;background-clip:text;color:transparent}
-    .overlay{position:fixed;inset:0;background:rgba(15,23,42,.94);display:none;place-items:center;z-index:50}
-    .fade-in{animation:fade .35s ease}
-    @keyframes fade {from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)}}
+    .overlay{position:fixed;inset:0;background:rgba(15,23,42,.95);display:none;place-items:center;z-index:50}
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
-  <!-- AUTH CARD -->
-  <div id="authCard" class="card w-full max-w-sm p-7 fade-in">
-    <h1 class="text-2xl font-extrabold mb-6 text-white">
-      <span class="brand">NusaTask</span> — Masuk / Daftar
-    </h1>
-
+  <!-- AUTH -->
+  <div id="authCard" class="card w-full max-w-sm p-7">
+    <h1 class="text-2xl font-extrabold mb-6 text-white">Masuk / Daftar</h1>
     <div class="space-y-3">
-      <input id="email" type="email" placeholder="Email"
-             class="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
-      <input id="password" type="password" placeholder="Password"
-             class="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+      <input id="email" type="email" placeholder="Email" class="w-full p-3 rounded bg-gray-800 text-white"/>
+      <input id="password" type="password" placeholder="Password" class="w-full p-3 rounded bg-gray-800 text-white"/>
       <button id="authBtn" class="btn w-full">Lanjutkan</button>
     </div>
-
-    <p id="authMsg" class="text-sm mt-3 text-red-400 min-h-[1.25rem]"></p>
-    <p class="text-xs text-gray-400 mt-6">Aman • 1 Akun/Device • Anti VPN/Proxy • Anti Cloning</p>
+    <p id="authMsg" class="text-sm mt-3 text-red-400"></p>
   </div>
 
   <!-- DASHBOARD -->
-  <div id="dash" class="hidden w-full max-w-md fade-in">
+  <div id="dash" class="hidden w-full max-w-md">
     <div class="card p-6 text-center">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold text-white">Dashboard</h2>
-        <button id="logoutBtn" class="text-xs text-gray-300 underline">Logout</button>
-      </div>
-
+      <h2 class="text-xl font-bold text-white mb-4">Dashboard</h2>
       <div class="p-5 rounded-xl bg-gray-800 mb-5">
         <p class="text-sm text-gray-300">Saldo</p>
         <p id="saldo" class="text-3xl font-extrabold text-green-400">Rp 0</p>
-        <p id="countInfo" class="text-xs text-gray-400 mt-1">0/20 kali hari ini • reset 07:00 WIB</p>
+        <p id="countInfo" class="text-xs text-gray-400 mt-1">0/20 kali hari ini (reset 07:00 WIB)</p>
       </div>
-
       <div class="space-y-3">
-        <button id="earnBtn"  class="btn w-full">Menghasilkan</button>
+        <button id="earnBtn" class="btn w-full">Menghasilkan</button>
         <button id="bonusBtn" class="btn w-full">Xstra Bonus</button>
       </div>
-
-      <div class="mt-4 text-sm text-gray-300 min-h-[1.25rem]">
-        <span id="notif"></span>
-      </div>
-
-      <div class="text-xs text-gray-500 mt-5">
-        Cooldown 3 menit per tombol. Tutup/refresh tidak menghapus cooldown.
-      </div>
+      <p id="notif" class="mt-4 text-sm text-gray-300 min-h-[1.25rem]"></p>
     </div>
   </div>
 
-  <!-- BLOCKED OVERLAY -->
+  <!-- BLOKIR OVERLAY -->
   <div id="blocked" class="overlay">
     <div class="text-center p-8">
       <h3 class="text-2xl font-extrabold mb-3 text-white">Akun Diblokir</h3>
-      <p class="text-gray-300 mb-6">Hubungi admin <span class="text-indigo-400">@nusataskproject</span></p>
+      <p class="text-gray-300">Hubungi admin <span class="text-indigo-400">@nusataskproject</span></p>
     </div>
   </div>
 
 <script>
-  /* ========================== CONFIG ========================== */
+  /* === FIREBASE CONFIG === */
   const firebaseConfig = {
     apiKey:"AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
     authDomain:"nusataskproject.firebaseapp.com",
-    projectId:"nusataskproject",
     databaseURL:"https://nusataskproject-default-rtdb.firebaseio.com",
+    projectId:"nusataskproject",
     storageBucket:"nusataskproject.firebasestorage.app",
     messagingSenderId:"409602188456",
     appId:"1:409602188456:web:6302d3030b763324e28e9d",
     measurementId:"G-9389QL1WRE"
   };
   firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db   = firebase.database();
+  const auth=firebase.auth(),db=firebase.database();
 
-  /* ========================== UI REFS ========================= */
-  const authCard  = document.getElementById('authCard');
-  const authBtn   = document.getElementById('authBtn');
-  const authMsg   = document.getElementById('authMsg');
-  const emailEl   = document.getElementById('email');
-  const passEl    = document.getElementById('password');
+  /* === REFS === */
+  const authCard=document.getElementById("authCard");
+  const authBtn=document.getElementById("authBtn");
+  const authMsg=document.getElementById("authMsg");
+  const emailEl=document.getElementById("email");
+  const passEl=document.getElementById("password");
+  const dash=document.getElementById("dash");
+  const saldoEl=document.getElementById("saldo");
+  const countInfo=document.getElementById("countInfo");
+  const notifEl=document.getElementById("notif");
+  const earnBtn=document.getElementById("earnBtn");
+  const bonusBtn=document.getElementById("bonusBtn");
+  const blockedOv=document.getElementById("blocked");
 
-  const dash      = document.getElementById('dash');
-  const saldoEl   = document.getElementById('saldo');
-  const countInfo = document.getElementById('countInfo');
-  const notifEl   = document.getElementById('notif');
-  const earnBtn   = document.getElementById('earnBtn');
-  const bonusBtn  = document.getElementById('bonusBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const blockedOv = document.getElementById('blocked');
+  /* === HELPERS === */
+  function dayKey(d){return d.toISOString().split("T")[0]}
+  function deviceId(){return navigator.userAgent+"|"+screen.width+"x"+screen.height;}
 
-  /* ====================== TIME (WIB via HTTPS) =================
-     gunakan worldtimeapi untuk ambil waktu Jakarta (anti manipulasi jam hp).
-  =============================================================== */
-  let cachedNow = null, lastTimeFetch = 0;
-  async function getJakartaNow() {
-    const now = Date.now();
-    if (cachedNow && now - lastTimeFetch < 60_000) return new Date(cachedNow); // cache 60s
-    try {
-      const r = await fetch("https://worldtimeapi.org/api/timezone/Asia/Jakarta");
-      const j = await r.json();
-      cachedNow = j.datetime; lastTimeFetch = Date.now();
-      return new Date(j.datetime);
-    } catch {
-      // fallback ke jam lokal jika API down
-      return new Date();
-    }
-  }
-  function dayKeyWIB(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
-
-  /* ====================== AUTH (login/daftar) ================== */
-  authBtn.onclick = async () => {
-    const email = emailEl.value.trim();
-    const pass  = passEl.value;
-    if (!email || !pass) { authMsg.textContent = "Email & password wajib diisi."; return; }
-    if (pass.length < 6) { authMsg.textContent = "Password minimal 6 karakter."; return; }
-
-    authMsg.textContent = "";
-    try {
-      await auth.signInWithEmailAndPassword(email, pass);
-    } catch {
-      try {
-        const cred = await auth.createUserWithEmailAndPassword(email, pass);
-        await db.ref("balances/"+cred.user.uid).set({ saldo:0, count:0, lastResetKey:"" });
-      } catch (e) {
-        authMsg.textContent = e.message || "Gagal autentikasi.";
-      }
+  /* === LOGIN/REGISTER === */
+  authBtn.onclick=async()=>{
+    const email=emailEl.value.trim();
+    const pass=passEl.value;
+    if(!email||!pass){authMsg.textContent="Isi email & password";return;}
+    try{
+      await auth.signInWithEmailAndPassword(email,pass);
+    }catch{
+      try{
+        const cred=await auth.createUserWithEmailAndPassword(email,pass);
+        await db.ref("balances/"+cred.user.uid).set({saldo:0,count:0,lastReset:dayKey(new Date())});
+      }catch(e){authMsg.textContent=e.message}
     }
   };
-  logoutBtn.onclick = () => auth.signOut();
 
-  /* =================== DEVICE BINDING (anti clone) ============= */
-  function deviceId() {
-    return navigator.userAgent + "|" + screen.width + "x" + screen.height;
-  }
-  async function enforceDevice(uid) {
-    const id = deviceId();
-    const ref = db.ref("devices/"+uid);
-    const snap = await ref.once("value");
-    if (!snap.exists()) {
-      await ref.set(id);
-    } else if (snap.val() !== id) {
-      await db.ref("blocked/"+uid).set(true);
-      await auth.signOut();
-      alert("Akun diblokir: terdeteksi login dari device berbeda.");
-    }
+  /* === DEVICE LOCK === */
+  async function enforceDevice(uid){
+    const id=deviceId();
+    const ref=db.ref("devices/"+uid);
+    const snap=await ref.once("value");
+    if(!snap.exists()) await ref.set(id);
+    else if(snap.val()!==id){await db.ref("blocked/"+uid).set(true);auth.signOut();}
   }
 
-  /* =================== VPN/Proxy Check (HTTPS) ================== 
-     pakai ipapi.is (tanpa key, HTTPS). Bila proxy/vpn/hosting/tor => blokir.
-  =============================================================== */
-  async function enforceNoVPN(uid) {
-    try {
-      const r = await fetch("https://ipapi.is/");
-      const j = await r.json();
-      const bad = j?.proxy || j?.vpn || j?.tor || j?.hosting || j?.is_proxy || j?.is_vpn || j?.is_tor || j?.is_hosting;
-      if (bad) {
+  /* === VPN CHECK === */
+  async function enforceNoVPN(uid){
+    try{
+      const r=await fetch("https://ipapi.is/");
+      const j=await r.json();
+      if(j.proxy||j.vpn||j.tor||j.hosting||j.is_proxy||j.is_vpn||j.is_tor||j.is_hosting){
         await db.ref("blocked/"+uid).set(true);
-        await auth.signOut();
-        alert("Akun diblokir: terdeteksi VPN/Proxy/Hosting.");
+        auth.signOut();
       }
-    } catch(_e) {/* diamkan jika gagal */}
+    }catch(e){}
   }
 
-  /* ===================== BLOCK OVERLAY ========================= */
+  /* === BLOCKED === */
   function listenBlocked(uid){
-    db.ref("blocked/"+uid).on("value", s=>{
-      blockedOv.style.display = s.exists() ? "grid" : "none";
-    });
+    db.ref("blocked/"+uid).on("value",s=>{blockedOv.style.display=s.exists()?"grid":"none";});
   }
 
-  /* =================== SALDO & LIMIT & RESET =================== */
+  /* === BALANCE === */
   function listenBalance(uid){
-    db.ref("balances/"+uid).on("value", s=>{
-      const v = s.val();
-      if (!v) return;
-      saldoEl.textContent = "Rp " + (v.saldo||0).toLocaleString("id-ID");
-      countInfo.textContent = `${v.count||0}/20 kali hari ini • reset 07:00 WIB`;
+    db.ref("balances/"+uid).on("value",s=>{
+      const v=s.val();if(!v)return;
+      saldoEl.textContent="Rp "+(v.saldo||0).toLocaleString("id-ID");
+      countInfo.textContent=`${v.count||0}/20 kali hari ini (reset 07:00 WIB)`;
     });
   }
 
+  /* === DAILY RESET === */
   async function ensureDailyReset(uid){
-    const now = await getJakartaNow();
-    const key = dayKeyWIB(now);
-    const hour = now.getHours();
-    const ref = db.ref("balances/"+uid);
+    const ref=db.ref("balances/"+uid);
     await ref.transaction(b=>{
-      if (!b) b = { saldo:0, count:0, lastResetKey:"" };
-      if ((b.lastResetKey||"") !== key && hour >= 7){
-        b.count = 0;
-        b.lastResetKey = key;
-      }
+      if(!b) b={saldo:0,count:0,lastReset:dayKey(new Date())};
+      const today=dayKey(new Date());
+      const hour=new Date().getHours();
+      if(b.lastReset!==today && hour>=7){b.count=0;b.lastReset=today;}
       return b;
     });
   }
 
-  /* ============= COOLDOWN (persist di Realtime DB) ============= 
-     path: cooldowns/<uid>/{earn,bonus} = lastClickMs (epoch Jakarta)
-     saat klik dicek sisa waktu; jika belum 3 menit, tolak dan tampilkan sisa.
-  =============================================================== */
-  async function getCooldown(uid, type){
-    const s = await db.ref(`cooldowns/${uid}/${type}`).once("value");
-    return s.val() || 0;
+  /* === COOLDOWN === */
+  async function getCooldown(uid,type){
+    const s=await db.ref(`cooldowns/${uid}/${type}`).once("value");
+    return s.val()||0;
   }
-  async function setCooldown(uid, type, ms){
+  async function setCooldown(uid,type,ms){
     await db.ref(`cooldowns/${uid}/${type}`).set(ms);
   }
 
-  async function handleReward(type){
-    const user = auth.currentUser; if (!user) return;
-    const uid = user.uid;
-    const btn = (type==="earn")?earnBtn:bonusBtn;
-
-    // waktu Jakarta & cooldown
-    const now = await getJakartaNow();
-    const nowMs = now.getTime();
-    const last = await getCooldown(uid, type);
-    const remain = 180000 - (nowMs - last); // 3 menit
-
-    if (remain > 0){
-      const sec = Math.ceil(remain/1000);
-      notifEl.textContent = `Cooldown ${type==="earn"?"Menghasilkan":"Xstra Bonus"}: ${sec} detik tersisa.`;
+  /* === REWARD === */
+  async function reward(uid,type){
+    const btn=(type==="earn")?earnBtn:bonusBtn;
+    const now=Date.now();
+    const last=await getCooldown(uid,type);
+    const remain=180000-(now-last); // 3 menit
+    if(remain>0){
+      notifEl.textContent=`Cooldown ${Math.ceil(remain/1000)} detik`;
       return;
     }
-
-    btn.disabled = true;
-    notifEl.textContent = "Memproses...";
-
     await ensureDailyReset(uid);
-
-    // transaksi saldo + count + limit 20x
-    const ref = db.ref("balances/"+uid);
-    let limited = false;
+    const ref=db.ref("balances/"+uid);
+    let limited=false;
     await ref.transaction(b=>{
-      if (!b) b = { saldo:0, count:0, lastResetKey:"" };
-      if (b.count >= 20){ limited = true; return b; }
-      b.saldo = (b.saldo||0) + 30000;
-      b.count = (b.count||0) + 1;
+      if(!b)b={saldo:0,count:0,lastReset:dayKey(new Date())};
+      const today=dayKey(new Date());
+      if(b.lastReset!==today){b.count=0;b.lastReset=today;}
+      if(b.count>=20){limited=true;return b;}
+      b.saldo=(b.saldo||0)+30000;
+      b.count=(b.count||0)+1;
+      b.lastReset=today;
       return b;
     });
-
-    if (limited){
-      notifEl.textContent = "Limit harian tercapai (20x). Reset 07:00 WIB.";
-      btn.disabled = false;
-      return;
-    }
-
-    await setCooldown(uid, type, nowMs);
-    notifEl.textContent = "Berhasil! Cooldown 3 menit berjalan.";
-    // tombol aktif kembali otomatis setelah 3 menit (opsional UX)
-    setTimeout(()=>{ btn.disabled = false; notifEl.textContent = ""; }, 180000);
+    if(limited){notifEl.textContent="Limit 20x tercapai";return;}
+    await setCooldown(uid,type,now);
+    notifEl.textContent="Berhasil! +30.000 (Cooldown 3 menit)";
   }
+  earnBtn.onclick=()=>reward(auth.currentUser.uid,"earn");
+  bonusBtn.onclick=()=>reward(auth.currentUser.uid,"bonus");
 
-  earnBtn.onclick  = ()=>handleReward("earn");
-  bonusBtn.onclick = ()=>handleReward("bonus");
-
-  /* ===================== AUTH STATE FLOW ======================= */
+  /* === AUTH STATE === */
   auth.onAuthStateChanged(async user=>{
-    if (user){
-      // UI
-      authCard.classList.add("hidden");
-      dash.classList.remove("hidden");
-
-      // proteksi
+    if(user){
+      authCard.classList.add("hidden");dash.classList.remove("hidden");
       await enforceDevice(user.uid);
       await enforceNoVPN(user.uid);
-
-      // listeners
-      listenBlocked(user.uid);
-      listenBalance(user.uid);
-
-      // initial checks
+      listenBlocked(user.uid);listenBalance(user.uid);
       await ensureDailyReset(user.uid);
-
-      // sinkronkan cooldown status tombol (opsional: tidak disable di awal)
-      notifEl.textContent = "";
-    } else {
-      dash.classList.add("hidden");
-      authCard.classList.remove("hidden");
-      blockedOv.style.display = "none";
-    }
+    }else{dash.classList.add("hidden");authCard.classList.remove("hidden");blockedOv.style.display="none";}
   });
 </script>
 </body>
