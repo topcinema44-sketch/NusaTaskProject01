@@ -9,57 +9,83 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @keyframes fade-in { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:translateY(0);} }
-    .animate-fade-in { animation:fade-in 1s ease-out forwards; }
-    @keyframes progress { 0%{width:0%} 100%{width:100%} }
-    .animate-progress { animation:progress 5s linear forwards; }
-    @keyframes fade-toast { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
-    .toast { animation:fade-toast 0.4s ease forwards; }
+    body {
+      background: linear-gradient(135deg, #1e1e2f, #2a2a3d);
+      font-family: 'Inter', sans-serif;
+    }
+    @keyframes fade-in { from { opacity:0; transform:translateY(20px);} to { opacity:1; transform:translateY(0);} }
+    .animate-fade-in { animation:fade-in 0.8s ease-out forwards; }
+    @keyframes slide-toast { from{opacity:0; transform:translateY(30px);} to{opacity:1; transform:translateY(0);} }
+    .toast { animation:slide-toast 0.4s ease forwards; }
+    .glass {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
   </style>
 </head>
-<body class="bg-gray-900 text-white">
+<body class="text-white">
 
   <!-- Username -->
-  <div id="user-info" class="fixed top-3 left-3 text-sm font-medium hidden"></div>
+  <div id="user-info" class="fixed top-3 left-3 text-sm font-semibold hidden"></div>
 
   <!-- Loading -->
-  <div id="loading" class="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-90 z-50">
-    <div class="text-3xl font-bold text-white opacity-0 animate-fade-in">NusaTask</div>
-    <div class="w-12 h-12 mt-6 border-4 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
-    <div class="w-48 h-2 bg-gray-700 mt-6 rounded-full overflow-hidden">
-      <div id="progress-bar" class="h-full bg-purple-500 animate-progress"></div>
+  <div id="loading" class="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-95 z-50">
+    <div class="text-4xl font-bold text-white opacity-0 animate-fade-in">NusaTask</div>
+    <div class="w-14 h-14 mt-6 border-4 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+    <div class="w-56 h-2 bg-gray-700 mt-6 rounded-full overflow-hidden">
+      <div id="progress-bar" class="h-full bg-purple-500 animate-[progress_5s_linear_forwards]"></div>
     </div>
-    <p id="loading-text" class="mt-4 text-white text-lg">Memuat...</p>
+    <p id="loading-text" class="mt-4 text-gray-300 text-lg">Memuat...</p>
   </div>
 
-  <!-- Blokir Screen -->
-  <div id="banned-screen" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 z-50">
-    <div class="bg-gray-800 p-8 rounded-2xl shadow-xl text-center max-w-md">
-      <h1 class="text-2xl font-bold mb-4">⚠️ Akun Diblokir</h1>
-      <p class="mb-4">Akun anda terdeteksi melakukan aktivitas mencurigakan / tuyul.</p>
+  <!-- Banned Screen -->
+  <div id="banned-screen" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-95 z-50">
+    <div class="glass p-8 rounded-2xl shadow-2xl text-center max-w-md animate-fade-in">
+      <h1 class="text-3xl font-bold mb-4 text-red-400">🚫 Akun Diblokir</h1>
+      <p class="mb-4">Aktivitas mencurigakan terdeteksi.</p>
       <p class="mb-6">Hubungi admin: <span class="text-purple-400 font-bold">@nusataskproject</span></p>
+    </div>
+  </div>
+
+  <!-- Warning Modal -->
+  <div id="warning-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
+    <div class="glass p-6 rounded-2xl shadow-xl max-w-md text-center animate-fade-in">
+      <h2 class="text-xl font-bold mb-4 text-yellow-400">⚠️ Peringatan Penting</h2>
+      <p class="mb-4">Segala bentuk <span class="font-bold">hack, nuyul, manipulasi</span> 
+      dilarang.</p>
+      <p class="mb-4">Jika terdeteksi → akun <span class="text-red-500 font-bold">banned otomatis</span>.</p>
+      <button onclick="closeWarning()" class="mt-4 px-5 py-2 bg-gradient-to-r from-purple-600 to-blue-500 rounded-xl font-bold hover:opacity-90 transition">
+        Saya Mengerti
+      </button>
     </div>
   </div>
 
   <!-- Auth -->
   <div id="auth-section" class="h-screen flex items-center justify-center">
-    <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-80 text-center">
-      <h1 class="text-xl font-bold mb-6">NusaTask</h1>
+    <div class="glass p-8 rounded-2xl shadow-xl w-80 text-center animate-fade-in">
+      <h1 class="text-2xl font-bold mb-6">🔑 NusaTask</h1>
       <input id="email" type="email" placeholder="Email" class="w-full mb-3 px-3 py-2 rounded-lg text-black">
       <input id="password" type="password" placeholder="Password" class="w-full mb-4 px-3 py-2 rounded-lg text-black">
-      <button onclick="loginOrRegister()" class="w-full py-2 bg-purple-600 rounded-xl font-bold hover:bg-purple-700 transition">Masuk / Daftar</button>
+      <button onclick="loginOrRegister()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-blue-500 rounded-xl font-bold hover:opacity-90 transition">Masuk / Daftar</button>
     </div>
   </div>
 
   <!-- Dashboard -->
-  <div id="dashboard" class="hidden p-6">
-    <h2 class="text-2xl font-bold mb-6">Dashboard</h2>
-    <div class="bg-gray-800 p-4 rounded-xl shadow-lg mb-6">
-      Saldo: <span id="saldo" class="font-bold text-green-400">0</span> poin
+  <div id="dashboard" class="hidden p-6 animate-fade-in">
+    <h2 class="text-3xl font-bold mb-6">📊 Dashboard</h2>
+
+    <div class="glass p-6 rounded-xl shadow-xl mb-6">
+      <p class="text-lg">Saldo Anda</p>
+      <p id="saldo" class="text-3xl font-bold text-green-400">0</p>
+      <div class="w-full bg-gray-700 h-2 mt-3 rounded-full overflow-hidden">
+        <div id="saldo-progress" class="h-2 bg-green-500 transition-all duration-500" style="width:0%"></div>
+      </div>
     </div>
-    <div class="flex flex-col gap-4">
-      <button onclick="earn('monetag')" class="py-3 bg-blue-600 rounded-xl font-bold hover:bg-blue-700 transition">Menghasilkan</button>
-      <button onclick="earn('klikadila')" class="py-3 bg-pink-600 rounded-xl font-bold hover:bg-pink-700 transition">Xstra Bonus</button>
+
+    <div class="grid gap-4">
+      <button onclick="earn('monetag')" class="py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-bold hover:opacity-90 transition">🚀 Menghasilkan</button>
+      <button onclick="earn('klikadila')" class="py-3 bg-gradient-to-r from-pink-600 to-red-500 rounded-xl font-bold hover:opacity-90 transition">🎁 Xstra Bonus</button>
     </div>
   </div>
 
@@ -85,26 +111,12 @@
       if(!id){ id="dev-"+Math.random().toString(36).substr(2,9); localStorage.setItem("deviceId",id); }
       return id;
     }
-    function showLoading(text="Memuat..."){
-      document.getElementById("loading").classList.remove("hidden");
-      document.getElementById("loading-text").innerText=text;
-      const bar=document.getElementById("progress-bar");
-      bar.classList.remove("animate-progress"); void bar.offsetWidth; bar.classList.add("animate-progress");
-      setTimeout(()=>hideLoading(),4000);
-    }
+    function showLoading(text="Memuat..."){ document.getElementById("loading").classList.remove("hidden"); document.getElementById("loading-text").innerText=text; setTimeout(()=>hideLoading(),4000); }
     function hideLoading(){ document.getElementById("loading").classList.add("hidden"); }
-    function showBanScreen(){ 
-      document.getElementById("banned-screen").classList.remove("hidden"); 
-      document.getElementById("auth-section").classList.add("hidden"); 
-      document.getElementById("dashboard").classList.add("hidden"); 
-    }
-    function showNotif(msg,type="info"){
-      const notif=document.createElement("div");
-      notif.className=`toast fixed bottom-5 right-5 px-4 py-2 rounded-xl shadow-lg text-white
-        ${type==="success"?"bg-green-500":type==="error"?"bg-red-500":"bg-blue-500"}`;
-      notif.innerText=msg;document.body.appendChild(notif);
-      setTimeout(()=>notif.remove(),4000);
-    }
+    function showBanScreen(){ document.getElementById("banned-screen").classList.remove("hidden"); document.getElementById("auth-section").classList.add("hidden"); document.getElementById("dashboard").classList.add("hidden"); }
+    function showNotif(msg,type="info"){ const notif=document.createElement("div"); notif.className=`toast fixed bottom-6 right-6 px-5 py-3 rounded-xl shadow-2xl text-white ${type==="success"?"bg-green-500":"bg-red-500"}`; notif.innerText=msg; document.body.appendChild(notif); setTimeout(()=>notif.remove(),4000); }
+    function showWarning(){ document.getElementById("warning-modal").classList.remove("hidden"); }
+    function closeWarning(){ document.getElementById("warning-modal").classList.add("hidden"); }
 
     // === Login/Register ===
     function loginOrRegister(){
@@ -117,8 +129,9 @@
         if(err.code==="auth/user-not-found"){
           auth.createUserWithEmailAndPassword(email,pass).then(()=>{
             hideLoading(); 
-            db.ref("users/"+auth.currentUser.uid).set({saldo:0,device:deviceId(),banned:false});
+            db.ref("users/"+auth.currentUser.uid).set({saldo:0,device:deviceId(),banned:false,lastClick:0,count:0,lastReset:0});
             showNotif("Registrasi berhasil","success");
+            showWarning();
           }).catch(e=>{hideLoading(); showNotif(e.message,"error")});
         } else { hideLoading(); showNotif(err.message,"error"); }
       });
@@ -146,22 +159,45 @@
     });
 
     // === Saldo ===
-    function loadSaldo(uid){ db.ref("users/"+uid+"/saldo").on("value",s=>{document.getElementById("saldo").innerText=s.val()||0;}); }
+    function loadSaldo(uid){ 
+      db.ref("users/"+uid+"/saldo").on("value",s=>{
+        let saldo=s.val()||0;
+        document.getElementById("saldo").innerText=saldo;
+        let persen=Math.min(100,(saldo/600000)*100);
+        document.getElementById("saldo-progress").style.width=persen+"%";
+      }); 
+    }
 
-    // === Earn ===
+    // === Earn (server time 07:00 WIB reset) ===
     function earn(src){
       const u=auth.currentUser;if(!u)return;
       const uid=u.uid;
       const ref=db.ref("users/"+uid);
-      ref.once("value").then(s=>{
-        let d=s.val()||{saldo:0,lastClick:0,count:0,date:""};
-        let today=new Date().toDateString();
-        if(d.date!==today){d.count=0; d.date=today;}
-        if(d.count>=20){showNotif("Limit harian tercapai","error"); return;}
-        if(Date.now()-d.lastClick<180000){showNotif("Cooldown 3 menit","error"); return;}
-        d.saldo+=30000; d.lastClick=Date.now(); d.count++;
-        ref.set(d);
-        showNotif("Berhasil +30.000 poin ("+src+")","success");
+
+      db.ref(".info/serverTimeOffset").once("value").then(snap=>{
+        const offset = snap.val() || 0;
+        const serverNow = new Date(Date.now() + offset);
+        const utc = serverNow.getTime() + serverNow.getTimezoneOffset() * 60000;
+        const wib = new Date(utc + (7 * 60 * 60000));
+
+        ref.once("value").then(s=>{
+          let d=s.val()||{saldo:0,lastClick:0,count:0,lastReset:0};
+          let resetTime = new Date(wib); resetTime.setHours(7,0,0,0);
+
+          if (wib.getTime() >= resetTime.getTime() && (!d.lastReset || d.lastReset < resetTime.getTime())) {
+            d.count = 0; d.lastReset = wib.getTime();
+          }
+
+          if(d.count >= 20){ showNotif("Limit harian tercapai","error"); return; }
+          if(wib.getTime() - d.lastClick < 180000){ showNotif("Cooldown 3 menit","error"); return; }
+
+          d.saldo += 30000;
+          d.lastClick = wib.getTime();
+          d.count++;
+
+          ref.set(d);
+          showNotif("Berhasil +30.000 poin ("+src+")","success");
+        });
       });
     }
 
