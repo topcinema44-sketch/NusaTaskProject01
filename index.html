@@ -1,96 +1,109 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NusaTask Project</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NusaTask – Earning</title>
+
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
-    body {
-      background: linear-gradient(135deg, #1e1e2f, #2a2a3d);
-      font-family: 'Inter', sans-serif;
-    }
-    @keyframes fade-in { from { opacity:0; transform:translateY(20px);} to { opacity:1; transform:translateY(0);} }
-    .animate-fade-in { animation:fade-in 0.8s ease-out forwards; }
-    @keyframes slide-toast { from{opacity:0; transform:translateY(30px);} to{opacity:1; transform:translateY(0);} }
-    .toast { animation:slide-toast 0.4s ease forwards; }
-    .glass {
-      background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.1);
-    }
+    :root { --glass: rgba(255,255,255,0.06); --glass-b: rgba(255,255,255,0.12); }
+    body{font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Inter,sans-serif;
+      background: radial-gradient(1200px 600px at 15% -20%, #3b82f6 0%, transparent 50%),
+                  radial-gradient(1000px 500px at 110% 10%, #a855f7 0%, transparent 50%),
+                  #0f1222;}
+    .glass{background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--glass-b);}
+    @keyframes fade {from{opacity:.0;transform:translateY(14px)}to{opacity:1;transform:none}}
+    .fade{animation:fade .6s ease forwards}
+    @keyframes toast{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+    .toast{animation:toast .25s ease forwards}
   </style>
 </head>
-<body class="text-white">
+<body class="text-white min-h-screen">
 
-  <!-- Username -->
-  <div id="user-info" class="fixed top-3 left-3 text-sm font-semibold hidden"></div>
+  <!-- User tag (kiri atas) -->
+  <div id="userTag" class="fixed top-3 left-3 px-3 py-1 rounded-full glass text-sm font-semibold hidden"></div>
 
-  <!-- Loading -->
-  <div id="loading" class="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-95 z-50">
-    <div class="text-4xl font-bold text-white opacity-0 animate-fade-in">NusaTask</div>
-    <div class="w-14 h-14 mt-6 border-4 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
-    <div class="w-56 h-2 bg-gray-700 mt-6 rounded-full overflow-hidden">
-      <div id="progress-bar" class="h-full bg-purple-500 animate-[progress_5s_linear_forwards]"></div>
+  <!-- Loading overlay -->
+  <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90">
+    <div class="text-3xl font-extrabold tracking-wide fade">NusaTask</div>
+    <div class="w-14 h-14 mt-6 border-4 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
+    <div class="w-56 h-2 bg-white/10 mt-6 rounded overflow-hidden">
+      <div id="bar" class="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500" style="width:0%"></div>
     </div>
-    <p id="loading-text" class="mt-4 text-gray-300 text-lg">Memuat...</p>
+    <p id="loadText" class="mt-3 text-white/80">Memuat…</p>
   </div>
 
-  <!-- Banned Screen -->
-  <div id="banned-screen" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-95 z-50">
-    <div class="glass p-8 rounded-2xl shadow-2xl text-center max-w-md animate-fade-in">
-      <h1 class="text-3xl font-bold mb-4 text-red-400">🚫 Akun Diblokir</h1>
-      <p class="mb-4">Aktivitas mencurigakan terdeteksi.</p>
-      <p class="mb-6">Hubungi admin: <span class="text-purple-400 font-bold">@nusataskproject</span></p>
-    </div>
-  </div>
-
-  <!-- Warning Modal -->
-  <div id="warning-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
-    <div class="glass p-6 rounded-2xl shadow-xl max-w-md text-center animate-fade-in">
-      <h2 class="text-xl font-bold mb-4 text-yellow-400">⚠️ Peringatan Penting</h2>
-      <p class="mb-4">Segala bentuk <span class="font-bold">hack, nuyul, manipulasi</span> 
-      dilarang.</p>
-      <p class="mb-4">Jika terdeteksi → akun <span class="text-red-500 font-bold">banned otomatis</span>.</p>
-      <button onclick="closeWarning()" class="mt-4 px-5 py-2 bg-gradient-to-r from-purple-600 to-blue-500 rounded-xl font-bold hover:opacity-90 transition">
-        Saya Mengerti
-      </button>
+  <!-- Banned screen -->
+  <div id="banned" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/90">
+    <div class="glass p-7 rounded-2xl shadow-2xl max-w-md text-center fade">
+      <h2 class="text-2xl font-bold text-red-400">🚫 Akun Diblokir</h2>
+      <p class="mt-3">Aktivitas mencurigakan / pelanggaran anti-tuyul terdeteksi.</p>
+      <p class="mt-4">Hubungi admin: <span class="font-bold text-indigo-300">@nusataskproject</span></p>
     </div>
   </div>
 
-  <!-- Auth -->
-  <div id="auth-section" class="h-screen flex items-center justify-center">
-    <div class="glass p-8 rounded-2xl shadow-xl w-80 text-center animate-fade-in">
-      <h1 class="text-2xl font-bold mb-6">🔑 NusaTask</h1>
-      <input id="email" type="email" placeholder="Email" class="w-full mb-3 px-3 py-2 rounded-lg text-black">
-      <input id="password" type="password" placeholder="Password" class="w-full mb-4 px-3 py-2 rounded-lg text-black">
-      <button onclick="loginOrRegister()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-blue-500 rounded-xl font-bold hover:opacity-90 transition">Masuk / Daftar</button>
+  <!-- Warning setelah registrasi -->
+  <div id="warn" class="hidden fixed inset-0 z-40 bg-black/80 flex items-center justify-center">
+    <div class="glass p-6 rounded-2xl max-w-md text-center fade">
+      <h3 class="text-xl font-bold text-yellow-300">⚠️ Peringatan Penting</h3>
+      <p class="mt-3">Segala bentuk hack, nuyul, cloning, atau VPN/proxy <b>tidak dibenarkan</b>.
+        Pelanggaran akan <b>dibanned otomatis</b>.</p>
+      <button onclick="closeWarn()" class="mt-5 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 font-semibold hover:opacity-90">Saya Mengerti</button>
     </div>
   </div>
 
-  <!-- Dashboard -->
-  <div id="dashboard" class="hidden p-6 animate-fade-in">
-    <h2 class="text-3xl font-bold mb-6">📊 Dashboard</h2>
-
-    <div class="glass p-6 rounded-xl shadow-xl mb-6">
-      <p class="text-lg">Saldo Anda</p>
-      <p id="saldo" class="text-3xl font-bold text-green-400">0</p>
-      <div class="w-full bg-gray-700 h-2 mt-3 rounded-full overflow-hidden">
-        <div id="saldo-progress" class="h-2 bg-green-500 transition-all duration-500" style="width:0%"></div>
+  <!-- CARD AUTH -->
+  <section id="auth" class="min-h-screen flex items-center justify-center p-6">
+    <div class="glass w-full max-w-md rounded-3xl p-7 shadow-2xl fade">
+      <div class="flex items-center gap-2 mb-6">
+        <span class="text-2xl">🔐</span>
+        <h1 class="text-2xl font-extrabold">NusaTask</h1>
       </div>
+      <div class="space-y-3">
+        <input id="email" type="email" placeholder="Email" class="w-full px-4 py-3 rounded-xl text-black" />
+        <input id="pass" type="password" placeholder="Password (min 6)" class="w-full px-4 py-3 rounded-xl text-black" />
+      </div>
+      <div class="grid grid-cols-2 gap-3 mt-5">
+        <button id="loginBtn" class="py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 font-bold hover:opacity-90">Masuk</button>
+        <button id="regBtn"   class="py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-600 font-bold hover:opacity-90">Daftar</button>
+      </div>
+      <p class="text-xs text-white/60 mt-4">Anti-tuyul aktif • 1 Device • Maks 2 IP / 24 jam • Anti VPN/Proxy</p>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dash" class="hidden p-6 max-w-2xl mx-auto">
+    <h2 class="text-3xl font-extrabold mb-5">Dashboard</h2>
+
+    <div class="glass rounded-2xl p-6 mb-6">
+      <p class="text-white/80">Saldo</p>
+      <p id="saldo" class="text-4xl font-extrabold text-emerald-400">0</p>
+      <div class="w-full h-2 bg-white/10 rounded mt-3 overflow-hidden">
+        <div id="saldoBar" class="h-full bg-emerald-500 transition-all" style="width:0%"></div>
+      </div>
+      <p id="quota" class="mt-2 text-sm text-white/70">0 / 20 klik hari ini</p>
     </div>
 
     <div class="grid gap-4">
-      <button onclick="earn('monetag')" class="py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-bold hover:opacity-90 transition">🚀 Menghasilkan</button>
-      <button onclick="earn('klikadila')" class="py-3 bg-gradient-to-r from-pink-600 to-red-500 rounded-xl font-bold hover:opacity-90 transition">🎁 Xstra Bonus</button>
+      <button onclick="earn('monetag')"   class="py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 font-bold hover:opacity-90">🚀 Menghasilkan</button>
+      <button onclick="earn('klikadila')" class="py-4 rounded-2xl bg-gradient-to-r from-pink-600 to-rose-600 font-bold hover:opacity-90">🎁 Xstra Bonus</button>
     </div>
-  </div>
+  </section>
 
-  <script>
-    // === Firebase Config ===
+  <!-- Toast container -->
+  <div id="toasts" class="fixed bottom-5 right-5 space-y-2 z-50"></div>
+
+  <!-- Firebase (ESM) -->
+  <script type="module">
+    // Firebase v10 ESM
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getDatabase, ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    // --- Config ---
     const firebaseConfig = {
       apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
       authDomain: "nusataskproject.firebaseapp.com",
@@ -101,116 +114,228 @@
       appId: "1:409602188456:web:6302d3030b763324e28e9d",
       measurementId: "G-9389QL1WRE"
     };
-    firebase.initializeApp(firebaseConfig);
-    const auth=firebase.auth();
-    const db=firebase.database();
 
-    // === Helpers ===
+    // --- Init ---
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getDatabase(app);
+
+    // --- UI helpers ---
+    const $ = (id)=>document.getElementById(id);
+    function toast(msg, type="info"){
+      const el=document.createElement("div");
+      el.className=`toast px-4 py-2 rounded-xl shadow-2xl ${type==="success"?"bg-emerald-500":type==="error"?"bg-rose-500":"bg-slate-700"}`;
+      el.textContent=msg; $("toasts").appendChild(el); setTimeout(()=>el.remove(), 4200);
+    }
+    function show(id){ $(id).classList.remove("hidden"); }
+    function hide(id){ $(id).classList.add("hidden"); }
     function deviceId(){
-      let id=localStorage.getItem("deviceId");
-      if(!id){ id="dev-"+Math.random().toString(36).substr(2,9); localStorage.setItem("deviceId",id); }
+      let id=localStorage.getItem("nt_device");
+      if(!id){ id="dev-"+Math.random().toString(36).slice(2,11); localStorage.setItem("nt_device", id); }
       return id;
     }
-    function showLoading(text="Memuat..."){ document.getElementById("loading").classList.remove("hidden"); document.getElementById("loading-text").innerText=text; setTimeout(()=>hideLoading(),4000); }
-    function hideLoading(){ document.getElementById("loading").classList.add("hidden"); }
-    function showBanScreen(){ document.getElementById("banned-screen").classList.remove("hidden"); document.getElementById("auth-section").classList.add("hidden"); document.getElementById("dashboard").classList.add("hidden"); }
-    function showNotif(msg,type="info"){ const notif=document.createElement("div"); notif.className=`toast fixed bottom-6 right-6 px-5 py-3 rounded-xl shadow-2xl text-white ${type==="success"?"bg-green-500":"bg-red-500"}`; notif.innerText=msg; document.body.appendChild(notif); setTimeout(()=>notif.remove(),4000); }
-    function showWarning(){ document.getElementById("warning-modal").classList.remove("hidden"); }
-    function closeWarning(){ document.getElementById("warning-modal").classList.add("hidden"); }
+    function setLoading(text="Memuat…", p=100){
+      $("loadText").innerText=text;
+      $("bar").style.width=p+"%";
+    }
+    function closeWarn(){ hide("warn"); }
 
-    // === Login/Register ===
-    function loginOrRegister(){
-      showLoading("Memproses...");
-      const email=document.getElementById("email").value;
-      const pass=document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email,pass)
-      .then(()=>hideLoading())
-      .catch(err=>{
-        if(err.code==="auth/user-not-found"){
-          auth.createUserWithEmailAndPassword(email,pass).then(()=>{
-            hideLoading(); 
-            db.ref("users/"+auth.currentUser.uid).set({saldo:0,device:deviceId(),banned:false,lastClick:0,count:0,lastReset:0});
-            showNotif("Registrasi berhasil","success");
-            showWarning();
-          }).catch(e=>{hideLoading(); showNotif(e.message,"error")});
-        } else { hideLoading(); showNotif(err.message,"error"); }
-      });
+    // --- Domain guard (peringatan jika bukan domain terotorisasi) ---
+    const allowedDomains=["localhost","nusataskproject.firebaseapp.com","nusataskproject.web.app","sketch.github.io"];
+    if(!allowedDomains.includes(location.hostname)){
+      toast("Domain tidak terotorisasi: "+location.hostname,"error");
     }
 
-    // === Auth State ===
-    auth.onAuthStateChanged(user=>{
-      if(user){
-        const uid=user.uid;
-        const ref=db.ref("users/"+uid);
-        ref.once("value").then(snap=>{
-          const data=snap.val()||{};
-          if(data.banned){ showBanScreen(); auth.signOut(); return; }
-          if(data.device && data.device!==deviceId()){ ref.update({banned:true}); showBanScreen(); auth.signOut(); return; }
-          ref.update({device:deviceId()});
-          document.getElementById("auth-section").classList.add("hidden");
-          document.getElementById("dashboard").classList.remove("hidden");
-          const username=(user.email||"").split("@")[0];
-          document.getElementById("user-info").innerText=username;
-          document.getElementById("user-info").classList.remove("hidden");
-          loadSaldo(uid);
-          checkVPN(uid);
-        });
+    // --- Server time via offset (Realtime DB) ---
+    async function serverNowWIB(){
+      // Ambil offset
+      const snap = await get(ref(db, ".info/serverTimeOffset"));
+      const offset = snap.exists() ? snap.val() : 0;
+      const serverNow = new Date(Date.now()+offset);
+      // Konversi WIB
+      const utcMs = serverNow.getTime() + serverNow.getTimezoneOffset()*60000;
+      return new Date(utcMs + 7*60*60000);
+    }
+    function todayResetWIB(now){
+      const t=new Date(now); t.setHours(7,0,0,0); return t.getTime();
+    }
+
+    // --- Anti VPN/Proxy + IP fetch (HTTPS endpoints) ---
+    async function getIpInfo(){
+      // ipapi.co supports HTTPS and simple JSON; privacy endpoint may fail → fall back.
+      try{
+        const r = await fetch("https://ipapi.co/json/");
+        const j = await r.json();
+        let privacy = {};
+        try{
+          const rp = await fetch(`https://ipapi.co/${j.ip}/privacy/`);
+          if(rp.ok) privacy = await rp.json();
+        }catch(e){}
+        return { ip:j.ip, org:j.org, country:j.country, privacy };
+      }catch(e){
+        return { ip:null, org:null, country:null, privacy:{} };
       }
+    }
+
+    async function antiVPNAndIPLimit(uid){
+      const info = await getIpInfo();
+      const now  = await serverNowWIB();
+      const nowMs = now.getTime();
+
+      // 1) Anti VPN/Proxy (best-effort)
+      const isVpn  = !!info?.privacy?.vpn;
+      const isProxy= !!info?.privacy?.proxy;
+      const isTor  = !!info?.privacy?.tor;
+      if(isVpn||isProxy||isTor){
+        await update(ref(db, "users/"+uid), { banned:true, banReason:"vpn_proxy" });
+        show("banned"); await signOut(auth); return false;
+      }
+
+      // 2) IP limit: max 2 IP dalam 24 jam (rolling)
+      const uref = ref(db, "users/"+uid);
+      const snap = await get(uref);
+      const data = snap.exists()? snap.val() : {};
+      const iplog = Array.isArray(data.ipLog) ? data.ipLog : [];
+
+      // bersihkan >24 jam
+      const cutoff = nowMs - 24*60*60*1000;
+      const fresh = iplog.filter(x => x && x.ip && x.ts >= cutoff);
+
+      // tambahkan entri saat ini jika IP ada
+      if(info.ip){
+        // jika IP berbeda dari entri terakhir -> push
+        const last = fresh[fresh.length-1];
+        if(!last || last.ip !== info.ip){
+          fresh.push({ ip:info.ip, ts:nowMs });
+        }else{
+          // update timestamp terakhir
+          fresh[fresh.length-1].ts = nowMs;
+        }
+      }
+
+      // hitung jumlah IP unik
+      const uniq = [...new Set(fresh.map(x=>x.ip))];
+      if(uniq.length > 2){
+        await update(uref, { banned:true, banReason:"ip_over_quota", ipLog:fresh });
+        show("banned"); await signOut(auth); return false;
+      }
+
+      await update(uref, { ipLog:fresh });
+      return true;
+    }
+
+    // --- Login & Register buttons ---
+    $("loginBtn").onclick = async ()=>{
+      try{
+        setLoading("Masuk…", 35); show("loader");
+        const email=$("email").value.trim(), pass=$("pass").value;
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        setLoading("Memuat akun…", 70);
+        // lanjut ke state handler
+      }catch(e){ hide("loader"); toast(e.message,"error"); }
+    };
+
+    $("regBtn").onclick = async ()=>{
+      try{
+        setLoading("Mendaftarkan…", 35); show("loader");
+        const email=$("email").value.trim(), pass=$("pass").value;
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        const uid = cred.user.uid;
+        await set(ref(db, "users/"+uid), {
+          email: cred.user.email,
+          saldo: 0,
+          lastClick: 0,
+          count: 0,
+          lastReset: 0,
+          device: deviceId(),
+          banned: false,
+          createdAt: (await serverNowWIB()).getTime(),
+          ipLog: []
+        });
+        toast("Registrasi berhasil","success");
+        show("warn"); // peringatan anti-tuyul
+      }catch(e){ toast(e.message,"error"); hide("loader"); }
+      finally{ hide("loader"); }
+    };
+
+    // --- Auth state ---
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user) return;
+      try{
+        setLoading("Sinkronisasi…", 55); show("loader");
+        const uid = user.uid;
+        const uref = ref(db, "users/"+uid);
+        const snap = await get(uref);
+        let data = snap.exists()? snap.val() : null;
+
+        // Ban check
+        if(data?.banned){ show("banned"); await signOut(auth); hide("loader"); return; }
+
+        // Device lock
+        if(data?.device && data.device !== deviceId()){
+          await update(uref, { banned:true, banReason:"multi_device" });
+          show("banned"); await signOut(auth); hide("loader"); return;
+        }
+        await update(uref, { device: deviceId() });
+
+        // Anti VPN + IP limit (maks 2 IP / 24 jam)
+        setLoading("Pemeriksaan keamanan…", 75);
+        const ok = await antiVPNAndIPLimit(uid);
+        if(!ok){ hide("loader"); return; }
+
+        // UI switch
+        hide("auth"); show("dash"); $("userTag").textContent=(user.email||"").split("@")[0]; show("userTag");
+
+        // Realtime saldo
+        onValue(ref(db, "users/"+uid+"/saldo"), s=>{
+          const val = s.exists()? s.val() : 0;
+          $("saldo").textContent = val;
+          $("saldoBar").style.width = Math.min(100, (val/600000)*100) + "%";
+        });
+
+        // Update kuota tampil
+        const uSnap = await get(uref);
+        data = uSnap.val();
+        $("quota").textContent = `${data.count||0} / 20 klik hari ini`;
+
+        hide("loader");
+      }catch(e){ hide("loader"); toast(e.message,"error"); }
     });
 
-    // === Saldo ===
-    function loadSaldo(uid){ 
-      db.ref("users/"+uid+"/saldo").on("value",s=>{
-        let saldo=s.val()||0;
-        document.getElementById("saldo").innerText=saldo;
-        let persen=Math.min(100,(saldo/600000)*100);
-        document.getElementById("saldo-progress").style.width=persen+"%";
-      }); 
+    // --- EARN ---
+    async function earn(source){
+      const user = auth.currentUser; if(!user) return;
+      const uid = user.uid; const uref = ref(db,"users/"+uid);
+
+      // waktu server (anti ubah tanggal HP)
+      const nowWIB = await serverNowWIB(); const nowMs = nowWIB.getTime();
+
+      const snap = await get(uref);
+      let d = snap.exists()? snap.val() : { saldo:0, lastClick:0, count:0, lastReset:0 };
+
+      // Reset harian jam 07:00 WIB (server)
+      const resetAt = todayResetWIB(nowWIB);
+      if(nowMs >= resetAt && (!d.lastReset || d.lastReset < resetAt)){
+        d.count = 0; d.lastReset = nowMs;
+      }
+
+      // Batas & cooldown
+      if(d.count >= 20){ toast("Limit harian tercapai","error"); return; }
+      if(nowMs - (d.lastClick||0) < 180000){ toast("Cooldown 3 menit","error"); return; }
+
+      // Tambahkan saldo
+      d.saldo = (d.saldo||0) + 30000;
+      d.lastClick = nowMs;
+      d.count = (d.count||0) + 1;
+
+      await set(uref, d);
+      $("quota").textContent = `${d.count} / 20 klik hari ini`;
+      toast(`+30.000 poin (${source})`,"success");
     }
+    window.earn = earn; // for HTML buttons
 
-    // === Earn (server time 07:00 WIB reset) ===
-    function earn(src){
-      const u=auth.currentUser;if(!u)return;
-      const uid=u.uid;
-      const ref=db.ref("users/"+uid);
-
-      db.ref(".info/serverTimeOffset").once("value").then(snap=>{
-        const offset = snap.val() || 0;
-        const serverNow = new Date(Date.now() + offset);
-        const utc = serverNow.getTime() + serverNow.getTimezoneOffset() * 60000;
-        const wib = new Date(utc + (7 * 60 * 60000));
-
-        ref.once("value").then(s=>{
-          let d=s.val()||{saldo:0,lastClick:0,count:0,lastReset:0};
-          let resetTime = new Date(wib); resetTime.setHours(7,0,0,0);
-
-          if (wib.getTime() >= resetTime.getTime() && (!d.lastReset || d.lastReset < resetTime.getTime())) {
-            d.count = 0; d.lastReset = wib.getTime();
-          }
-
-          if(d.count >= 20){ showNotif("Limit harian tercapai","error"); return; }
-          if(wib.getTime() - d.lastClick < 180000){ showNotif("Cooldown 3 menit","error"); return; }
-
-          d.saldo += 30000;
-          d.lastClick = wib.getTime();
-          d.count++;
-
-          ref.set(d);
-          showNotif("Berhasil +30.000 poin ("+src+")","success");
-        });
-      });
-    }
-
-    // === VPN/Proxy Check ===
-    async function checkVPN(uid){
-      try{
-        const res=await fetch("http://ip-api.com/json/");
-        const d=await res.json();
-        if(d.proxy||d.hosting){ db.ref("users/"+uid).update({banned:true}); showBanScreen(); auth.signOut(); }
-      }catch(e){console.warn("VPN check fail",e);}
-    }
-
-    window.onload=()=>showLoading("Memuat...");
+    // --- Hide loader after first paint ---
+    window.addEventListener("load", ()=>{ setTimeout(()=>{ hide("loader"); }, 600); });
   </script>
 </body>
 </html>
