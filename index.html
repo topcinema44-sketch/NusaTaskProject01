@@ -2,169 +2,152 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bot Earning — Pro</title>
-  <meta name="theme-color" content="#0b0f1a" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bot Earning — NusaTask</title>
+
+  <!-- Toastify -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
   <style>
     :root{
-      --bg:#0b0f1a; --card:#0f172a; --muted:#8ea0c8; --text:#eaf1ff;
-      --primary:#5b8cff; --primary-2:#355bff; --accent:#22d3ee;
-      --danger:#ef4444; --ok:#22c55e; --ring:rgba(91,140,255,.35);
+      --bg:#0b0f14; --card:#121821; --muted:#7b8a9e; --text:#e8eef6; --accent:#6a11cb; --accent2:#2575fc; --danger:#e53935; --good:#2ecc71; --warn:#ffb300;
+      --radius:18px;
     }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{
-      margin:0; font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;
-      background:
-        radial-gradient(1200px 600px at 80% -20%, rgba(34,211,238,.08), transparent 60%),
-        radial-gradient(900px 500px at -10% 120%, rgba(91,140,255,.08), transparent 60%),
-        var(--bg);
-      color:var(--text);
-    }
-    .wrap{max-width:640px;margin:0 auto;padding:18px}
-    .brand{display:flex;align-items:center;gap:10px}
-    .logo{
-      width:34px;height:34px;border-radius:10px;
-      background:linear-gradient(135deg,var(--primary),var(--accent));
-      box-shadow:0 10px 30px rgba(91,140,255,.35), inset 0 0 20px rgba(255,255,255,.15);
-      animation:float 6s ease-in-out infinite;
-    }
-    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
-      border:1px solid rgba(148,163,184,.15);
-      border-radius:18px; padding:18px; margin:14px 0;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 10px 30px rgba(2,6,23,.6);
-      animation:fadeIn .25s ease;
-    }
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}}
-    h1{font-size:20px;margin:0} h2{font-size:18px;margin:0 0 10px}
-    .muted{color:var(--muted);font-size:14px}
-    input{
-      width:100%; padding:12px 14px; margin:8px 0;
-      background:rgba(15,23,42,.7); color:var(--text);
-      border:1px solid rgba(148,163,184,.2); border-radius:12px;
-      outline:none; transition:.2s;
-    }
-    input:focus{border-color:var(--primary); box-shadow:0 0 0 6px var(--ring)}
-    .row{display:flex;justify-content:space-between;gap:10px;align-items:center}
-    .stack>*{display:block;margin:10px 0}
-    button{
-      position:relative; width:100%; padding:13px 14px; border:0; border-radius:14px;
-      background:linear-gradient(180deg,var(--primary),var(--primary-2));
-      color:#fff; font-weight:700; letter-spacing:.2px; cursor:pointer;
-      transition: transform .08s ease, box-shadow .2s ease, filter .2s ease;
-      box-shadow:0 10px 20px rgba(53,91,255,.35); overflow:hidden; user-select:none;
-    }
-    button:active{transform:translateY(1px)} button[disabled]{opacity:.55; cursor:not-allowed; box-shadow:none; filter:grayscale(.2)}
-    .btn-ok{background:linear-gradient(180deg,#22c55e,#16a34a)} .ghost{background:transparent;border:1px dashed rgba(148,163,184,.25);color:var(--muted); box-shadow:none; font-weight:600;}
-    button::after{
-      content:""; position:absolute; left:var(--x,50%); top:var(--y,50%);
-      width:0;height:0;border-radius:999px;background:#fff;opacity:.4;transform:translate(-50%,-50%);
-      transition:width .45s ease,height .45s ease,opacity .6s ease;
-    }
-    button.ripple::after{width:240px;height:240px;opacity:0}
-    .pill{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(91,140,255,.15);border:1px solid rgba(91,140,255,.35);}
-    .toasts{position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:10px; z-index:50}
-    .toast{
-      min-width:220px; max-width:320px; padding:12px 14px; border-radius:12px;
-      background:rgba(15,23,42,.95); border:1px solid rgba(148,163,184,.2);
-      box-shadow:0 10px 30px rgba(2,6,23,.7);
-      transform:translateY(10px); opacity:0; animation:toast-in .18s ease forwards;
-    }
-    .toast.ok{border-color:rgba(34,197,94,.45)} .toast.warn{border-color:rgba(234,179,8,.45)} .toast.err{border-color:rgba(239,68,68,.45)}
-    @keyframes toast-in{to{transform:translateY(0);opacity:1}}
-    .balance{
-      font-size:26px; font-weight:900;
-      background:linear-gradient(90deg,#fff, #9cc2ff, #fff);
-      -webkit-background-clip:text; background-clip:text; color:transparent;
-      background-size:200% 100%; animation:shine 2.5s linear infinite;
-    }
-    @keyframes shine{0%{background-position:200% 0}100%{background-position:-200% 0}}
-    .ads{display:block;text-align:center;padding:10px;border-radius:12px;border:1px dashed rgba(148,163,184,.25);color:#a7c3ff;text-decoration:none}
-    .warning{background:linear-gradient(180deg, rgba(255,225,0,.06), rgba(255,225,0,.00)); border-color:rgba(234,179,8,.35)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#0b0f14 0%,#0b0f14 40%,#0e141c 100%);color:var(--text)}
+    .wrap{max-width:420px;margin:32px auto;padding:0 16px}
+    .card{background:linear-gradient(180deg,#121821,#0f151d);border-radius:var(--radius);box-shadow:0 10px 30px rgba(0,0,0,.45);padding:20px;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.04);animation:fadeIn .5s ease}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    h1,h2,h3{margin:0 0 12px}
+    h1{font-size:22px}
+    .muted{color:var(--muted);font-size:12px}
+    .input{width:100%;padding:12px;border:none;border-radius:12px;background:#0c1219;color:var(--text);outline:none}
+    .row{display:flex;gap:10px}
+    .btn{width:100%;padding:12px;border:none;border-radius:12px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);cursor:pointer;transition:transform .15s ease,opacity .2s}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .btn.secondary{background:#1b2330;color:#dfe7f2;border:1px solid rgba(255,255,255,0.06)}
+    .center{text-align:center}
+    .balance{font-size:28px;font-weight:800;letter-spacing:.4px}
+    .grid{display:grid;gap:10px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#0f1621;color:#b9c6d8;font-size:12px;border:1px solid rgba(255,255,255,.06)}
+    .sectionTitle{display:flex;justify-content:space-between;align-items:center;margin-top:10px;margin-bottom:6px}
+    .hr{height:1px;background:linear-gradient(90deg,transparent,#233046,transparent);margin:12px 0}
+    .badge{font-size:11px;padding:3px 8px;border-radius:999px;background:#0f1723;border:1px solid rgba(255,255,255,.06);color:#9fb1c9}
+    /* overlay block */
+    .overlay{position:fixed;inset:0;background:rgba(8,12,18,.7);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:9999}
+    .overlay .panel{background:linear-gradient(180deg,#151c27,#0c1219);border-radius:20px;border:1px solid rgba(255,255,255,.08);padding:22px;max-width:360px;margin:0 16px;text-align:center;box-shadow:0 18px 40px rgba(0,0,0,.55)}
+    .overlay h3{margin-bottom:6px}
+    .overlay p{color:#c9d5e6}
+    .tag-danger{color:#fff;background:rgba(229,57,53,.2);border:1px solid rgba(229,57,53,.35)}
+    /* admin table */
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;text-align:left;border-bottom:1px dashed rgba(255,255,255,.06);font-size:13px}
+    th{color:#a8b8cf}
+    .tiny{font-size:12px;color:#a8b8cf}
+    .adSlot{height:120px;border:1px dashed rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#8aa0b9;background:#0f1621}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="brand">
-      <div class="logo" aria-hidden="true"></div>
-      <div>
-        <h1>Bot Earning — Pro</h1>
-        <div class="muted">Dark UI • Live saldo • Cooldown persist • Notif profesional</div>
+    <!-- LOGIN / REGISTER -->
+    <div id="loginCard" class="card">
+      <h1>🚀 NusaTask — Bot Earning</h1>
+      <p class="muted">Masuk atau daftar dengan email. Sekali daftar, selanjutnya auto login.</p>
+      <div class="grid">
+        <input id="email" type="email" class="input" placeholder="Email" required />
+        <input id="pass" type="password" class="input" placeholder="Password" required />
+        <button id="btnAuth" class="btn">Masuk / Daftar</button>
       </div>
+      <div class="hr"></div>
+      <div class="tiny">Anti tuyul aktif • 1 Device • 1 IP • Anti VPN/Proxy</div>
     </div>
 
-    <!-- AUTH -->
-    <div id="authCard" class="card">
-      <h2>Login / Register</h2>
-      <form id="authForm" class="stack" autocomplete="on">
-        <input type="email" id="email" inputmode="email" placeholder="Email" required />
-        <input type="password" id="pass" placeholder="Password" required />
-        <div class="row">
-          <button id="btnLogin" type="submit">Masuk</button>
-          <button id="btnRegister" type="button" class="btn-ok">Daftar</button>
-        </div>
-        <div class="muted">Sekali daftar → langsung auto-login.</div>
-      </form>
-    </div>
-
-    <!-- WARNING (5s before continue) -->
-    <div id="warnCard" class="card warning" style="display:none">
-      <h2>Peringatan</h2>
-      <ul class="muted">
-        <li>Satu akun per pengguna. Aktivitas mencurigakan diblokir.</li>
-        <li>IP saat pendaftaran dicatat (pindah jaringan diperbolehkan).</li>
-        <li>Kecurangan/otomasi tanpa izin akan dibatasi.</li>
-      </ul>
-      <button id="btnContinue" disabled>Continue (5)</button>
-      <div class="muted" style="margin-top:6px">Tunggu 5 detik, lalu lanjut ke dashboard.</div>
+    <!-- WARNING FIRST RUN -->
+    <div id="warnCard" class="card" style="display:none">
+      <h2>⚠️ Peringatan</h2>
+      <p class="muted">1 Device 1 Akun • 1 IP • Segala bentuk tuyul/kecurangan akan diblokir permanen.</p>
+      <button id="btnContinue" class="btn" disabled>Lanjut (5)</button>
     </div>
 
     <!-- DASHBOARD -->
     <div id="dashCard" class="card" style="display:none">
-      <div class="row">
-        <div>
-          <div class="muted">Akun</div>
-          <div id="userEmail">-</div>
+      <div class="sectionTitle">
+        <h2>Dashboard</h2>
+        <span id="who" class="badge">…</span>
+      </div>
+      <div class="balance">Rp <span id="balance">0</span></div>
+      <div class="hr"></div>
+
+      <div class="grid">
+        <!-- Monetag slot -->
+        <div class="adSlot">Monetag — Tempel script di sini</div>
+        <button id="btnEarn" class="btn">🎁 Menghasilkan</button>
+
+        <!-- KlikAdila slot -->
+        <div class="adSlot">KlikAdila — Tempel script di sini</div>
+        <button id="btnBonus" class="btn secondary">💎 Xstra Bonus</button>
+      </div>
+
+      <div class="sectionTitle">
+        <span class="pill">Withdraw</span>
+        <span class="tiny">Diproses manual oleh admin</span>
+      </div>
+      <div class="grid">
+        <input id="wdAmount" type="number" min="1000" class="input" placeholder="Nominal WD (Rp)" />
+        <input id="wdNote" class="input" placeholder="Metode/No e-wallet (mis. DANA/OVO/Bank)" />
+        <button id="btnWD" class="btn">Kirim Permintaan WD</button>
+      </div>
+
+      <div class="hr"></div>
+      <div class="tiny">Batas 20 klaim per tombol. Reset harian otomatis pukul 07:00 WIB.</div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="adminCard" class="card" style="display:none">
+      <div class="sectionTitle">
+        <h2>Admin Panel</h2>
+        <span class="badge">Admin</span>
+      </div>
+
+      <h3>WD Pending</h3>
+      <div style="overflow:auto">
+        <table id="wdTable">
+          <thead><tr><th>UID</th><th>Jumlah</th><th>Catatan</th><th>Aksi</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="hr"></div>
+
+      <h3>Kontrol User</h3>
+      <div class="grid">
+        <input id="blockUid" class="input" placeholder="UID user" />
+        <div class="row">
+          <button id="btnBlock" class="btn" style="width:50%;background:linear-gradient(135deg,#b31217,#e52d27)">Blokir</button>
+          <button id="btnUnblock" class="btn secondary" style="width:50%">Buka Blokir</button>
         </div>
-        <div class="pill" id="ipChip">IP: -</div>
       </div>
-      <hr style="border-color:rgba(148,163,184,.15);margin:14px 0" />
-      <div class="row" style="align-items:flex-end">
-        <div>
-          <div class="muted">Saldo</div>
-          <div id="saldo" class="balance">Rp 0</div>
-        </div>
-        <button id="btnLogout" class="ghost" style="width:auto;padding:10px 14px">Keluar</button>
-      </div>
-
-      <!-- Buttons vertical -->
-      <div class="stack" style="margin-top:10px">
-        <button id="btnEarn" data-label="Menghasilkan (+Rp30.000)">Menghasilkan (+Rp30.000)</button>
-        <a id="slotMonetag" class="ads" href="#" target="_blank" rel="noopener">[Slot Monetag]</a>
-
-        <button id="btnBonus1" data-label="Xstra Bonus 1 (+Rp30.000)">Xstra Bonus 1 (+Rp30.000)</button>
-        <a id="slotKlik1" class="ads" href="#" target="_blank" rel="noopener">[Slot KlikAdilla 1]</a>
-
-        <button id="btnBonus2" data-label="Xstra Bonus 2 (+Rp30.000)">Xstra Bonus 2 (+Rp30.000)</button>
-        <a id="slotKlik2" class="ads" href="#" target="_blank" rel="noopener">[Slot KlikAdilla 2]</a>
-      </div>
-
-      <div class="muted" style="margin-top:8px">Cooldown 3 menit per tombol • Tetap berjalan meski halaman di-refresh.</div>
     </div>
   </div>
 
-  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
+  <!-- BLOCKED OVERLAY -->
+  <div id="blockedOverlay" class="overlay">
+    <div class="panel">
+      <span class="badge tag-danger">Akun Diblokir</span>
+      <h3>Akses Dinonaktifkan</h3>
+      <p>Hubungi admin <b>@nusataskproject</b> untuk banding.</p>
+    </div>
+  </div>
 
-  <!-- FIREBASE -->
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-    import { getDatabase, ref, onValue, get, set, update, runTransaction, child } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+    // ===== Firebase SDKs =====
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getDatabase, ref, get, set, update, onValue, push, child } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-    // === CONFIG KAMU ===
+    // ==== CONFIG (isi punyamu, ini sudah pakai punyamu) ====
     const firebaseConfig = {
       apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
       authDomain: "nusataskproject.firebaseapp.com",
@@ -173,231 +156,328 @@
       messagingSenderId: "409602188456",
       appId: "1:409602188456:web:6302d3030b763324e28e9d",
       measurementId: "G-9389QL1WRE",
-      databaseURL: "https://nusataskproject-default-rtdb.firebaseio.com"  <!-- pastikan URL RTDB aktif -->
+      databaseURL: "https://nusataskproject-default-rtdb.firebaseio.com"
     };
 
-    // === ADS LINKS (GANTI DENGAN IKLANMU) ===
-    const MONETAG_URL = "https://example-monetag.com/campaign"; // GANTI
-    const KLIK1_URL  = "https://example-klikadila.com/camp-1";  // GANTI
-    const KLIK2_URL  = "https://example-klikadila.com/camp-2";  // GANTI
-    document.getElementById("slotMonetag").href = MONETAG_URL;
-    document.getElementById("slotKlik1").href   = KLIK1_URL;
-    document.getElementById("slotKlik2").href   = KLIK2_URL;
-
-    // === CONST ===
-    const REWARD = 30000;
-    const COOLDOWN_MS = 3*60*1000; // 3 menit
-    const CONTINUE_WAIT_MS = 5000; // 5 detik
-    const fmtIDR = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n);
-
-    // === INIT ===
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const fs   = getFirestore(app);
-    const rtdb = getDatabase(app);
+    const db = getDatabase(app);
 
-    // === UI elts ===
-    const authCard = document.getElementById('authCard');
-    const warnCard = document.getElementById('warnCard');
-    const dashCard = document.getElementById('dashCard');
-    const authForm = document.getElementById('authForm');
-    const btnLogin = document.getElementById('btnLogin');
-    const btnRegister = document.getElementById('btnRegister');
-    const btnLogout = document.getElementById('btnLogout');
-    const emailEl = document.getElementById('email');
-    const passEl  = document.getElementById('pass');
-    const userEmailEl = document.getElementById('userEmail');
-    const ipChip = document.getElementById('ipChip');
-    const saldoEl = document.getElementById('saldo');
-    const btnEarn = document.getElementById('btnEarn');
-    const btnBonus1 = document.getElementById('btnBonus1');
-    const btnBonus2 = document.getElementById('btnBonus2');
-    const btnContinue = document.getElementById('btnContinue');
-    const toasts = document.getElementById('toasts');
+    // ===== Helpers =====
+    const $ = (id)=>document.getElementById(id);
+    const notify = (t, color="#2ecc71") => Toastify({text:t,duration:3000,gravity:"top",position:"right",backgroundColor:color}).showToast();
 
-    // Toast
-    function toast(msg,type='ok'){
-      const t = document.createElement('div');
-      t.className = `toast ${type}`; t.innerHTML = msg;
-      toasts.appendChild(t);
-      setTimeout(()=>{ t.style.opacity=.0; t.style.transform='translateY(6px)'; }, 2200);
-      setTimeout(()=> t.remove(), 2700);
-      if(navigator.vibrate) navigator.vibrate(10);
+    // device id (bukan fingerprint; hanya ID lokal)
+    function getDeviceId(){
+      let id = localStorage.getItem("deviceId");
+      if(!id){ id = "dev-" + Math.random().toString(36).slice(2,12); localStorage.setItem("deviceId", id); }
+      return id;
     }
-    // Ripple
-    function attachRipple(btn){
-      btn.addEventListener('click', e=>{
-        const rect = btn.getBoundingClientRect();
-        btn.style.setProperty('--x', `${e.clientX-rect.left}px`);
-        btn.style.setProperty('--y', `${e.clientY-rect.top}px`);
-        btn.classList.remove('ripple'); void btn.offsetWidth; btn.classList.add('ripple');
-      });
-    }
-    [btnLogin,btnRegister,btnLogout,btnEarn,btnBonus1,btnBonus2,btnContinue].forEach(b=>b&&attachRipple(b));
+    const deviceId = getDeviceId();
+    const userAgent = navigator.userAgent.slice(0,140);
 
-    // IP helper
-    async function getPublicIP(){
-      try{ const r=await fetch("https://api.ipify.org?format=json"); const j=await r.json(); return j.ip||"-"; }
-      catch{ return "-"; }
+    // get IP + VPN/Proxy check via ipwho.is (HTTPS compatible)
+    async function getIpInfo(){
+      try{
+        const r = await fetch("https://ipwho.is/?fields=ip,security");
+        const j = await r.json();
+        return j && j.ip ? j : null;
+      }catch{ return null; }
     }
 
-    // Cooldown label
-    function setCooldownUI(btn, msLeft){
-      const base = btn.dataset.label;
-      if(msLeft<=0){ btn.disabled=false; btn.textContent=base; }
-      else{
-        btn.disabled=true;
-        const s = Math.ceil(msLeft/1000); const m = Math.floor(s/60), r = s%60;
-        btn.textContent = `${base} (tunggu ${m>0? m+"m "+r+"s": r+"s"})`;
+    // key reset harian pukul 07:00 WIB
+    function getResetKey(){
+      const nowJakarta = new Date(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta' }).format(new Date()));
+      // buat tanggal WIB hari ini (tanpa jam)
+      const y = nowJakarta.getFullYear();
+      const m = nowJakarta.getMonth();
+      const d = nowJakarta.getDate();
+      const today7 = new Date(y, m, d, 7, 0, 0); // 07:00 WIB
+      const nowLocal = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+      // jika sebelum jam 7, gunakan tanggal kemarin sebagai periode aktif
+      const start = (nowLocal < today7) ? new Date(y, m, d-1) : new Date(y, m, d);
+      const yyyy = start.getFullYear();
+      const mm = String(start.getMonth()+1).padStart(2,'0');
+      const dd = String(start.getDate()).padStart(2,'0');
+      return `${yyyy}-${mm}-${dd}`; // contoh: 2025-09-05
+    }
+
+    // ===== DOM =====
+    const loginCard = $("loginCard");
+    const warnCard = $("warnCard");
+    const dashCard = $("dashCard");
+    const adminCard = $("adminCard");
+    const overlay = $("blockedOverlay");
+
+    const btnAuth = $("btnAuth");
+    const btnContinue = $("btnContinue");
+    const who = $("who");
+    const balSpan = $("balance");
+    const btnEarn = $("btnEarn");
+    const btnBonus = $("btnBonus");
+    const wdAmount = $("wdAmount");
+    const wdNote = $("wdNote");
+    const btnWD = $("btnWD");
+    const wdTableBody = document.querySelector("#wdTable tbody");
+
+    // ===== Auth (login/register) =====
+    btnAuth.onclick = async ()=>{
+      const email = $("email").value.trim();
+      const pass = $("pass").value.trim();
+      if(!email || !pass){ notify("Isi email & password", "#e53935"); return; }
+      try{
+        await signInWithEmailAndPassword(auth, email, pass);
+        notify("Login berhasil");
+      }catch(e){
+        if(e.code === "auth/user-not-found"){
+          await createUserWithEmailAndPassword(auth, email, pass);
+          notify("Registrasi berhasil 🎉");
+        }else{
+          notify("Gagal: "+e.message, "#e53935");
+        }
       }
-    }
+    };
 
-    // Auth handlers
-    authForm.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      try{
-        await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
-        toast("Login berhasil. Selamat datang 👋","ok");
-      }catch(err){ toast("Login gagal: "+err.message,"err"); }
-    });
-    btnRegister.addEventListener("click", async ()=>{
-      try{
-        await createUserWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
-        toast("Registrasi sukses. Menyiapkan akun…","ok");
-      }catch(err){ toast("Registrasi gagal: "+err.message,"err"); }
-    });
-    btnLogout.addEventListener("click", async ()=>{ await signOut(auth); toast("Kamu telah keluar.","ok"); });
-
-    // Ensure profile (Firestore) + setup RTDB nodes
-    async function ensureProfile(u){
-      const uref = doc(fs,"users",u.uid);
-      const usnap = await getDoc(uref);
-      const ip = await getPublicIP();
-
-      if(!usnap.exists()){
-        await setDoc(uref,{
-          email: u.email, role:"user", balance:0,
-          createdAt: serverTimestamp(), signupIp: ip, lastIp: ip,
-          warnedOnce:false
-        });
-      }else{
-        const d = usnap.data();
-        if(d.lastIp !== ip) await updateDoc(uref,{ lastIp: ip });
+    // ===== State change =====
+    onAuthStateChanged(auth, async (u)=>{
+      if(!u){ // logged out
+        loginCard.style.display = "";
+        warnCard.style.display = "none";
+        dashCard.style.display = "none";
+        adminCard.style.display = "none";
+        overlay.style.display = "none";
+        return;
       }
 
-      // RTDB: balance & cooldown defaults
-      const balRef = ref(rtdb, `balances/${u.uid}`);
-      const cdRef  = ref(rtdb, `cooldowns/${u.uid}`);
-      const balSnap = await get(balRef);
-      if(!balSnap.exists()) await set(balRef, 0);
-      const cdSnap = await get(cdRef);
-      if(!cdSnap.exists()) await set(cdRef, { earn:0, bonus1:0, bonus2:0 });
+      // --- Anti VPN/Proxy & IP lock ---
+      const ipInfo = await getIpInfo();
+      if(!ipInfo){ notify("Tidak bisa verifikasi IP. Coba lagi.", "#e53935"); await signOut(auth); return; }
+      if(ipInfo.security && (ipInfo.security.vpn || ipInfo.security.proxy || ipInfo.security.tor)){
+        notify("VPN/Proxy/Tor terdeteksi. Matikan dulu.", "#e53935");
+        await signOut(auth); return;
+      }
 
-      return ip;
-    }
+      // --- Device Lock (dua arah) & IP Lock ---
+      const devRef = ref(db, "devices/" + deviceId);
+      const uidDevRef = ref(db, "uidDevices/" + u.uid);
+      const ipRef = ref(db, "ipLocks/" + u.uid);
 
-    // Show warning (5s)
-    function showWarning(onDone){
-      warnCard.style.display='block'; dashCard.style.display='none';
-      btnContinue.disabled = true;
-      let start = Date.now();
-      const timer = setInterval(()=>{
-        const left = CONTINUE_WAIT_MS - (Date.now()-start);
-        if(left<=0){ btnContinue.textContent="Continue"; btnContinue.disabled=false; clearInterval(timer); }
-        else{ btnContinue.textContent=`Continue (${Math.ceil(left/1000)})`; }
-      }, 200);
-      btnContinue.onclick = onDone;
-    }
+      const [devSnap, uidDevSnap, ipSnap] = await Promise.all([get(devRef), get(uidDevRef), get(ipRef)]);
 
-    // Dashboard
-    function showDashboard(){
-      authCard.style.display='none'; warnCard.style.display='none'; dashCard.style.display='block';
-    }
-
-    // Keep UI synced (balance + cooldowns)
-    function bindRealtime(u){
-      // Balance
-      onValue(ref(rtdb,`balances/${u.uid}`),(s)=>{
-        const val = s.exists()? s.val():0; saldoEl.textContent = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(val);
-      });
-      // Cooldowns + tick
-      const cstate = { earn:0, bonus1:0, bonus2:0 };
-      onValue(ref(rtdb,`cooldowns/${u.uid}`),(s)=>{
-        const v = s.val()||{earn:0,bonus1:0,bonus2:0}; cstate.earn=v.earn||0; cstate.bonus1=v.bonus1||0; cstate.bonus2=v.bonus2||0;
-      });
-      (function loop(){
-        const now = Date.now();
-        setCooldownUI(btnEarn,   cstate.earn   - now);
-        setCooldownUI(btnBonus1, cstate.bonus1 - now);
-        setCooldownUI(btnBonus2, cstate.bonus2 - now);
-        requestAnimationFrame(loop);
-      })();
-    }
-
-    // Claim handler
-    async function claim(u, key, adUrl){
-      const cdRef = ref(rtdb, `cooldowns/${u.uid}/${key}`);
-      const balRef = ref(rtdb, `balances/${u.uid}`);
-
-      // Check cooldown atomically (two-step, still client-side)
-      const cdSnap = await get(cdRef);
-      const now = Date.now();
-      const nextAt = (cdSnap.exists()? cdSnap.val():0);
-      if(now < nextAt){ toast("Masih cooldown untuk tombol ini.","warn"); return; }
-
-      if(adUrl && adUrl.startsWith("http")) window.open(adUrl, "_blank","noopener");
-
-      // Increment balance atomically via transaction
-      const newBalance = await runTransaction(balRef, (curr)=> (curr||0)+REWARD).then(r=>r.snapshot.val());
-
-      // Write cooldown (client time; untuk anti-manipulasi penuh butuh server)
-      await update(ref(rtdb,`cooldowns/${u.uid}`), { [key]: now + COOLDOWN_MS });
-
-      // Mirror ke Firestore (profile + earnings log)
+      // if deviceId already mapped to other uid -> block
+      if(devSnap.exists() && devSnap.val() !== u.uid){
+        await set(ref(db, "blocked/"+u.uid), { by:"system", reason:"device_conflict", at: Date.now() });
+        showBlocked(); await signOut(auth); return;
+      }
+      // if uid already mapped to other device -> block (prevents cloning/parallel app)
+      if(uidDevSnap.exists() && uidDevSnap.val() !== deviceId){
+        await set(ref(db, "blocked/"+u.uid), { by:"system", reason:"multi_device", at: Date.now() });
+        showBlocked(); await signOut(auth); return;
+      }
+      // write mappings (idempotent)
       await Promise.all([
-        updateDoc(doc(fs,"users",u.uid), { balance: newBalance }),
-        addDoc(collection(fs,"earnings"), { uid:u.uid, amount:REWARD, source:key, createdAt:serverTimestamp() })
+        set(devRef, u.uid),
+        set(uidDevRef, deviceId)
       ]);
 
-      toast(`Berhasil +${fmtIDR(REWARD)} 🎉`, "ok");
-    }
+      // IP lock (first bind)
+      if(!ipSnap.exists()){
+        await set(ipRef, ipInfo.ip);
+      }else if(ipSnap.val() !== ipInfo.ip){
+        await set(ref(db, "blocked/"+u.uid), { by:"system", reason:"ip_changed", at: Date.now() });
+        showBlocked(); await signOut(auth); return;
+      }
 
-    // Auth state
-    onAuthStateChanged(auth, async (u)=>{
-      if(!u){ authCard.style.display='block'; warnCard.style.display='none'; dashCard.style.display='none'; return; }
-      try{
-        const ip = await ensureProfile(u);
-        userEmailEl.textContent = u.email; ipChip.textContent = `IP: ${ip}`;
-        // Warning 1x
-        const prof = await getDoc(doc(fs,"users",u.uid));
-        const warned = prof.exists() && prof.data().warnedOnce===true;
-        if(!warned){
-          showWarning(async ()=>{
-            await updateDoc(doc(fs,"users",u.uid), { warnedOnce:true });
-            showDashboard();
-            bindRealtime(u);
-          });
-        }else{
-          showDashboard();
-          bindRealtime(u);
-        }
+      // --- Blocked check ---
+      const blockSnap = await get(ref(db, "blocked/"+u.uid));
+      if(blockSnap.exists()){
+        showBlocked();
+        // jangan signOut supaya overlay tetap terlihat
+        loginCard.style.display = "none";
+        warnCard.style.display = "none";
+        dashCard.style.display = "none";
+        // adminCard tetap hidden
+        return;
+      }
 
-        // Wire buttons
-        btnEarn.onclick   = ()=> claim(u,'earn',MONETAG_URL);
-        btnBonus1.onclick = ()=> claim(u,'bonus1',KLIK1_URL);
-        btnBonus2.onclick = ()=> claim(u,'bonus2',KLIK2_URL);
-
-      }catch(e){
-        toast(e.message || "Terjadi kesalahan.","err");
-        await signOut(auth);
+      // --- First time warning? (cek flag userInit) ---
+      const initRef = ref(db, "userInit/"+u.uid);
+      const inited = await get(initRef);
+      if(!inited.exists()){
+        loginCard.style.display = "none";
+        warnCard.style.display = "";
+        let c=5;
+        btnContinue.textContent = `Lanjut (${c})`;
+        const t = setInterval(()=>{
+          c--; btnContinue.textContent = `Lanjut (${c})`;
+          if(c<=0){ clearInterval(t); btnContinue.disabled = false; btnContinue.textContent = "Lanjut"; }
+        },1000);
+        btnContinue.onclick = async ()=>{
+          await set(initRef, true);
+          warnCard.style.display = "none";
+          await showDashboard(u);
+        };
+      }else{
+        loginCard.style.display = "none";
+        warnCard.style.display = "none";
+        await showDashboard(u);
       }
     });
-  </script>
 
-  <!-- ====== TARUH SCRIPT IKLANMU DI SINI (Monetag / KlikAdilla) ======
-       Contoh (placeholder):
-       <script src="https://YOUR-MONETAG-SNIPPET.js"></script>
-       <script src="https://YOUR-KLIKADILLA-SNIPPET.js"></script>
-  -->
+    // ===== Dashboard + Admin =====
+    async function showDashboard(u){
+      who.textContent = u.email;
+      dashCard.style.display = "";
+
+      // live balance
+      const balRef = ref(db, "balances/"+u.uid);
+      onValue(balRef, (snap)=>{ balSpan.textContent = snap.exists()? snap.val() : 0; });
+
+      // Admin badge & panel
+      const adminRef = ref(db, "admins/"+u.uid);
+      const adminSnap = await get(adminRef);
+      if(adminSnap.exists() && adminSnap.val()===true){
+        adminCard.style.display = "";
+        loadWDTable();
+      }else{
+        adminCard.style.display = "none";
+      }
+
+      btnEarn.onclick = ()=>handleClaim(u.uid, "earning");
+      btnBonus.onclick = ()=>handleClaim(u.uid, "bonus");
+      btnWD.onclick = ()=>requestWD(u.uid);
+    }
+
+    // cooldown + daily limit (20) persisted
+    async function handleClaim(uid, type){
+      const now = Date.now();
+      const cooldownRef = ref(db, `cooldowns/${uid}/${type}`);
+      const countKey = getResetKey();
+      const countRef = ref(db, `counts/${uid}/${type}/${countKey}`);
+      const balRef = ref(db, `balances/${uid}`);
+
+      const [cdSnap, ctSnap, blSnap] = await Promise.all([get(cooldownRef), get(countRef), get(balRef)]);
+      // check daily count
+      const count = ctSnap.exists()? ctSnap.val() : 0;
+      if(count >= 20){
+        notify("Limit harian 20x untuk tombol ini. Reset 07:00 WIB.", "#ffb300");
+        return;
+      }
+      // check cooldown 3 menit
+      if(cdSnap.exists() && now - cdSnap.val() < 180000){
+        const remain = Math.ceil((180000 - (now - cdSnap.val()))/1000);
+        notify("Cooldown "+remain+" detik lagi.", "#ffb300");
+        return;
+      }
+      // add balance + set cd + increase count
+      let bal = blSnap.exists()? blSnap.val() : 0;
+      bal += 30000;
+      await Promise.all([
+        set(balRef, bal),
+        set(cooldownRef, now),
+        set(countRef, count+1),
+        push(ref(db, `earnLogs/${uid}`), { type, amount:30000, at: now })
+      ]);
+      notify((type==="earning"?"🎁":"💎")+" +Rp30.000");
+    }
+
+    // Withdraw request (saldo dipotong saat ADMIN approve)
+    async function requestWD(uid){
+      const amount = parseInt(wdAmount.value || "0", 10);
+      const note = (wdNote.value || "").trim();
+      if(isNaN(amount) || amount <= 0){ notify("Nominal tidak valid", "#e53935"); return; }
+      const balSnap = await get(ref(db, "balances/"+uid));
+      const bal = balSnap.exists()? balSnap.val() : 0;
+      if(amount > bal){ notify("Saldo tidak cukup", "#e53935"); return; }
+      if(!note){ notify("Isi metode/no. tujuan WD", "#e53935"); return; }
+
+      const newRef = push(ref(db, "withdrawals"));
+      await set(newRef, { uid, amount, note, status:"pending", at: Date.now() });
+      notify("WD terkirim. Menunggu admin.");
+      wdAmount.value = ""; wdNote.value = "";
+    }
+
+    // Admin: load WD pending
+    function loadWDTable(){
+      onValue(ref(db, "withdrawals"), (snap)=>{
+        const tbody = wdTableBody; tbody.innerHTML = "";
+        if(!snap.exists()) return;
+        snap.forEach(child=>{
+          const w = child.val(); const key = child.key;
+          if(w.status!=="pending") return;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="tiny">${w.uid}</td>
+            <td>Rp ${w.amount.toLocaleString('id-ID')}</td>
+            <td class="tiny">${w.note||""}</td>
+            <td class="row" style="gap:6px">
+              <button class="btn" style="padding:8px;border-radius:8px" data-act="ok" data-key="${key}" data-uid="${w.uid}" data-amt="${w.amount}">Approve</button>
+              <button class="btn secondary" style="padding:8px;border-radius:8px" data-act="no" data-key="${key}">Reject</button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+
+        // bind actions
+        tbody.querySelectorAll("button").forEach(btn=>{
+          btn.onclick = async ()=>{
+            const act = btn.dataset.act;
+            const key = btn.dataset.key;
+            if(act==="ok"){
+              const uid = btn.dataset.uid;
+              const amt = parseInt(btn.dataset.amt,10);
+              // potong saldo saat approve
+              const balRef = ref(db, "balances/"+uid);
+              const balSnap = await get(balRef);
+              const bal = balSnap.exists()? balSnap.val() : 0;
+              if(amt > bal){ notify("Saldo user kurang untuk approve", "#e53935"); return; }
+              await set(balRef, bal-amt);
+              await update(ref(db, "withdrawals/"+key), { status:"approved", doneAt: Date.now() });
+              notify("WD Approved");
+            }else{
+              await update(ref(db, "withdrawals/"+key), { status:"rejected", doneAt: Date.now() });
+              notify("WD Rejected", "#e53935");
+            }
+          };
+        });
+      });
+
+      // block/unblock
+      $("btnBlock").onclick = async ()=>{
+        const uid = $("blockUid").value.trim(); if(!uid){ notify("Masukkan UID", "#e53935"); return; }
+        await set(ref(db, "blocked/"+uid), { by:"admin", reason:"manual", at: Date.now() });
+        notify("User diblokir");
+      };
+      $("btnUnblock").onclick = async ()=>{
+        const uid = $("blockUid").value.trim(); if(!uid){ notify("Masukkan UID", "#e53935"); return; }
+        await set(ref(db, "blocked/"+uid), null);
+        notify("Blokir dihapus");
+      };
+    }
+
+    function showBlocked(){
+      overlay.style.display = "flex";
+    }
+
+    // ========== RULES YANG DISARANKAN (set di Realtime Database -> Rules) ==========
+    // {
+    //   "rules": {
+    //     "balances": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
+    //     "cooldowns": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
+    //     "counts": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
+    //     "earnLogs": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
+    //     "uidDevices": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
+    //     "devices": { ".read": "auth != null", ".write": "auth != null" },
+    //     "ipLocks": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
+    //     "blocked": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null" } },
+    //     "withdrawals": { ".read": "auth != null", ".write": "auth != null" },
+    //     "admins": { ".read": "auth != null", ".write": "auth != null" },
+    //     "userInit": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } }
+    //   }
+    // }
+
+    // ========== CARA JADIKAN ADMIN ==========
+    // di Realtime Database, tambahkan:
+    // /admins/<UID_ADMIN> = true
+  </script>
 </body>
 </html>
