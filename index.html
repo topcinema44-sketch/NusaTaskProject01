@@ -1,191 +1,393 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>NusaTask - Bot Earning 1</title>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
-
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Font + Custom Style -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bot Earning — Pro</title>
+  <meta name="theme-color" content="#0b0f1a" />
   <style>
-    body { font-family: 'Poppins', sans-serif; }
-    .btn { transition: all 0.3s ease; }
-    .btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(0,255,150,0.4); }
-    .disabled { background: #555 !important; cursor: not-allowed; }
-    .toast {
-      position: fixed; bottom: 20px; right: 20px;
-      background: #1f2937; padding: 12px 18px;
-      border-radius: 10px; color: #fff;
-      opacity: 0; transform: translateY(20px);
-      transition: all 0.4s ease;
+    :root{
+      --bg:#0b0f1a; --card:#0f172a; --muted:#8ea0c8; --text:#eaf1ff;
+      --primary:#5b8cff; --primary-2:#355bff; --accent:#22d3ee; --danger:#ef4444; --ok:#22c55e;
+      --ring:rgba(91,140,255,.35);
     }
-    .toast.show { opacity: 1; transform: translateY(0); }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;
+      background:
+        radial-gradient(1200px 600px at 80% -20%, rgba(34,211,238,.08), transparent 60%),
+        radial-gradient(900px 500px at -10% 120%, rgba(91,140,255,.08), transparent 60%),
+        var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:640px;margin:0 auto;padding:18px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{
+      width:34px;height:34px;border-radius:10px;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      box-shadow:0 10px 30px rgba(91,140,255,.35), inset 0 0 20px rgba(255,255,255,.15);
+      animation:float 6s ease-in-out infinite;
+    }
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
+      border:1px solid rgba(148,163,184,.15);
+      border-radius:18px; padding:18px; margin:14px 0;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 10px 30px rgba(2,6,23,.6);
+    }
+
+    h1{font-size:20px;margin:0}
+    h2{font-size:18px;margin:0 0 10px}
+    .muted{color:var(--muted);font-size:14px}
+
+    input{
+      width:100%; padding:12px 14px; margin:8px 0;
+      background:rgba(15,23,42,.7); color:var(--text);
+      border:1px solid rgba(148,163,184,.2); border-radius:12px;
+      outline:none; transition:.2s;
+    }
+    input:focus{border-color:var(--primary); box-shadow:0 0 0 6px var(--ring)}
+    .row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .stack>*{display:block;margin:10px 0}
+
+    button{
+      position:relative;
+      width:100%; padding:13px 14px; border:0; border-radius:14px;
+      background:linear-gradient(180deg,var(--primary),var(--primary-2));
+      color:#fff; font-weight:700; letter-spacing:.2px;
+      cursor:pointer; transition: transform .08s ease, box-shadow .2s ease, filter .2s ease;
+      box-shadow:0 10px 20px rgba(53,91,255,.35);
+      overflow:hidden; user-select:none;
+    }
+    button:active{transform:translateY(1px)}
+    button[disabled]{opacity:.55; cursor:not-allowed; box-shadow:none; filter:grayscale(.2)}
+    .btn-ok{background:linear-gradient(180deg,#22c55e,#16a34a)}
+    .btn-danger{background:linear-gradient(180deg,#ef4444,#dc2626)}
+    .ghost{
+      background:transparent;border:1px dashed rgba(148,163,184,.25);
+      color:var(--muted); box-shadow:none; font-weight:600;
+    }
+    /* Ripple */
+    button:after{
+      content:""; position:absolute; inset:auto; width:0; height:0; border-radius:999px; opacity:.4;
+      background:#fff; transform:translate(-50%,-50%); pointer-events:none;
+      transition:width .45s ease,height .45s ease,opacity .6s ease;
+    }
+    button.animate-ripple:after{width:260px;height:260px;opacity:0}
+
+    .pill{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(91,140,255,.15);border:1px solid rgba(91,140,255,.35);}
+
+    /* Toasts */
+    .toasts{position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:10px; z-index:50}
+    .toast{
+      min-width:220px; max-width:320px; padding:12px 14px; border-radius:12px;
+      background:rgba(15,23,42,.95); border:1px solid rgba(148,163,184,.2);
+      box-shadow:0 10px 30px rgba(2,6,23,.7);
+      transform:translateY(10px); opacity:0; animation:toast-in .18s ease forwards;
+    }
+    .toast.ok{border-color:rgba(34,197,94,.45)}
+    .toast.warn{border-color:rgba(234,179,8,.45)}
+    .toast.err{border-color:rgba(239,68,68,.45)}
+    @keyframes toast-in{to{transform:translateY(0);opacity:1}}
+
+    /* Shimmer balance */
+    .balance{
+      font-size:26px; font-weight:900;
+      background:linear-gradient(90deg,#fff, #9cc2ff, #fff);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      background-size:200% 100%; animation:shine 2.5s linear infinite;
+    }
+    @keyframes shine{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    .ads{
+      display:block;text-align:center;padding:10px;border-radius:12px;border:1px dashed rgba(148,163,184,.25);
+      color:#a7c3ff;text-decoration:none
+    }
   </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex items-center justify-center min-h-screen">
-
-<div class="w-[400px] bg-gray-800/70 backdrop-blur-md rounded-2xl shadow-2xl p-6 text-center">
-  <h1 class="text-3xl font-bold mb-6 text-green-400">🎯 NusaTask Bot 1</h1>
-
-  <!-- Loading -->
-  <div id="loading" class="hidden text-blue-400 animate-pulse">⏳ Memproses...</div>
-
-  <!-- Login -->
-  <div id="loginForm">
-    <input id="email" type="email" placeholder="Email" class="w-full p-2 mb-2 text-black rounded">
-    <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-2 text-black rounded">
-    <button onclick="login()" class="btn bg-blue-500 w-full py-2 rounded mt-2">Login</button>
-    <button onclick="register()" class="btn bg-green-500 w-full py-2 rounded mt-2">Register</button>
-  </div>
-
-  <!-- Dashboard -->
-  <div id="dashboard" class="hidden">
-    <div class="bg-gray-900 rounded-xl p-4 shadow mb-4">
-      <p id="saldo" class="text-2xl font-semibold">Saldo: Rp 0</p>
-      <div class="w-full bg-gray-700 h-3 rounded mt-3 overflow-hidden">
-        <div id="progressBar" class="bg-green-500 h-3 transition-all duration-500" style="width:0%"></div>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Bot Earning — Pro</h1>
+        <div class="muted">UI modern • Dark • Cooldown persist • Notif profesional</div>
       </div>
-      <p id="progress" class="text-sm text-gray-400 mt-2">Claim: 0/20</p>
     </div>
 
-    <button id="rewardBtn" onclick="claimReward('reward')" class="btn w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 font-semibold">🎁 Ambil Reward</button>
-    <button id="bonusBtn" onclick="claimReward('bonus')" class="btn w-full py-3 mt-3 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 font-semibold">⭐ Xstra Bonus</button>
+    <!-- AUTH -->
+    <div id="authCard" class="card">
+      <h2>Login / Register</h2>
+      <form id="authForm" class="stack" autocomplete="on">
+        <input type="email" id="email" inputmode="email" placeholder="Email" required />
+        <input type="password" id="pass" placeholder="Password" required />
+        <div class="row">
+          <button id="btnLogin" type="submit">Masuk</button>
+          <button id="btnRegister" type="button" class="btn-ok">Daftar</button>
+        </div>
+        <div class="muted">Sekali daftar → langsung login otomatis.</div>
+      </form>
+    </div>
 
-    <p id="cooldownText" class="text-red-400 mt-4"></p>
+    <!-- DASHBOARD -->
+    <div id="dashCard" class="card" style="display:none">
+      <div class="row">
+        <div>
+          <div class="muted">Akun</div>
+          <div id="userEmail">-</div>
+        </div>
+        <div class="pill" id="ipChip">IP: -</div>
+      </div>
+      <hr style="border-color:rgba(148,163,184,.15);margin:14px 0" />
+      <div class="row" style="align-items:flex-end">
+        <div>
+          <div class="muted">Saldo</div>
+          <div id="saldo" class="balance">Rp 0</div>
+        </div>
+        <button id="btnLogout" class="ghost" style="width:auto;padding:10px 14px">Keluar</button>
+      </div>
+
+      <div class="stack" style="margin-top:10px">
+        <!-- TOMBOL 1: MENGHASILKAN (Monetag) -->
+        <button id="btnEarn" data-label="Menghasilkan (+Rp30.000)">Menghasilkan (+Rp30.000)</button>
+        <a id="slotMonetag" class="ads" href="#" target="_blank" rel="noopener">[Slot Monetag]</a>
+
+        <!-- TOMBOL 2: XSTRA BONUS 1 (KlikAdilla) -->
+        <button id="btnBonus1" data-label="Xstra Bonus 1 (+Rp30.000)">Xstra Bonus 1 (+Rp30.000)</button>
+        <a id="slotKlik1" class="ads" href="#" target="_blank" rel="noopener">[Slot KlikAdilla 1]</a>
+
+        <!-- TOMBOL 3: XSTRA BONUS 2 (KlikAdilla) -->
+        <button id="btnBonus2" data-label="Xstra Bonus 2 (+Rp30.000)">Xstra Bonus 2 (+Rp30.000)</button>
+        <a id="slotKlik2" class="ads" href="#" target="_blank" rel="noopener">[Slot KlikAdilla 2]</a>
+      </div>
+
+      <div class="muted" style="margin-top:8px">Cooldown 3 menit per tombol • Tetap berjalan meski halaman di-refresh.</div>
+    </div>
   </div>
 
-  <!-- Pesan banned -->
-  <div id="banned" class="hidden text-red-400 font-bold mt-6">
-    🚫 Akun anda diblokir. Hubungi admin 👉 <a href="https://t.me/nusataskproject" class="underline">@nusataskproject</a>
-  </div>
-</div>
+  <!-- Toast container -->
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
 
-<!-- Toast Notifikasi -->
-<div id="toast" class="toast">✅ Reward berhasil ditambahkan!</div>
+  <!-- FIREBASE (modular) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-  import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    // === CONFIG KAMU ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
+      authDomain: "nusataskproject.firebaseapp.com",
+      projectId: "nusataskproject",
+      storageBucket: "nusataskproject.firebasestorage.app",
+      messagingSenderId: "409602188456",
+      appId: "1:409602188456:web:6302d3030b763324e28e9d",
+      measurementId: "G-9389QL1WRE"
+    };
 
-  // ✅ Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyCrFmaHbmL299cum51EtJIjt5NpukpTmho",
-    authDomain: "penyimpanansaldo-280df.firebaseapp.com",
-    databaseURL: "https://penyimpanansaldo-280df-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "penyimpanansaldo-280df",
-    storageBucket: "penyimpanansaldo-280df.firebasestorage.app",
-    messagingSenderId: "659609775130",
-    appId: "1:659609775130:web:bdd088ca5a877498c5b5a3",
-    measurementId: "G-L4TW7E23H2"
-  };
+    // === ADS LINKS (GANTI DENGAN LINK IKLANMU) ===
+    const MONETAG_URL = "https://example-monetag.com/campaign"; // GANTI
+    const KLIK1_URL  = "https://example-klikadila.com/camp-1";  // GANTI
+    const KLIK2_URL  = "https://example-klikadila.com/camp-2";  // GANTI
+    document.getElementById("slotMonetag").href = MONETAG_URL;
+    document.getElementById("slotKlik1").href   = KLIK1_URL;
+    document.getElementById("slotKlik2").href   = KLIK2_URL;
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
+    // === CONST ===
+    const REWARD = 30000;            // Rp 30.000 per aksi
+    const COOLDOWN_MS = 3*60*1000;   // 3 menit
+    const fmtIDR = n => new Intl.NumberFormat('id-ID', {style:'currency', currency:'IDR', maximumFractionDigits:0}).format(n);
 
-  const BOT_KEY = "bot1";   // ubah ke bot2, bot3, dst untuk clone
-  let currentUser, cooldown = 120000, maxClaim = 20;
+    // === INIT ===
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
 
-  function showToast(msg) {
-    const toast = document.getElementById("toast");
-    toast.innerText = msg;
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 3000);
-  }
+    // === UI elts ===
+    const authCard = document.getElementById('authCard');
+    const dashCard = document.getElementById('dashCard');
+    const authForm = document.getElementById('authForm');
+    const btnLogin = document.getElementById('btnLogin');
+    const btnRegister = document.getElementById('btnRegister');
+    const btnLogout = document.getElementById('btnLogout');
+    const emailEl = document.getElementById('email');
+    const passEl  = document.getElementById('pass');
+    const userEmailEl = document.getElementById('userEmail');
+    const ipChip = document.getElementById('ipChip');
+    const saldoEl = document.getElementById('saldo');
+    const btnEarn = document.getElementById('btnEarn');
+    const btnBonus1 = document.getElementById('btnBonus1');
+    const btnBonus2 = document.getElementById('btnBonus2');
 
-  async function register() {
-    const email = document.getElementById('email').value;
-    const pass = document.getElementById('password').value;
-    document.getElementById('loading').classList.remove("hidden");
-    try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-      currentUser = userCred.user;
-      await set(ref(db, "users/" + currentUser.uid), {
-        email: email,
-        status: "active",
-        bots: {
-          [BOT_KEY]: { saldo: 0, claimedToday: 0, lastClaim: 0 }
-        }
+    const toasts = document.getElementById('toasts');
+    function toast(msg, type='ok'){ // ok | warn | err
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.innerHTML = msg;
+      toasts.appendChild(t);
+      setTimeout(()=>{ t.style.opacity=.0; t.style.transform='translateY(6px)'; }, 2200);
+      setTimeout(()=> t.remove(), 2700);
+    }
+
+    function ripple(btn){
+      btn.classList.remove('animate-ripple'); // restart animation
+      void btn.offsetWidth; // reflow
+      btn.classList.add('animate-ripple');
+    }
+
+    function setCooldownUI(btn, msLeft){
+      const base = btn.dataset.label;
+      if(msLeft<=0){ btn.disabled=false; btn.textContent=base; }
+      else{
+        btn.disabled=true;
+        const s = Math.ceil(msLeft/1000);
+        const m = Math.floor(s/60), r = s%60;
+        btn.textContent = `${base} (tunggu ${m>0? m+"m "+r+"s": r+"s"})`;
+      }
+    }
+
+    function tickButtons(state){
+      const now = Date.now();
+      setCooldownUI(btnEarn,   state.cooldowns.earn   - now);
+      setCooldownUI(btnBonus1, state.cooldowns.bonus1 - now);
+      setCooldownUI(btnBonus2, state.cooldowns.bonus2 - now);
+      requestAnimationFrame(()=>tickButtons(state));
+    }
+
+    async function getPublicIP(){
+      try{
+        const r = await fetch("https://api.ipify.org?format=json");
+        const j = await r.json();
+        return j.ip || "-";
+      }catch{ return "-"; }
+    }
+
+    async function ensureUserDoc(u){
+      const ref = doc(db,"users",u.uid);
+      const snap = await getDoc(ref);
+      if(!snap.exists()){
+        const ip = await getPublicIP();
+        await setDoc(ref,{
+          email: u.email,
+          balance: 0,
+          role: "user",
+          createdAt: serverTimestamp(),
+          signupIp: ip,
+          lastIp: ip,
+          cooldowns: { earn:0, bonus1:0, bonus2:0 }
+        });
+        return {balance:0, cooldowns:{earn:0,bonus1:0,bonus2:0}, lastIp: ip};
+      }else{
+        const d = snap.data();
+        // update IP log (pindah jaringan boleh)
+        const ip = await getPublicIP();
+        if(d.lastIp !== ip){ await updateDoc(ref,{ lastIp: ip }); }
+        return d;
+      }
+    }
+
+    async function addBalance(u, inc){
+      const ref = doc(db,"users",u.uid);
+      const snap = await getDoc(ref);
+      const curr = (snap.exists() && (snap.data().balance||0)) || 0;
+      await updateDoc(ref,{ balance: curr + inc });
+      // log optional
+      await addDoc(collection(db,"earnings"),{
+        uid: u.uid, amount: inc, createdAt: serverTimestamp(), source: "button"
       });
-      showToast("✅ Registrasi berhasil!");
-      loadDashboard();
-    } catch (e) {
-      alert("❌ " + e.message);
-    }
-    document.getElementById('loading').classList.add("hidden");
-  }
-
-  async function login() {
-    const email = document.getElementById('email').value;
-    const pass = document.getElementById('password').value;
-    document.getElementById('loading').classList.remove("hidden");
-    try {
-      const userCred = await signInWithEmailAndPassword(auth, email, pass);
-      currentUser = userCred.user;
-      loadDashboard();
-    } catch (e) {
-      alert("❌ " + e.message);
-    }
-    document.getElementById('loading').classList.add("hidden");
-  }
-
-  onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; loadDashboard(); } });
-
-  async function loadDashboard() {
-    const snap = await get(ref(db, "users/" + currentUser.uid));
-    if (!snap.exists()) return;
-    const userData = snap.val();
-
-    if (userData.status === "banned") {
-      document.getElementById("loginForm").classList.add("hidden");
-      document.getElementById("banned").classList.remove("hidden");
-      return;
+      return curr + inc;
     }
 
-    document.getElementById("loginForm").classList.add("hidden");
-    document.getElementById("dashboard").classList.remove("hidden");
-    updateUI(userData.bots[BOT_KEY] || { saldo: 0, claimedToday: 0, lastClaim: 0 });
-  }
-
-  async function claimReward(type) {
-    const snap = await get(ref(db, "users/" + currentUser.uid + "/bots/" + BOT_KEY));
-    let data = snap.val() || { saldo: 0, claimedToday: 0, lastClaim: 0 };
-
-    if (data.claimedToday >= maxClaim) {
-      showToast("⚠️ Limit harian tercapai!");
-      return;
+    async function setCooldown(u, key, until){
+      const ref = doc(db,"users",u.uid);
+      await updateDoc(ref,{ [`cooldowns.${key}`]: until });
     }
 
-    const now = Date.now();
-    if (now - data.lastClaim < cooldown) {
-      document.getElementById("cooldownText").innerText = "⏳ Tunggu cooldown selesai!";
-      return;
+    function showDashboard(u, state){
+      userEmailEl.textContent = u.email;
+      saldoEl.textContent = fmtIDR(state.balance || 0);
+      ipChip.textContent = `IP: ${state.lastIp || "-"}`;
+      authCard.style.display = 'none';
+      dashCard.style.display = 'block';
+      tickButtons(state);
+
+      btnEarn.onclick = async ()=>{
+        ripple(btnEarn);
+        const now = Date.now();
+        if(now < state.cooldowns.earn){ toast("Masih cooldown untuk tombol ini.", "warn"); return; }
+        if(MONETAG_URL?.startsWith("http")) window.open(MONETAG_URL,"_blank","noopener");
+        const nb = await addBalance(auth.currentUser, REWARD);
+        state.balance = nb; saldoEl.textContent = fmtIDR(nb);
+        state.cooldowns.earn = now + COOLDOWN_MS; await setCooldown(auth.currentUser, 'earn', state.cooldowns.earn);
+        toast(`Berhasil +${fmtIDR(REWARD)} 🎉`, "ok");
+      };
+
+      btnBonus1.onclick = async ()=>{
+        ripple(btnBonus1);
+        const now = Date.now();
+        if(now < state.cooldowns.bonus1){ toast("Masih cooldown untuk tombol ini.", "warn"); return; }
+        if(KLIK1_URL?.startsWith("http")) window.open(KLIK1_URL,"_blank","noopener");
+        const nb = await addBalance(auth.currentUser, REWARD);
+        state.balance = nb; saldoEl.textContent = fmtIDR(nb);
+        state.cooldowns.bonus1 = now + COOLDOWN_MS; await setCooldown(auth.currentUser, 'bonus1', state.cooldowns.bonus1);
+        toast(`Bonus masuk +${fmtIDR(REWARD)} ✅`, "ok");
+      };
+
+      btnBonus2.onclick = async ()=>{
+        ripple(btnBonus2);
+        const now = Date.now();
+        if(now < state.cooldowns.bonus2){ toast("Masih cooldown untuk tombol ini.", "warn"); return; }
+        if(KLIK2_URL?.startsWith("http")) window.open(KLIK2_URL,"_blank","noopener");
+        const nb = await addBalance(auth.currentUser, REWARD);
+        state.balance = nb; saldoEl.textContent = fmtIDR(nb);
+        state.cooldowns.bonus2 = now + COOLDOWN_MS; await setCooldown(auth.currentUser, 'bonus2', state.cooldowns.bonus2);
+        toast(`Bonus masuk +${fmtIDR(REWARD)} ✅`, "ok");
+      };
     }
 
-    let reward = type === "reward" ? 500 : 1000;
-    data.saldo += reward;
-    data.claimedToday += 1;
-    data.lastClaim = now;
+    // AUTH HANDLERS
+    authForm.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      try{
+        await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
+        toast("Login berhasil. Selamat datang 👋", "ok");
+      }catch(err){ toast("Login gagal: "+err.message, "err"); }
+    });
+    btnRegister.addEventListener("click", async ()=>{
+      try{
+        await createUserWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
+        toast("Registrasi sukses. Membuat akun…", "ok");
+      }catch(err){ toast("Registrasi gagal: "+err.message, "err"); }
+    });
+    btnLogout.addEventListener("click", async ()=>{
+      await signOut(auth); toast("Kamu telah keluar.", "ok");
+    });
 
-    await update(ref(db, "users/" + currentUser.uid + "/bots/" + BOT_KEY), data);
-    updateUI(data);
-    showToast("✅ Reward berhasil ditambahkan!");
-  }
+    // AUTH STATE
+    onAuthStateChanged(auth, async (u)=>{
+      if(!u){ authCard.style.display='block'; dashCard.style.display='none'; return; }
+      try{
+        const data = await ensureUserDoc(u);
+        const state = {
+          balance: data.balance||0,
+          lastIp: data.lastIp||"-",
+          cooldowns: data.cooldowns || { earn:0, bonus1:0, bonus2:0 }
+        };
+        showDashboard(u, state);
+      }catch(e){
+        toast(e.message || "Terjadi kesalahan.", "err");
+        await signOut(auth);
+      }
+    });
+  </script>
 
-  function updateUI(data) {
-    document.getElementById("saldo").innerText = "Saldo: Rp " + data.saldo;
-    document.getElementById("progress").innerText = "Claim: " + data.claimedToday + "/" + maxClaim;
-    document.getElementById("progressBar").style.width = (data.claimedToday / maxClaim * 100) + "%";
-    document.getElementById("cooldownText").innerText = "";
-  }
-</script>
+  <!-- ====== TARUH SCRIPT IKLANMU DI SINI (dari Monetag / KlikAdilla) ======
+       Contoh (placeholder): 
+       <script src="https://YOUR-MONETAG-SNIPPET.js"></script>
+       <script src="https://YOUR-KLIKADILLA-SNIPPET.js"></script>
+  -->
 </body>
 </html>
