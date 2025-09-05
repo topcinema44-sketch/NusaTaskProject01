@@ -1,483 +1,310 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bot Earning — NusaTask</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NusaTask • Bot Earning</title>
 
-  <!-- Toastify -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <!-- Firebase v8 (compat dengan Realtime DB) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <!-- Tailwind (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
 
   <style>
-    :root{
-      --bg:#0b0f14; --card:#121821; --muted:#7b8a9e; --text:#e8eef6; --accent:#6a11cb; --accent2:#2575fc; --danger:#e53935; --good:#2ecc71; --warn:#ffb300;
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#0b0f14 0%,#0b0f14 40%,#0e141c 100%);color:var(--text)}
-    .wrap{max-width:420px;margin:32px auto;padding:0 16px}
-    .card{background:linear-gradient(180deg,#121821,#0f151d);border-radius:var(--radius);box-shadow:0 10px 30px rgba(0,0,0,.45);padding:20px;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.04);animation:fadeIn .5s ease}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-    h1,h2,h3{margin:0 0 12px}
-    h1{font-size:22px}
-    .muted{color:var(--muted);font-size:12px}
-    .input{width:100%;padding:12px;border:none;border-radius:12px;background:#0c1219;color:var(--text);outline:none}
-    .row{display:flex;gap:10px}
-    .btn{width:100%;padding:12px;border:none;border-radius:12px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);cursor:pointer;transition:transform .15s ease,opacity .2s}
-    .btn:hover{transform:translateY(-1px)}
-    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
-    .btn.secondary{background:#1b2330;color:#dfe7f2;border:1px solid rgba(255,255,255,0.06)}
-    .center{text-align:center}
-    .balance{font-size:28px;font-weight:800;letter-spacing:.4px}
-    .grid{display:grid;gap:10px}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#0f1621;color:#b9c6d8;font-size:12px;border:1px solid rgba(255,255,255,.06)}
-    .sectionTitle{display:flex;justify-content:space-between;align-items:center;margin-top:10px;margin-bottom:6px}
-    .hr{height:1px;background:linear-gradient(90deg,transparent,#233046,transparent);margin:12px 0}
-    .badge{font-size:11px;padding:3px 8px;border-radius:999px;background:#0f1723;border:1px solid rgba(255,255,255,.06);color:#9fb1c9}
-    /* overlay block */
-    .overlay{position:fixed;inset:0;background:rgba(8,12,18,.7);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:9999}
-    .overlay .panel{background:linear-gradient(180deg,#151c27,#0c1219);border-radius:20px;border:1px solid rgba(255,255,255,.08);padding:22px;max-width:360px;margin:0 16px;text-align:center;box-shadow:0 18px 40px rgba(0,0,0,.55)}
-    .overlay h3{margin-bottom:6px}
-    .overlay p{color:#c9d5e6}
-    .tag-danger{color:#fff;background:rgba(229,57,53,.2);border:1px solid rgba(229,57,53,.35)}
-    /* admin table */
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;text-align:left;border-bottom:1px dashed rgba(255,255,255,.06);font-size:13px}
-    th{color:#a8b8cf}
-    .tiny{font-size:12px;color:#a8b8cf}
-    .adSlot{height:120px;border:1px dashed rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#8aa0b9;background:#0f1621}
+    :root{--bg:#0f172a;--card:#1e293b;--accent:#6366f1;}
+    body{background:var(--bg);font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;color:#e5e7eb;}
+    .card{background:var(--card);border-radius:1rem;box-shadow:0 10px 30px rgba(0,0,0,.45);}
+    .btn{background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:.9rem;padding:.9rem 1rem;font-weight:700}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .brand{letter-spacing:.3px;background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .overlay{position:fixed;inset:0;background:rgba(15,23,42,.94);display:none;place-items:center;z-index:50}
+    .fade-in{animation:fade .35s ease}
+    @keyframes fade {from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
-<body>
-  <div class="wrap">
-    <!-- LOGIN / REGISTER -->
-    <div id="loginCard" class="card">
-      <h1>🚀 NusaTask — Bot Earning</h1>
-      <p class="muted">Masuk atau daftar dengan email. Sekali daftar, selanjutnya auto login.</p>
-      <div class="grid">
-        <input id="email" type="email" class="input" placeholder="Email" required />
-        <input id="pass" type="password" class="input" placeholder="Password" required />
-        <button id="btnAuth" class="btn">Masuk / Daftar</button>
-      </div>
-      <div class="hr"></div>
-      <div class="tiny">Anti tuyul aktif • 1 Device • 1 IP • Anti VPN/Proxy</div>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+  <!-- AUTH CARD -->
+  <div id="authCard" class="card w-full max-w-sm p-7 fade-in">
+    <h1 class="text-2xl font-extrabold mb-6 text-white">
+      <span class="brand">NusaTask</span> — Masuk / Daftar
+    </h1>
+
+    <div class="space-y-3">
+      <input id="email" type="email" placeholder="Email"
+             class="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+      <input id="password" type="password" placeholder="Password"
+             class="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+      <button id="authBtn" class="btn w-full">Lanjutkan</button>
     </div>
 
-    <!-- WARNING FIRST RUN -->
-    <div id="warnCard" class="card" style="display:none">
-      <h2>⚠️ Peringatan</h2>
-      <p class="muted">1 Device 1 Akun • 1 IP • Segala bentuk tuyul/kecurangan akan diblokir permanen.</p>
-      <button id="btnContinue" class="btn" disabled>Lanjut (5)</button>
-    </div>
+    <p id="authMsg" class="text-sm mt-3 text-red-400 min-h-[1.25rem]"></p>
+    <p class="text-xs text-gray-400 mt-6">Aman • 1 Akun/Device • Anti VPN/Proxy • Anti Cloning</p>
+  </div>
 
-    <!-- DASHBOARD -->
-    <div id="dashCard" class="card" style="display:none">
-      <div class="sectionTitle">
-        <h2>Dashboard</h2>
-        <span id="who" class="badge">…</span>
-      </div>
-      <div class="balance">Rp <span id="balance">0</span></div>
-      <div class="hr"></div>
-
-      <div class="grid">
-        <!-- Monetag slot -->
-        <div class="adSlot">Monetag — Tempel script di sini</div>
-        <button id="btnEarn" class="btn">🎁 Menghasilkan</button>
-
-        <!-- KlikAdila slot -->
-        <div class="adSlot">KlikAdila — Tempel script di sini</div>
-        <button id="btnBonus" class="btn secondary">💎 Xstra Bonus</button>
+  <!-- DASHBOARD -->
+  <div id="dash" class="hidden w-full max-w-md fade-in">
+    <div class="card p-6 text-center">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-white">Dashboard</h2>
+        <button id="logoutBtn" class="text-xs text-gray-300 underline">Logout</button>
       </div>
 
-      <div class="sectionTitle">
-        <span class="pill">Withdraw</span>
-        <span class="tiny">Diproses manual oleh admin</span>
-      </div>
-      <div class="grid">
-        <input id="wdAmount" type="number" min="1000" class="input" placeholder="Nominal WD (Rp)" />
-        <input id="wdNote" class="input" placeholder="Metode/No e-wallet (mis. DANA/OVO/Bank)" />
-        <button id="btnWD" class="btn">Kirim Permintaan WD</button>
+      <div class="p-5 rounded-xl bg-gray-800 mb-5">
+        <p class="text-sm text-gray-300">Saldo</p>
+        <p id="saldo" class="text-3xl font-extrabold text-green-400">Rp 0</p>
+        <p id="countInfo" class="text-xs text-gray-400 mt-1">0/20 kali hari ini • reset 07:00 WIB</p>
       </div>
 
-      <div class="hr"></div>
-      <div class="tiny">Batas 20 klaim per tombol. Reset harian otomatis pukul 07:00 WIB.</div>
-    </div>
-
-    <!-- ADMIN PANEL -->
-    <div id="adminCard" class="card" style="display:none">
-      <div class="sectionTitle">
-        <h2>Admin Panel</h2>
-        <span class="badge">Admin</span>
+      <div class="space-y-3">
+        <button id="earnBtn"  class="btn w-full">Menghasilkan</button>
+        <button id="bonusBtn" class="btn w-full">Xstra Bonus</button>
       </div>
 
-      <h3>WD Pending</h3>
-      <div style="overflow:auto">
-        <table id="wdTable">
-          <thead><tr><th>UID</th><th>Jumlah</th><th>Catatan</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
+      <div class="mt-4 text-sm text-gray-300 min-h-[1.25rem]">
+        <span id="notif"></span>
       </div>
 
-      <div class="hr"></div>
-
-      <h3>Kontrol User</h3>
-      <div class="grid">
-        <input id="blockUid" class="input" placeholder="UID user" />
-        <div class="row">
-          <button id="btnBlock" class="btn" style="width:50%;background:linear-gradient(135deg,#b31217,#e52d27)">Blokir</button>
-          <button id="btnUnblock" class="btn secondary" style="width:50%">Buka Blokir</button>
-        </div>
+      <div class="text-xs text-gray-500 mt-5">
+        Cooldown 3 menit per tombol. Tutup/refresh tidak menghapus cooldown.
       </div>
     </div>
   </div>
 
   <!-- BLOCKED OVERLAY -->
-  <div id="blockedOverlay" class="overlay">
-    <div class="panel">
-      <span class="badge tag-danger">Akun Diblokir</span>
-      <h3>Akses Dinonaktifkan</h3>
-      <p>Hubungi admin <b>@nusataskproject</b> untuk banding.</p>
+  <div id="blocked" class="overlay">
+    <div class="text-center p-8">
+      <h3 class="text-2xl font-extrabold mb-3 text-white">Akun Diblokir</h3>
+      <p class="text-gray-300 mb-6">Hubungi admin <span class="text-indigo-400">@nusataskproject</span></p>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-  <script type="module">
-    // ===== Firebase SDKs =====
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { getDatabase, ref, get, set, update, onValue, push, child } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+<script>
+  /* ========================== CONFIG ========================== */
+  const firebaseConfig = {
+    apiKey:"AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
+    authDomain:"nusataskproject.firebaseapp.com",
+    projectId:"nusataskproject",
+    databaseURL:"https://nusataskproject-default-rtdb.firebaseio.com",
+    storageBucket:"nusataskproject.firebasestorage.app",
+    messagingSenderId:"409602188456",
+    appId:"1:409602188456:web:6302d3030b763324e28e9d",
+    measurementId:"G-9389QL1WRE"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.database();
 
-    // ==== CONFIG (isi punyamu, ini sudah pakai punyamu) ====
-    const firebaseConfig = {
-      apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
-      authDomain: "nusataskproject.firebaseapp.com",
-      projectId: "nusataskproject",
-      storageBucket: "nusataskproject.firebasestorage.app",
-      messagingSenderId: "409602188456",
-      appId: "1:409602188456:web:6302d3030b763324e28e9d",
-      measurementId: "G-9389QL1WRE",
-      databaseURL: "https://nusataskproject-default-rtdb.firebaseio.com"
-    };
+  /* ========================== UI REFS ========================= */
+  const authCard  = document.getElementById('authCard');
+  const authBtn   = document.getElementById('authBtn');
+  const authMsg   = document.getElementById('authMsg');
+  const emailEl   = document.getElementById('email');
+  const passEl    = document.getElementById('password');
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+  const dash      = document.getElementById('dash');
+  const saldoEl   = document.getElementById('saldo');
+  const countInfo = document.getElementById('countInfo');
+  const notifEl   = document.getElementById('notif');
+  const earnBtn   = document.getElementById('earnBtn');
+  const bonusBtn  = document.getElementById('bonusBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const blockedOv = document.getElementById('blocked');
 
-    // ===== Helpers =====
-    const $ = (id)=>document.getElementById(id);
-    const notify = (t, color="#2ecc71") => Toastify({text:t,duration:3000,gravity:"top",position:"right",backgroundColor:color}).showToast();
-
-    // device id (bukan fingerprint; hanya ID lokal)
-    function getDeviceId(){
-      let id = localStorage.getItem("deviceId");
-      if(!id){ id = "dev-" + Math.random().toString(36).slice(2,12); localStorage.setItem("deviceId", id); }
-      return id;
+  /* ====================== TIME (WIB via HTTPS) =================
+     gunakan worldtimeapi untuk ambil waktu Jakarta (anti manipulasi jam hp).
+  =============================================================== */
+  let cachedNow = null, lastTimeFetch = 0;
+  async function getJakartaNow() {
+    const now = Date.now();
+    if (cachedNow && now - lastTimeFetch < 60_000) return new Date(cachedNow); // cache 60s
+    try {
+      const r = await fetch("https://worldtimeapi.org/api/timezone/Asia/Jakarta");
+      const j = await r.json();
+      cachedNow = j.datetime; lastTimeFetch = Date.now();
+      return new Date(j.datetime);
+    } catch {
+      // fallback ke jam lokal jika API down
+      return new Date();
     }
-    const deviceId = getDeviceId();
-    const userAgent = navigator.userAgent.slice(0,140);
+  }
+  function dayKeyWIB(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
 
-    // get IP + VPN/Proxy check via ipwho.is (HTTPS compatible)
-    async function getIpInfo(){
-      try{
-        const r = await fetch("https://ipwho.is/?fields=ip,security");
-        const j = await r.json();
-        return j && j.ip ? j : null;
-      }catch{ return null; }
+  /* ====================== AUTH (login/daftar) ================== */
+  authBtn.onclick = async () => {
+    const email = emailEl.value.trim();
+    const pass  = passEl.value;
+    if (!email || !pass) { authMsg.textContent = "Email & password wajib diisi."; return; }
+    if (pass.length < 6) { authMsg.textContent = "Password minimal 6 karakter."; return; }
+
+    authMsg.textContent = "";
+    try {
+      await auth.signInWithEmailAndPassword(email, pass);
+    } catch {
+      try {
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+        await db.ref("balances/"+cred.user.uid).set({ saldo:0, count:0, lastResetKey:"" });
+      } catch (e) {
+        authMsg.textContent = e.message || "Gagal autentikasi.";
+      }
+    }
+  };
+  logoutBtn.onclick = () => auth.signOut();
+
+  /* =================== DEVICE BINDING (anti clone) ============= */
+  function deviceId() {
+    return navigator.userAgent + "|" + screen.width + "x" + screen.height;
+  }
+  async function enforceDevice(uid) {
+    const id = deviceId();
+    const ref = db.ref("devices/"+uid);
+    const snap = await ref.once("value");
+    if (!snap.exists()) {
+      await ref.set(id);
+    } else if (snap.val() !== id) {
+      await db.ref("blocked/"+uid).set(true);
+      await auth.signOut();
+      alert("Akun diblokir: terdeteksi login dari device berbeda.");
+    }
+  }
+
+  /* =================== VPN/Proxy Check (HTTPS) ================== 
+     pakai ipapi.is (tanpa key, HTTPS). Bila proxy/vpn/hosting/tor => blokir.
+  =============================================================== */
+  async function enforceNoVPN(uid) {
+    try {
+      const r = await fetch("https://ipapi.is/");
+      const j = await r.json();
+      const bad = j?.proxy || j?.vpn || j?.tor || j?.hosting || j?.is_proxy || j?.is_vpn || j?.is_tor || j?.is_hosting;
+      if (bad) {
+        await db.ref("blocked/"+uid).set(true);
+        await auth.signOut();
+        alert("Akun diblokir: terdeteksi VPN/Proxy/Hosting.");
+      }
+    } catch(_e) {/* diamkan jika gagal */}
+  }
+
+  /* ===================== BLOCK OVERLAY ========================= */
+  function listenBlocked(uid){
+    db.ref("blocked/"+uid).on("value", s=>{
+      blockedOv.style.display = s.exists() ? "grid" : "none";
+    });
+  }
+
+  /* =================== SALDO & LIMIT & RESET =================== */
+  function listenBalance(uid){
+    db.ref("balances/"+uid).on("value", s=>{
+      const v = s.val();
+      if (!v) return;
+      saldoEl.textContent = "Rp " + (v.saldo||0).toLocaleString("id-ID");
+      countInfo.textContent = `${v.count||0}/20 kali hari ini • reset 07:00 WIB`;
+    });
+  }
+
+  async function ensureDailyReset(uid){
+    const now = await getJakartaNow();
+    const key = dayKeyWIB(now);
+    const hour = now.getHours();
+    const ref = db.ref("balances/"+uid);
+    await ref.transaction(b=>{
+      if (!b) b = { saldo:0, count:0, lastResetKey:"" };
+      if ((b.lastResetKey||"") !== key && hour >= 7){
+        b.count = 0;
+        b.lastResetKey = key;
+      }
+      return b;
+    });
+  }
+
+  /* ============= COOLDOWN (persist di Realtime DB) ============= 
+     path: cooldowns/<uid>/{earn,bonus} = lastClickMs (epoch Jakarta)
+     saat klik dicek sisa waktu; jika belum 3 menit, tolak dan tampilkan sisa.
+  =============================================================== */
+  async function getCooldown(uid, type){
+    const s = await db.ref(`cooldowns/${uid}/${type}`).once("value");
+    return s.val() || 0;
+  }
+  async function setCooldown(uid, type, ms){
+    await db.ref(`cooldowns/${uid}/${type}`).set(ms);
+  }
+
+  async function handleReward(type){
+    const user = auth.currentUser; if (!user) return;
+    const uid = user.uid;
+    const btn = (type==="earn")?earnBtn:bonusBtn;
+
+    // waktu Jakarta & cooldown
+    const now = await getJakartaNow();
+    const nowMs = now.getTime();
+    const last = await getCooldown(uid, type);
+    const remain = 180000 - (nowMs - last); // 3 menit
+
+    if (remain > 0){
+      const sec = Math.ceil(remain/1000);
+      notifEl.textContent = `Cooldown ${type==="earn"?"Menghasilkan":"Xstra Bonus"}: ${sec} detik tersisa.`;
+      return;
     }
 
-    // key reset harian pukul 07:00 WIB
-    function getResetKey(){
-      const nowJakarta = new Date(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta' }).format(new Date()));
-      // buat tanggal WIB hari ini (tanpa jam)
-      const y = nowJakarta.getFullYear();
-      const m = nowJakarta.getMonth();
-      const d = nowJakarta.getDate();
-      const today7 = new Date(y, m, d, 7, 0, 0); // 07:00 WIB
-      const nowLocal = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
-      // jika sebelum jam 7, gunakan tanggal kemarin sebagai periode aktif
-      const start = (nowLocal < today7) ? new Date(y, m, d-1) : new Date(y, m, d);
-      const yyyy = start.getFullYear();
-      const mm = String(start.getMonth()+1).padStart(2,'0');
-      const dd = String(start.getDate()).padStart(2,'0');
-      return `${yyyy}-${mm}-${dd}`; // contoh: 2025-09-05
-    }
+    btn.disabled = true;
+    notifEl.textContent = "Memproses...";
 
-    // ===== DOM =====
-    const loginCard = $("loginCard");
-    const warnCard = $("warnCard");
-    const dashCard = $("dashCard");
-    const adminCard = $("adminCard");
-    const overlay = $("blockedOverlay");
+    await ensureDailyReset(uid);
 
-    const btnAuth = $("btnAuth");
-    const btnContinue = $("btnContinue");
-    const who = $("who");
-    const balSpan = $("balance");
-    const btnEarn = $("btnEarn");
-    const btnBonus = $("btnBonus");
-    const wdAmount = $("wdAmount");
-    const wdNote = $("wdNote");
-    const btnWD = $("btnWD");
-    const wdTableBody = document.querySelector("#wdTable tbody");
-
-    // ===== Auth (login/register) =====
-    btnAuth.onclick = async ()=>{
-      const email = $("email").value.trim();
-      const pass = $("pass").value.trim();
-      if(!email || !pass){ notify("Isi email & password", "#e53935"); return; }
-      try{
-        await signInWithEmailAndPassword(auth, email, pass);
-        notify("Login berhasil");
-      }catch(e){
-        if(e.code === "auth/user-not-found"){
-          await createUserWithEmailAndPassword(auth, email, pass);
-          notify("Registrasi berhasil 🎉");
-        }else{
-          notify("Gagal: "+e.message, "#e53935");
-        }
-      }
-    };
-
-    // ===== State change =====
-    onAuthStateChanged(auth, async (u)=>{
-      if(!u){ // logged out
-        loginCard.style.display = "";
-        warnCard.style.display = "none";
-        dashCard.style.display = "none";
-        adminCard.style.display = "none";
-        overlay.style.display = "none";
-        return;
-      }
-
-      // --- Anti VPN/Proxy & IP lock ---
-      const ipInfo = await getIpInfo();
-      if(!ipInfo){ notify("Tidak bisa verifikasi IP. Coba lagi.", "#e53935"); await signOut(auth); return; }
-      if(ipInfo.security && (ipInfo.security.vpn || ipInfo.security.proxy || ipInfo.security.tor)){
-        notify("VPN/Proxy/Tor terdeteksi. Matikan dulu.", "#e53935");
-        await signOut(auth); return;
-      }
-
-      // --- Device Lock (dua arah) & IP Lock ---
-      const devRef = ref(db, "devices/" + deviceId);
-      const uidDevRef = ref(db, "uidDevices/" + u.uid);
-      const ipRef = ref(db, "ipLocks/" + u.uid);
-
-      const [devSnap, uidDevSnap, ipSnap] = await Promise.all([get(devRef), get(uidDevRef), get(ipRef)]);
-
-      // if deviceId already mapped to other uid -> block
-      if(devSnap.exists() && devSnap.val() !== u.uid){
-        await set(ref(db, "blocked/"+u.uid), { by:"system", reason:"device_conflict", at: Date.now() });
-        showBlocked(); await signOut(auth); return;
-      }
-      // if uid already mapped to other device -> block (prevents cloning/parallel app)
-      if(uidDevSnap.exists() && uidDevSnap.val() !== deviceId){
-        await set(ref(db, "blocked/"+u.uid), { by:"system", reason:"multi_device", at: Date.now() });
-        showBlocked(); await signOut(auth); return;
-      }
-      // write mappings (idempotent)
-      await Promise.all([
-        set(devRef, u.uid),
-        set(uidDevRef, deviceId)
-      ]);
-
-      // IP lock (first bind)
-      if(!ipSnap.exists()){
-        await set(ipRef, ipInfo.ip);
-      }else if(ipSnap.val() !== ipInfo.ip){
-        await set(ref(db, "blocked/"+u.uid), { by:"system", reason:"ip_changed", at: Date.now() });
-        showBlocked(); await signOut(auth); return;
-      }
-
-      // --- Blocked check ---
-      const blockSnap = await get(ref(db, "blocked/"+u.uid));
-      if(blockSnap.exists()){
-        showBlocked();
-        // jangan signOut supaya overlay tetap terlihat
-        loginCard.style.display = "none";
-        warnCard.style.display = "none";
-        dashCard.style.display = "none";
-        // adminCard tetap hidden
-        return;
-      }
-
-      // --- First time warning? (cek flag userInit) ---
-      const initRef = ref(db, "userInit/"+u.uid);
-      const inited = await get(initRef);
-      if(!inited.exists()){
-        loginCard.style.display = "none";
-        warnCard.style.display = "";
-        let c=5;
-        btnContinue.textContent = `Lanjut (${c})`;
-        const t = setInterval(()=>{
-          c--; btnContinue.textContent = `Lanjut (${c})`;
-          if(c<=0){ clearInterval(t); btnContinue.disabled = false; btnContinue.textContent = "Lanjut"; }
-        },1000);
-        btnContinue.onclick = async ()=>{
-          await set(initRef, true);
-          warnCard.style.display = "none";
-          await showDashboard(u);
-        };
-      }else{
-        loginCard.style.display = "none";
-        warnCard.style.display = "none";
-        await showDashboard(u);
-      }
+    // transaksi saldo + count + limit 20x
+    const ref = db.ref("balances/"+uid);
+    let limited = false;
+    await ref.transaction(b=>{
+      if (!b) b = { saldo:0, count:0, lastResetKey:"" };
+      if (b.count >= 20){ limited = true; return b; }
+      b.saldo = (b.saldo||0) + 30000;
+      b.count = (b.count||0) + 1;
+      return b;
     });
 
-    // ===== Dashboard + Admin =====
-    async function showDashboard(u){
-      who.textContent = u.email;
-      dashCard.style.display = "";
-
-      // live balance
-      const balRef = ref(db, "balances/"+u.uid);
-      onValue(balRef, (snap)=>{ balSpan.textContent = snap.exists()? snap.val() : 0; });
-
-      // Admin badge & panel
-      const adminRef = ref(db, "admins/"+u.uid);
-      const adminSnap = await get(adminRef);
-      if(adminSnap.exists() && adminSnap.val()===true){
-        adminCard.style.display = "";
-        loadWDTable();
-      }else{
-        adminCard.style.display = "none";
-      }
-
-      btnEarn.onclick = ()=>handleClaim(u.uid, "earning");
-      btnBonus.onclick = ()=>handleClaim(u.uid, "bonus");
-      btnWD.onclick = ()=>requestWD(u.uid);
+    if (limited){
+      notifEl.textContent = "Limit harian tercapai (20x). Reset 07:00 WIB.";
+      btn.disabled = false;
+      return;
     }
 
-    // cooldown + daily limit (20) persisted
-    async function handleClaim(uid, type){
-      const now = Date.now();
-      const cooldownRef = ref(db, `cooldowns/${uid}/${type}`);
-      const countKey = getResetKey();
-      const countRef = ref(db, `counts/${uid}/${type}/${countKey}`);
-      const balRef = ref(db, `balances/${uid}`);
+    await setCooldown(uid, type, nowMs);
+    notifEl.textContent = "Berhasil! Cooldown 3 menit berjalan.";
+    // tombol aktif kembali otomatis setelah 3 menit (opsional UX)
+    setTimeout(()=>{ btn.disabled = false; notifEl.textContent = ""; }, 180000);
+  }
 
-      const [cdSnap, ctSnap, blSnap] = await Promise.all([get(cooldownRef), get(countRef), get(balRef)]);
-      // check daily count
-      const count = ctSnap.exists()? ctSnap.val() : 0;
-      if(count >= 20){
-        notify("Limit harian 20x untuk tombol ini. Reset 07:00 WIB.", "#ffb300");
-        return;
-      }
-      // check cooldown 3 menit
-      if(cdSnap.exists() && now - cdSnap.val() < 180000){
-        const remain = Math.ceil((180000 - (now - cdSnap.val()))/1000);
-        notify("Cooldown "+remain+" detik lagi.", "#ffb300");
-        return;
-      }
-      // add balance + set cd + increase count
-      let bal = blSnap.exists()? blSnap.val() : 0;
-      bal += 30000;
-      await Promise.all([
-        set(balRef, bal),
-        set(cooldownRef, now),
-        set(countRef, count+1),
-        push(ref(db, `earnLogs/${uid}`), { type, amount:30000, at: now })
-      ]);
-      notify((type==="earning"?"🎁":"💎")+" +Rp30.000");
+  earnBtn.onclick  = ()=>handleReward("earn");
+  bonusBtn.onclick = ()=>handleReward("bonus");
+
+  /* ===================== AUTH STATE FLOW ======================= */
+  auth.onAuthStateChanged(async user=>{
+    if (user){
+      // UI
+      authCard.classList.add("hidden");
+      dash.classList.remove("hidden");
+
+      // proteksi
+      await enforceDevice(user.uid);
+      await enforceNoVPN(user.uid);
+
+      // listeners
+      listenBlocked(user.uid);
+      listenBalance(user.uid);
+
+      // initial checks
+      await ensureDailyReset(user.uid);
+
+      // sinkronkan cooldown status tombol (opsional: tidak disable di awal)
+      notifEl.textContent = "";
+    } else {
+      dash.classList.add("hidden");
+      authCard.classList.remove("hidden");
+      blockedOv.style.display = "none";
     }
-
-    // Withdraw request (saldo dipotong saat ADMIN approve)
-    async function requestWD(uid){
-      const amount = parseInt(wdAmount.value || "0", 10);
-      const note = (wdNote.value || "").trim();
-      if(isNaN(amount) || amount <= 0){ notify("Nominal tidak valid", "#e53935"); return; }
-      const balSnap = await get(ref(db, "balances/"+uid));
-      const bal = balSnap.exists()? balSnap.val() : 0;
-      if(amount > bal){ notify("Saldo tidak cukup", "#e53935"); return; }
-      if(!note){ notify("Isi metode/no. tujuan WD", "#e53935"); return; }
-
-      const newRef = push(ref(db, "withdrawals"));
-      await set(newRef, { uid, amount, note, status:"pending", at: Date.now() });
-      notify("WD terkirim. Menunggu admin.");
-      wdAmount.value = ""; wdNote.value = "";
-    }
-
-    // Admin: load WD pending
-    function loadWDTable(){
-      onValue(ref(db, "withdrawals"), (snap)=>{
-        const tbody = wdTableBody; tbody.innerHTML = "";
-        if(!snap.exists()) return;
-        snap.forEach(child=>{
-          const w = child.val(); const key = child.key;
-          if(w.status!=="pending") return;
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td class="tiny">${w.uid}</td>
-            <td>Rp ${w.amount.toLocaleString('id-ID')}</td>
-            <td class="tiny">${w.note||""}</td>
-            <td class="row" style="gap:6px">
-              <button class="btn" style="padding:8px;border-radius:8px" data-act="ok" data-key="${key}" data-uid="${w.uid}" data-amt="${w.amount}">Approve</button>
-              <button class="btn secondary" style="padding:8px;border-radius:8px" data-act="no" data-key="${key}">Reject</button>
-            </td>`;
-          tbody.appendChild(tr);
-        });
-
-        // bind actions
-        tbody.querySelectorAll("button").forEach(btn=>{
-          btn.onclick = async ()=>{
-            const act = btn.dataset.act;
-            const key = btn.dataset.key;
-            if(act==="ok"){
-              const uid = btn.dataset.uid;
-              const amt = parseInt(btn.dataset.amt,10);
-              // potong saldo saat approve
-              const balRef = ref(db, "balances/"+uid);
-              const balSnap = await get(balRef);
-              const bal = balSnap.exists()? balSnap.val() : 0;
-              if(amt > bal){ notify("Saldo user kurang untuk approve", "#e53935"); return; }
-              await set(balRef, bal-amt);
-              await update(ref(db, "withdrawals/"+key), { status:"approved", doneAt: Date.now() });
-              notify("WD Approved");
-            }else{
-              await update(ref(db, "withdrawals/"+key), { status:"rejected", doneAt: Date.now() });
-              notify("WD Rejected", "#e53935");
-            }
-          };
-        });
-      });
-
-      // block/unblock
-      $("btnBlock").onclick = async ()=>{
-        const uid = $("blockUid").value.trim(); if(!uid){ notify("Masukkan UID", "#e53935"); return; }
-        await set(ref(db, "blocked/"+uid), { by:"admin", reason:"manual", at: Date.now() });
-        notify("User diblokir");
-      };
-      $("btnUnblock").onclick = async ()=>{
-        const uid = $("blockUid").value.trim(); if(!uid){ notify("Masukkan UID", "#e53935"); return; }
-        await set(ref(db, "blocked/"+uid), null);
-        notify("Blokir dihapus");
-      };
-    }
-
-    function showBlocked(){
-      overlay.style.display = "flex";
-    }
-
-    // ========== RULES YANG DISARANKAN (set di Realtime Database -> Rules) ==========
-    // {
-    //   "rules": {
-    //     "balances": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
-    //     "cooldowns": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
-    //     "counts": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
-    //     "earnLogs": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
-    //     "uidDevices": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
-    //     "devices": { ".read": "auth != null", ".write": "auth != null" },
-    //     "ipLocks": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } },
-    //     "blocked": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null" } },
-    //     "withdrawals": { ".read": "auth != null", ".write": "auth != null" },
-    //     "admins": { ".read": "auth != null", ".write": "auth != null" },
-    //     "userInit": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" } }
-    //   }
-    // }
-
-    // ========== CARA JADIKAN ADMIN ==========
-    // di Realtime Database, tambahkan:
-    // /admins/<UID_ADMIN> = true
-  </script>
+  });
+</script>
 </body>
 </html>
