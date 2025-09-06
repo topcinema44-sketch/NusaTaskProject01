@@ -4,181 +4,448 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>NusaTask • Earning</title>
+
+<!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --bg1:#0f172a; --bg2:#1e293b;
+  --bg1:#0b1020; --bg2:#111827;
+  --card:#0d1424; --border:rgba(255,255,255,.08);
+  --text:#e5e7eb; --muted:#9ca3af;
   --pri1:#6366f1; --pri2:#4f46e5;
   --sec1:#22c55e; --sec2:#16a34a;
+  --warn:#f87171; --info:#60a5fa;
 }
-body{margin:0;font-family:'Poppins',sans-serif;color:#fff;
-  background:radial-gradient(1200px 1200px at 10% -10%,#1f2445 0,#121827 45%),
-             linear-gradient(135deg,var(--bg1),var(--bg2));
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:'Poppins',sans-serif; color:var(--text);
+  background:radial-gradient(1200px 900px at 10% -10%,#1f2445 0,#121827 45%),linear-gradient(135deg,var(--bg1),var(--bg2));
+  min-height:100vh;
 }
-.topbar{position:fixed;top:0;left:0;right:0;z-index:20;
-  display:flex;align-items:center;gap:10px;
-  padding:12px 16px;background:rgba(0,0,0,.25);backdrop-filter: blur(6px);}
-.avatar{width:28px;height:28px;border-radius:50%;background:#20293a;display:grid;place-items:center}
+
+/* Splash */
+#splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:linear-gradient(135deg,var(--bg1),var(--bg2));z-index:100;transition:opacity 1s ease}
+#splash .logo{width:120px;height:120px;border-radius:24px; background:#101524; display:grid; place-items:center; font-size:42px; opacity:0; transform:translateY(8px); animation:pop 1s .1s forwards}
+@keyframes pop{to{opacity:1; transform:translateY(0)}}
+.spinner{width:30px;height:30px;border:3px solid #344055;border-top:3px solid var(--pri1);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress{width:220px;height:6px;background:#1f2937;border-radius:4px;overflow:hidden}
+.progress-bar{height:100%;width:0;background:var(--pri1);transition:width .3s ease}
+
+/* Topbar */
+.topbar{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(0,0,0,.3);backdrop-filter:blur(6px);border-bottom:1px solid var(--border);z-index:20}
+.avatar{width:28px;height:28px;border-radius:50%;background:#1e293b;display:grid;place-items:center}
 .avatar::after{content:"👤"}
-.user-email{font-size:13px;color:#d1d5db;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70vw}
-.wrap{max-width:700px;margin:90px auto 40px;padding:0 16px}
-.card{background:#0c1220;border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;padding:22px;text-align:center;
-  box-shadow:0 10px 30px rgba(0,0,0,.35);}
-.saldo{font-size:26px;font-weight:700;margin-bottom:20px}
-.btn{display:block;width:100%;margin:10px 0;padding:15px;border:0;
-  border-radius:12px;font-size:16px;font-weight:600;color:#fff;cursor:pointer;transition:.2s}
+.user-email{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70vw}
+
+/* Layout */
+.wrap{max-width:760px;margin:90px auto 40px;padding:0 16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.35);animation:fadein .5s ease}
+@keyframes fadein{from{opacity:.2;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+h2{margin:0 0 12px}
+
+/* Inputs & Buttons */
+.inpt{width:100%;padding:14px;margin:8px 0;border-radius:12px;border:1px solid var(--border);background:#1e293b;color:var(--text);outline:none}
+.btn{width:100%;margin:10px 0;padding:15px;border:0;border-radius:12px;font-size:16px;font-weight:600;color:#fff;cursor:pointer;transition:transform .06s ease,opacity .2s}
+.btn:active{transform:translateY(1px)}
 .btn:disabled{opacity:.6;cursor:not-allowed}
 .btn-pri{background:linear-gradient(90deg,var(--pri1),var(--pri2))}
 .btn-sec{background:linear-gradient(90deg,var(--sec1),var(--sec2))}
-.progress{height:6px;background:#1e293b;border-radius:10px;overflow:hidden;margin-top:4px}
-.progress span{display:block;height:100%;background:#22c55e;width:0%;transition:width 0.3s}
-.bannedOverlay{position:fixed;top:0;left:0;right:0;bottom:0;
-  background:rgba(0,0,0,.85);color:#fff;display:none;z-index:999;
-  justify-content:center;align-items:center;text-align:center;padding:20px}
+
+/* Earning UI */
+.saldo{font-size:26px;font-weight:700;margin-bottom:16px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.col{flex:1 1 320px}
+.action-card{background:#0b1322;border:1px solid var(--border);border-radius:16px;padding:16px}
+.title{font-weight:700;margin-bottom:4px}
+.sub{font-size:12px;color:var(--muted)}
+.progress-task{height:8px;border-radius:6px;background:#1f2937;overflow:hidden;margin-top:8px}
+.progress-bar-task{height:100%;background:var(--pri1);width:0%;transition:width .4s ease}
+.progress-text{font-size:12px;color:var(--muted);margin-top:4px;text-align:right}
+
+/* Info */
+.warn{font-size:13px;color:var(--warn);margin-top:14px}
+.hint{font-size:13px;color:var(--muted);margin-top:8px}
+.hint a{color:var(--info);text-decoration:none}
+
+/* Banned overlay */
+.veil{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:19;display:none}
+.banned{position:fixed;inset:0;display:none;align-items:center;justify-content:center;text-align:center;z-index:20;padding:20px}
+.banned .box{background:#0e1526;border:1px solid var(--border);padding:26px 20px;border-radius:16px;max-width:520px}
+.banned h1{margin:0 0 10px;color:var(--warn);font-size:24px}
+.banned a{color:var(--info);font-weight:600;text-decoration:none}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:rgba(17,24,39,.95);color:#e5e7eb;border:1px solid var(--border);padding:10px 14px;border-radius:10px;font-size:14px;z-index:200;opacity:0;transition:.35s;max-width:90vw;text-align:center}
 </style>
 </head>
 <body>
 
-<div class="topbar"><div class="avatar"></div><div class="user-email" id="miniEmail">Memuat…</div></div>
-<div class="wrap">
+<!-- Splash -->
+<div id="splash">
+  <div class="logo">NT</div>
+  <div class="spinner"></div>
+  <div class="progress"><div class="progress-bar" id="splashBar"></div></div>
+</div>
 
-  <!-- login -->
+<!-- Topbar -->
+<div class="topbar">
+  <div class="avatar"></div>
+  <div class="user-email" id="miniEmail">Belum login</div>
+</div>
+
+<div class="wrap">
+  <!-- Auth -->
   <div class="card" id="authCard">
-    <h2>Masuk / Daftar</h2>
-    <input id="email" class="btn" style="background:#1e293b;color:#fff;margin-top:12px" type="email" placeholder="Email">
-    <input id="password" class="btn" style="background:#1e293b;color:#fff" type="password" placeholder="Password (min 6)">
+    <h2>Masuk</h2>
+    <input id="emailLogin" class="inpt" type="email" placeholder="Email">
+    <input id="passLogin" class="inpt" type="password" placeholder="Password">
     <button id="btnLogin" class="btn btn-pri">Masuk</button>
+    <hr style="border:0;border-top:1px solid var(--border);margin:14px 0">
+    <h2>Daftar</h2>
+    <input id="emailReg" class="inpt" type="email" placeholder="Email">
+    <input id="passReg" class="inpt" type="password" placeholder="Password (min 6)">
     <button id="btnRegister" class="btn btn-sec">Daftar</button>
   </div>
 
-  <!-- earning -->
+  <!-- Earning -->
   <div class="card" id="earnCard" style="display:none">
     <div class="saldo" id="saldo">Saldo: Rp 0</div>
 
-    <button id="btnEarn" class="btn btn-pri">MENGHASILKAN</button>
-    <div class="progress"><span id="progEarn"></span></div>
+    <div class="row">
+      <div class="col">
+        <div class="action-card">
+          <div class="title">MENGHASILKAN</div>
+          <div class="sub">Iklan Monetag • cooldown 3 menit • max 25/hari</div>
+          <button id="btnEarn" class="btn btn-pri" style="margin-top:10px">MENGHASILKAN</button>
+          <div class="progress-task"><div class="progress-bar-task" id="progEarn"></div></div>
+          <div class="progress-text" id="progTextEarn">0 / 25</div>
+        </div>
+      </div>
 
-    <button id="btnBonus" class="btn btn-sec">XSTRA BONUS</button>
-    <div class="progress"><span id="progBonus"></span></div>
+      <div class="col">
+        <div class="action-card">
+          <div class="title">XSTRA BONUS</div>
+          <div class="sub">Iklan KlikAdila • cooldown 3 menit • max 30/hari</div>
+          <button id="btnBonus" class="btn btn-sec" style="margin-top:10px">XSTRA BONUS</button>
+          <div class="progress-task"><div class="progress-bar-task" id="progBonus"></div></div>
+          <div class="progress-text" id="progTextBonus">0 / 30</div>
+        </div>
+      </div>
+    </div>
 
-    <p style="font-size:13px;color:#f87171;margin-top:16px">⚠️ Segala bentuk kecurangan (tuyul, hack, clone) akan <b>diblokir permanen</b>.<br/>
-    Jika akun terblokir, hubungi <a href="https://t.me/nusataskproject" style="color:#60a5fa">Admin Telegram</a></p>
+    <p class="warn">⚠️ Segala bentuk kecurangan (tuyul, hack, clone, VPN) akan diblokir otomatis.</p>
+    <p class="hint">Jika akun terblokir, hubungi admin di <a href="https://t.me/nusataskproject" target="_blank">t.me/nusataskproject</a></p>
   </div>
 </div>
 
-<!-- banned overlay -->
-<div class="bannedOverlay" id="bannedCard">
-  <div>
-    <h2>🚫 Akun Anda Diblokir</h2>
-    <p>Hubungi admin di <a href="https://t.me/nusataskproject" style="color:#60a5fa">t.me/nusataskproject</a></p>
+<!-- Banned Overlay -->
+<div class="veil" id="veil"></div>
+<div class="banned" id="bannedCard">
+  <div class="box">
+    <h1>🚫 Akun Anda Diblokir</h1>
+    <p>Hubungi admin melalui <a href="https://t.me/nusataskproject" target="_blank">Telegram</a></p>
   </div>
 </div>
 
-<!-- Firebase -->
+<!-- Toast container -->
+<div id="toast"></div>
+
+<!-- Firebase v8 (namespaced, stabil untuk mobile) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<!-- Monetag SDK -->
-<script src='//libtl.com/sdk.js' data-zone='9779635' data-sdk='show_9779635'></script>
-<!-- FingerprintJS -->
+<!-- FingerprintJS untuk device lock -->
 <script src="https://openfpcdn.io/fingerprintjs/v3"></script>
+<!-- Monetag SDK untuk tombol MENGHASILKAN -->
+<script src='//libtl.com/sdk.js' data-zone='9779635' data-sdk='show_9779635'></script>
 
 <script>
-const firebaseConfig={apiKey:"AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
-authDomain:"nusataskproject.firebaseapp.com",
-databaseURL:"https://nusataskproject-default-rtdb.asia-southeast1.firebasedatabase.app",
-projectId:"nusataskproject",storageBucket:"nusataskproject.firebasestorage.app",
-messagingSenderId:"409602188456",appId:"1:409602188456:web:6302d3030b763324e28e9d",
-measurementId:"G-9389QL1WRE"};
+/* ===== Splash ===== */
+const splash=document.getElementById("splash"); const splashBar=document.getElementById("splashBar");
+let p=0; const t=setInterval(()=>{p+=12; splashBar.style.width=p+"%"; if(p>=100){clearInterval(t); setTimeout(()=>{splash.style.opacity="0"; setTimeout(()=>splash.remove(),900)},300)}},140);
+
+/* ===== Firebase Config ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
+  authDomain: "nusataskproject.firebaseapp.com",
+  databaseURL: "https://nusataskproject-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "nusataskproject",
+  storageBucket: "nusataskproject.firebasestorage.app",
+  messagingSenderId: "409602188456",
+  appId: "1:409602188456:web:6302d3030b763324e28e9d",
+  measurementId: "G-9389QL1WRE"
+};
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.database();
 
-let deviceId=""; const CD_MS=180000, REWARD_EARN=30000, REWARD_BONUS=15000, MAX_EARN=25, MAX_BONUS=30;
+/* ===== Helpers ===== */
+const CD_MS=180000; // 3 menit
+const MAX_EARN=25, MAX_BONUS=30;
+const REWARD_EARN=30000, REWARD_BONUS=30000; // sesuai permintaan
 function $(id){return document.getElementById(id);}
-function resetKeyWIB(){return new Date().toLocaleDateString("id-ID",{timeZone:"Asia/Jakarta"});}
+function toast(msg){
+  const d=document.createElement("div"); d.className="toast"; d.textContent=msg;
+  document.body.appendChild(d); requestAnimationFrame(()=>d.style.opacity="1");
+  setTimeout(()=>d.style.opacity="0",2200); setTimeout(()=>d.remove(),2600);
+}
+// key reset 06:00 WIB harian (string kunci)
+function resetKeyWIB(){
+  try{
+    const now=new Date();
+    const wib = new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit'}).formatToParts(now);
+    const hour = Number(wib.find(p=>p.type==='hour').value);
+    const dateParts = wib.filter(p=>['year','month','day'].includes(p.type)).reduce((a,p)=>{a[p.type]=p.value;return a;},{});
+    let y=dateParts.year, m=dateParts.month, d=dateParts.day;
+    if(hour<6){ // sebelum jam 6 → pakai hari kemarin
+      const prev=new Date(now.getTime()-24*3600*1000);
+      const p2=new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta', year:'numeric', month:'2-digit', day:'2-digit'}).formatToParts(prev);
+      y=p2.find(p=>p.type==='year').value; m=p2.find(p=>p.type==='month').value; d=p2.find(p=>p.type==='day').value;
+    }
+    return `${y}-${m}-${d}`;
+  }catch(e){
+    // fallback
+    const dt=new Date(); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+  }
+}
 
-// init fingerprint
-FingerprintJS.load().then(fp=>fp.get()).then(res=>{deviceId=res.visitorId;});
+/* ===== Device Fingerprint (anti clone) ===== */
+let deviceId = localStorage.getItem("NT_device") || "";
+let fpReady = FingerprintJS.load().then(fp=>fp.get()).then(res=>{
+  deviceId = res.visitorId;
+  localStorage.setItem("NT_device", deviceId);
+}).catch(()=>{ if(!deviceId){ deviceId=crypto.randomUUID(); localStorage.setItem("NT_device", deviceId);} });
 
-// auth buttons
-$("btnLogin").onclick=()=>auth.signInWithEmailAndPassword($("email").value,$("password").value).catch(e=>alert(e.message));
-$("btnRegister").onclick=()=>auth.createUserWithEmailAndPassword($("email").value,$("password").value).then(()=>{}).catch(e=>alert(e.message));
+/* ===== IP Publik ===== */
+async function getPublicIP(){
+  try{
+    const r=await fetch("https://api.ipify.org?format=json",{cache:"no-store"});
+    const j=await r.json(); return j.ip || null;
+  }catch(e){ return null; }
+}
 
-// anti tuyul
+/* ===== UI Switch ===== */
+function showAuth(){
+  $("authCard").style.display="block";
+  $("earnCard").style.display="none";
+  $("bannedCard").style.display="none";
+  $("veil").style.display="none";
+  $("miniEmail").textContent="Belum login";
+}
+function showEarn(email){
+  $("authCard").style.display="none";
+  $("earnCard").style.display="block";
+  $("bannedCard").style.display="none";
+  $("veil").style.display="none";
+  $("miniEmail").textContent=email||"";
+}
+function showBanned(email){
+  $("authCard").style.display="none";
+  $("earnCard").style.display="none";
+  $("bannedCard").style.display="flex";
+  $("veil").style.display="block";
+  $("miniEmail").textContent=email||"";
+}
+
+/* ===== Anti Tuyul Check (AUTO BAN) =====
+   - 1 device = 1 akun
+   - 1 IP maksimal 2 akun / 24 jam
+*/
 async function antiTuyulCheck(user){
-  const refUser=db.ref("users/"+user.uid);
-  const ip= (await (await fetch("https://api.ipify.org?format=json")).json()).ip;
+  const uid=user.uid;
+  const refUser=db.ref("users/"+uid);
+  await fpReady; // pastikan deviceId siap
 
+  // device lock
   const devRef=db.ref("devices/"+deviceId);
   const devSnap=await devRef.once("value");
-  if(devSnap.exists() && devSnap.val()!==user.uid){
-    await refUser.update({banned:true,reason:"Multi akun di device"});return false;
+  if(devSnap.exists() && devSnap.val()!==uid){
+    await refUser.update({banned:true, reason:"Multi akun di 1 device"});
+    return {ok:false, why:"device"};
   }
-  const ipRef=db.ref("ips/"+ip);
-  const ipSnap=await ipRef.once("value"); let data=ipSnap.val()||{};
-  let now=Date.now(),count=0;for(let k in data){if(now-data[k]<86400000)count++;}
-  if(count>=2 && !data[user.uid]){
-    await refUser.update({banned:true,reason:">2 akun di IP"});return false;
+
+  // ip limit
+  const ip=await getPublicIP();
+  if(ip){
+    const ipRef=db.ref("ips/"+ip);
+    const ipSnap=await ipRef.once("value");
+    const data=ipSnap.val()||{};
+    const now=Date.now();
+    let count=0;
+    for(const k in data){
+      if(now-(data[k]||0) < 24*3600*1000) count++;
+    }
+    if(count>=2 && !data[uid]){
+      await refUser.update({banned:true, reason:">2 akun per IP/24h"});
+      return {ok:false, why:"ip"};
+    }
+    await ipRef.child(uid).set(now);
+    await refUser.update({ip});
   }
-  await devRef.set(user.uid); await ipRef.child(user.uid).set(now);
-  await refUser.update({deviceId,ip});
+
+  await devRef.set(uid);
+  await refUser.update({deviceId});
+  return {ok:true};
+}
+
+/* ===== AUTH Actions ===== */
+$("btnLogin").onclick=async ()=>{
+  const email=$("emailLogin").value.trim(), pass=$("passLogin").value;
+  if(!email||!pass) return toast("Lengkapi email & password");
+  try{
+    await auth.signInWithEmailAndPassword(email,pass);
+  }catch(e){ toast(e.message||"Gagal login"); }
+};
+
+$("btnRegister").onclick=async ()=>{
+  const email=$("emailReg").value.trim(), pass=$("passReg").value;
+  if(!email||!pass) return toast("Lengkapi email & password");
+  if(pass.length<6) return toast("Password minimal 6 karakter");
+  try{
+    const cred=await auth.createUserWithEmailAndPassword(email,pass);
+    // auto-login: Firebase sudah signed-in; seed data user:
+    await db.ref("users/"+cred.user.uid).set({
+      email:cred.user.email,
+      saldo:0,
+      banned:false,
+      deviceId, ip:null,
+      earning:{
+        menghasilkan:{count:0,lastClick:0,lastReset:resetKeyWIB()},
+        bonus:{count:0,lastClick:0,lastReset:resetKeyWIB()}
+      }
+    });
+    const at=await antiTuyulCheck(cred.user);
+    if(!at.ok){ showBanned(cred.user.email); return; }
+    toast("Registrasi berhasil");
+  }catch(e){ toast(e.message||"Gagal registrasi"); }
+};
+
+/* ===== Auth State ===== */
+auth.onAuthStateChanged(async user=>{
+  if(!user){ showAuth(); return; }
+
+  $("miniEmail").textContent=user.email||"";
+  const ref=db.ref("users/"+user.uid);
+  const s=await ref.once("value");
+  if(!s.exists()){
+    await ref.set({
+      email:user.email, saldo:0, banned:false, deviceId, ip:null,
+      earning:{menghasilkan:{count:0,lastClick:0,lastReset:resetKeyWIB()}, bonus:{count:0,lastClick:0,lastReset:resetKeyWIB()}}
+    });
+  }
+
+  // cek banned + anti tuyul setiap login
+  const at=await antiTuyulCheck(user);
+  const data=(await ref.once("value")).val();
+  if(!at.ok || data?.banned){ showBanned(user.email); return; }
+
+  // realtime saldo
+  ref.child("saldo").on("value",sv=>{
+    $("saldo").textContent="Saldo: Rp "+Number(sv.val()||0).toLocaleString("id-ID");
+  });
+
+  showEarn(user.email);
+  refreshUI();
+});
+
+/* ===== Earning Buttons ===== */
+$("btnEarn").onclick=()=> {
+  const u=auth.currentUser; if(!u){ toast("Silakan login"); return; }
+  // Cek limit & cooldown dulu → jika lolos, tampilkan iklan Monetag; reward saat iklan selesai
+  precheckAction("menghasilkan", MAX_EARN, "MENGHASILKAN", $("btnEarn"), $("progEarn"), $("progTextEarn"))
+    .then(ok=>{
+      if(!ok) return;
+      if(typeof show_9779635!=="function"){ toast("Iklan belum siap"); return; }
+      show_9779635().then(()=>{
+        commitReward("menghasilkan", REWARD_EARN, MAX_EARN, $("btnEarn"), $("progEarn"), $("progTextEarn"));
+      }).catch(()=>toast("Iklan gagal ditampilkan"));
+    });
+};
+
+$("btnBonus").onclick=()=> {
+  const u=auth.currentUser; if(!u){ toast("Silakan login"); return; }
+  // TODO: sambungkan SDK KlikAdila di sini, sementara langsung reward normal (tetap patuh cooldown/limit)
+  precheckAction("bonus", MAX_BONUS, "XSTRA BONUS", $("btnBonus"), $("progBonus"), $("progTextBonus"))
+    .then(ok=>{ if(ok){ commitReward("bonus", REWARD_BONUS, MAX_BONUS, $("btnBonus"), $("progBonus"), $("progTextBonus")); }});
+};
+
+/* ===== Precheck (limit + cooldown + reset harian) ===== */
+async function precheckAction(type, max, label, btn, barEl, textEl){
+  const u=auth.currentUser; if(!u) return false;
+  const base=db.ref("users/"+u.uid);
+  // banned on the fly
+  const ud=(await base.once("value")).val();
+  if(ud?.banned){ showBanned(u.email); return false; }
+
+  const ref=base.child("earning/"+type);
+  let d=(await ref.once("value")).val() || {count:0,lastClick:0,lastReset:resetKeyWIB()};
+  // reset harian 06:00 WIB
+  if(d.lastReset!==resetKeyWIB()){ d.count=0; d.lastReset=resetKeyWIB(); await ref.update({count:0,lastReset:resetKeyWIB()}); }
+
+  if(d.count>=max){ toast("🚫 Limit harian habis"); updateProgressUI(d.count,max,barEl,textEl); setCoolText(btn,label,0,true); return false; }
+
+  const remain=CD_MS - (Date.now() - (d.lastClick||0));
+  if(remain>0){
+    startCountdown(btn,label,remain);
+    updateProgressUI(d.count,max,barEl,textEl);
+    toast("⏳ Masih cooldown");
+    return false;
+  }
+  // siap tampilkan iklan
   return true;
 }
 
-auth.onAuthStateChanged(async user=>{
-  if(!user){$("authCard").style.display="block";$("earnCard").style.display="none";$("bannedCard").style.display="none";$("miniEmail").textContent="Belum login";return;}
-  const ref=db.ref("users/"+user.uid);
-  const snap=await ref.once("value"); let data=snap.val();
-  if(!data){await ref.set({email:user.email,saldo:0,banned:false,earning:{menghasilkan:{},bonus:{}}});}
-  const ok=await antiTuyulCheck(user);
-  if(!ok||data?.banned){$("authCard").style.display="none";$("earnCard").style.display="none";$("bannedCard").style.display="flex";$("miniEmail").textContent=user.email;return;}
-  $("authCard").style.display="none";$("earnCard").style.display="block";$("bannedCard").style.display="none";$("miniEmail").textContent=user.email;
-  db.ref("users/"+user.uid+"/saldo").on("value",s=>{$("saldo").textContent="Saldo: Rp "+(s.val()||0);});
-});
+/* ===== Commit Reward (setelah iklan selesai / valid) ===== */
+async function commitReward(type, reward, max, btn, barEl, textEl){
+  const u=auth.currentUser; if(!u) return;
+  const baseRef=db.ref("users/"+u.uid);
+  const actRef=baseRef.child("earning/"+type);
+  let d=(await actRef.once("value")).val() || {count:0,lastClick:0,lastReset:resetKeyWIB()};
 
-// tombol menghasilkan
-$("btnEarn").onclick=()=> {
-  const u=auth.currentUser;if(!u)return;
-  checkAndReward("menghasilkan",REWARD_EARN,MAX_EARN,"progEarn",()=> {
-    show_9779635().then(()=>{ commitReward("menghasilkan",REWARD_EARN,"progEarn"); })
-    .catch(()=>alert("Iklan gagal ditampilkan"));
-  });
-};
-// tombol bonus
-$("btnBonus").onclick=()=> {
-  const u=auth.currentUser;if(!u)return;
-  checkAndReward("bonus",REWARD_BONUS,MAX_BONUS,"progBonus",()=> {
-    commitReward("bonus",REWARD_BONUS,"progBonus");
-  });
-};
-
-async function checkAndReward(type,reward,max,progId,onReady){
-  const u=auth.currentUser;const ref=db.ref("users/"+u.uid+"/earning/"+type);
-  const snap=await ref.once("value");let d=snap.val()||{count:0,lastClick:0,lastReset:resetKeyWIB()};
-  if(d.lastReset!==resetKeyWIB()){d.count=0;d.lastReset=resetKeyWIB();}
-  if(d.count>=max){alert("🚫 Limit harian habis");return;}
-  const remain=CD_MS-(Date.now()-(d.lastClick||0));
-  if(remain>0){updateProgress(remain,progId);return;}
-  onReady();
-}
-async function commitReward(type,reward,progId){
-  const u=auth.currentUser;if(!u)return;
-  const baseRef=db.ref("users/"+u.uid);const actRef=baseRef.child("earning/"+type);
-  const snap=await actRef.once("value");let d=snap.val()||{count:0,lastClick:0,lastReset:resetKeyWIB()};
   await baseRef.update({
     saldo:firebase.database.ServerValue.increment(reward),
     ["earning/"+type+"/count"]:(d.count||0)+1,
     ["earning/"+type+"/lastClick"]:firebase.database.ServerValue.TIMESTAMP,
     ["earning/"+type+"/lastReset"]:resetKeyWIB()
   });
-  updateProgress(CD_MS,progId);
+
+  // UI
+  startCountdown(btn, btn.textContent.replace(/\s*\(\d+s\)$/,''), CD_MS);
+  d.count=(d.count||0)+1;
+  updateProgressUI(d.count,max,barEl,textEl);
+  toast("✅ Reward masuk");
 }
-function updateProgress(ms,id){
-  let span=$(id);let total=CD_MS;let end=Date.now()+ms;
-  function step(){let remain=end-Date.now();if(remain<0)remain=0;let percent=100-(remain/total*100);span.style.width=percent+"%";if(remain>0)requestAnimationFrame(step);}
-  step();
+
+/* ===== UI Helpers ===== */
+function updateProgressUI(count,max,barEl,textEl){
+  const pct=Math.min(100, (Number(count)/max)*100);
+  barEl.style.width=pct+"%";
+  textEl.textContent=`${count} / ${max}`;
+}
+function startCountdown(btn,label,ms){
+  const end=Date.now()+ms;
+  if(btn._cd) clearInterval(btn._cd);
+  btn.disabled=true;
+  const tick=()=>{
+    const s=Math.max(0, Math.ceil((end-Date.now())/1000));
+    btn.textContent = `${label} (${s}s)`;
+    if(s<=0){ clearInterval(btn._cd); btn.textContent=label; btn.disabled=false; }
+  };
+  tick(); btn._cd=setInterval(tick,1000);
+}
+function setCoolText(btn,label,ms,limit=false){
+  if(limit){ btn.textContent=label+" (Limit)"; btn.disabled=true; }
+  else if(ms<=0){ btn.textContent=label; btn.disabled=false; }
+}
+
+/* ===== Initial refresh after login ===== */
+async function refreshUI(){
+  const u=auth.currentUser; if(!u) return;
+  const e=(await db.ref(`users/${u.uid}/earning/menghasilkan`).once("value")).val()||{count:0};
+  const b=(await db.ref(`users/${u.uid}/earning/bonus`).once("value")).val()||{count:0};
+  updateProgressUI(Number(e.count||0),MAX_EARN,$("progEarn"),$("progTextEarn"));
+  updateProgressUI(Number(b.count||0),MAX_BONUS,$("progBonus"),$("progTextBonus"));
 }
 </script>
 </body>
