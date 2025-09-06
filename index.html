@@ -1,47 +1,269 @@
-{
-  "rules": {
-    ".read": false,
-    ".write": false,
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>NusaTask - Bot Earning</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    "users": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid || root.child('admins').child(auth.uid).exists()",
-        ".write": "auth != null && auth.uid === $uid || root.child('admins').child(auth.uid).exists()",
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-        // Validasi struktur data user
-        "email": {
-          ".validate": "newData.isString()"
-        },
-        "saldo": {
-          ".validate": "newData.isNumber() && newData.val() >= 0"
-        },
-        "deviceId": {
-          ".validate": "newData.isString() && (data.exists() ? newData.val() === data.val() : true)"
-        },
-        "banned": {
-          ".validate": "newData.isBoolean()"
-        },
-        "earning": {
-          "menghasilkan": {
-            "count": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 25" },
-            "lastClick": { ".validate": "newData.isNumber()" },
-            "lastReset": { ".validate": "newData.isString()" }
-          },
-          "bonus": {
-            "count": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 30" },
-            "lastClick": { ".validate": "newData.isNumber()" },
-            "lastReset": { ".validate": "newData.isString()" }
-          }
-        }
-      }
-    },
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-    // Admin section
-    "admins": {
-      "$adminUid": {
-        ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
-        ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
-      }
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    .fade-in { animation: fadeIn 1s ease-in-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-  }
-}
+    .overlay {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.9); color:white;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.2rem; z-index:9999; text-align:center;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <!-- Loading -->
+  <div id="loadingScreen" class="fixed inset-0 flex flex-col items-center justify-center bg-gray-900 z-50">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-500"></div>
+    <p class="mt-4 text-gray-300">Memuat aplikasi...</p>
+    <div class="w-64 bg-gray-700 h-2 rounded mt-4 overflow-hidden">
+      <div id="progressBar" class="bg-indigo-500 h-2 w-0"></div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" class="hidden p-6 fade-in">
+
+    <!-- Profil -->
+    <div id="profileSection" class="hidden text-center mb-6">
+      <h2 class="text-xl font-bold">👤 Profil</h2>
+      <p id="profileEmail" class="text-gray-400"></p>
+      <p id="profileUID" class="text-gray-500 text-xs"></p>
+      <h3 class="text-2xl mt-2">Saldo: <span id="saldoDisplay">Rp 0</span></h3>
+    </div>
+
+    <!-- Auth -->
+    <div id="authSection" class="max-w-md mx-auto mt-12 text-center">
+      <h1 class="text-3xl font-bold mb-6">🚀 NusaTask - Earning</h1>
+      <input id="email" type="email" placeholder="Email" class="w-full p-3 mb-3 rounded bg-gray-800 text-white">
+      <input id="password" type="password" placeholder="Password" class="w-full p-3 mb-3 rounded bg-gray-800 text-white">
+      <div class="flex space-x-2">
+        <button onclick="register()" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 p-3 rounded">Register</button>
+        <button onclick="login()" class="w-1/2 bg-green-600 hover:bg-green-700 p-3 rounded">Login</button>
+      </div>
+      <p id="authMessage" class="mt-4 text-sm text-red-400"></p>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden text-center mt-10">
+      <button id="earnBtn" class="block w-full bg-indigo-600 hover:bg-indigo-700 p-3 mb-4 rounded shadow">
+        Menghasilkan (Monetag)
+      </button>
+      <button id="bonusBtn" class="block w-full bg-green-600 hover:bg-green-700 p-3 mb-4 rounded shadow">
+        Xstra Bonus (Klik Adila)
+      </button>
+      <p id="statusMessage" class="mt-6 text-sm text-gray-400"></p>
+    </div>
+  </div>
+
+  <!-- Overlay Banned -->
+  <div id="bannedOverlay" class="overlay hidden">
+    🚫 Akun Anda diblokir<br>Hubungi admin @nusataskproject
+  </div>
+
+  <script>
+    // ================= FIREBASE CONFIG =================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
+      authDomain: "nusataskproject.firebaseapp.com",
+      databaseURL: "https://nusataskproject-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "nusataskproject",
+      storageBucket: "nusataskproject.firebasestorage.app",
+      messagingSenderId: "409602188456",
+      appId: "1:409602188456:web:6302d3030b763324e28e9d",
+      measurementId: "G-9389QL1WRE"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // ================= LOADING SCREEN =================
+    let progress = 0;
+    const progressBar = document.getElementById("progressBar");
+    const loadingScreen = document.getElementById("loadingScreen");
+    const app = document.getElementById("app");
+    const loadingInterval = setInterval(() => {
+      progress += 25;
+      progressBar.style.width = progress + "%";
+      if (progress >= 100) {
+        clearInterval(loadingInterval);
+        loadingScreen.classList.add("hidden");
+        app.classList.remove("hidden");
+      }
+    }, 300);
+
+    // ================= DEVICE ID GENERATOR =================
+    function getDeviceId() {
+      let id = localStorage.getItem("deviceId");
+      if (!id) {
+        id = "dev-" + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem("deviceId", id);
+      }
+      return id;
+    }
+
+    // ================= AUTH =================
+    const authMessage = document.getElementById("authMessage");
+    function register() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          const uid = userCredential.user.uid;
+          const deviceId = getDeviceId();
+          db.ref("users/" + uid).set({
+            email: email,
+            saldo: 0,
+            deviceId: deviceId,
+            banned: false,
+            earning: {
+              menghasilkan: { count: 0, lastClick: 0, lastReset: "" },
+              bonus: { count: 0, lastClick: 0, lastReset: "" }
+            }
+          });
+        })
+        .catch(error => {
+          authMessage.textContent = error.message;
+        });
+    }
+
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .catch(error => {
+          authMessage.textContent = error.message;
+        });
+    }
+
+    // ================= AFTER LOGIN =================
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const uid = user.uid;
+        db.ref("users/" + uid).once("value").then(snap => {
+          const data = snap.val();
+          if (!data) return;
+
+          if (data.banned) {
+            document.getElementById("bannedOverlay").classList.remove("hidden");
+            return;
+          }
+
+          // tampil profil
+          document.getElementById("authSection").classList.add("hidden");
+          document.getElementById("profileSection").classList.remove("hidden");
+          document.getElementById("dashboard").classList.remove("hidden");
+          document.getElementById("profileEmail").textContent = data.email;
+          document.getElementById("profileUID").textContent = uid;
+          document.getElementById("saldoDisplay").textContent = "Rp " + data.saldo.toLocaleString();
+
+          // sync realtime saldo
+          db.ref("users/" + uid + "/saldo").on("value", s => {
+            document.getElementById("saldoDisplay").textContent = "Rp " + (s.val() || 0).toLocaleString();
+          });
+        });
+      }
+    });
+
+    // ================= COOLDOWN UI =================
+    function startCooldown(btn, normalText, cooldownMs) {
+      btn.disabled = true;
+      let sisa = cooldownMs / 1000; // detik
+      btn.textContent = `${normalText} (Cooldown ${sisa}s)`;
+      const interval = setInterval(() => {
+        sisa--;
+        if (sisa > 0) {
+          btn.textContent = `${normalText} (Cooldown ${sisa}s)`;
+        } else {
+          clearInterval(interval);
+          btn.disabled = false;
+          btn.textContent = normalText;
+        }
+      }, 1000);
+    }
+
+    // ================= EARNING SYSTEM =================
+    const earnBtn = document.getElementById("earnBtn");
+    const bonusBtn = document.getElementById("bonusBtn");
+    const statusMessage = document.getElementById("statusMessage");
+
+    function handleEarning(type) {
+      const user = auth.currentUser;
+      if (!user) return;
+      const uid = user.uid;
+
+      const offsetRef = db.ref(".info/serverTimeOffset");
+      offsetRef.once("value").then(snap => {
+        const serverTime = Date.now() + snap.val();
+        const today = new Date(serverTime).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" });
+
+        db.ref("users/" + uid + "/earning/" + type).once("value").then(snap => {
+          let data = snap.val() || { count: 0, lastClick: 0, lastReset: today };
+
+          // Reset harian jam 6 pagi
+          const now = new Date(serverTime);
+          const jam = now.getHours();
+          if (data.lastReset !== today && jam >= 6) {
+            data.count = 0;
+            data.lastReset = today;
+          }
+
+          // Aturan
+          let limit = type === "menghasilkan" ? 25 : 30;
+          let reward = type === "menghasilkan" ? 30000 : 50000;
+          let normalText = type === "menghasilkan" ? "Menghasilkan (Monetag)" : "Xstra Bonus (Klik Adila)";
+          const btn = type === "menghasilkan" ? earnBtn : bonusBtn;
+
+          // Cek cooldown
+          if (serverTime - data.lastClick < 180000) {
+            statusMessage.textContent = "⏳ Masih cooldown...";
+            return;
+          }
+
+          // Cek limit
+          if (data.count >= limit) {
+            statusMessage.textContent = "🚫 Limit harian tercapai. Reset jam 06:00 WIB.";
+            return;
+          }
+
+          // Update saldo & data
+          const updates = {};
+          updates["saldo"] = firebase.database.ServerValue.increment(reward);
+          updates[`earning/${type}/count`] = data.count + 1;
+          updates[`earning/${type}/lastClick`] = serverTime;
+          updates[`earning/${type}/lastReset`] = today;
+
+          db.ref("users/" + uid).update(updates);
+          statusMessage.textContent = `✅ +Rp ${reward.toLocaleString()} berhasil`;
+
+          // Mulai cooldown UI
+          startCooldown(btn, normalText, 180000);
+        });
+      });
+    }
+
+    earnBtn.onclick = () => handleEarning("menghasilkan");
+    bonusBtn.onclick = () => handleEarning("bonus");
+  </script>
+</body>
+</html>
