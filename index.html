@@ -1,244 +1,47 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>NusaTask - Bot Earning</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid || root.child('admins').child(auth.uid).exists()",
+        ".write": "auth != null && auth.uid === $uid || root.child('admins').child(auth.uid).exists()",
 
-  <!-- TailwindCSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .fade-in { animation: fadeIn 1s ease-in-out; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .overlay {
-      position: fixed; top:0; left:0; width:100%; height:100%;
-      background: rgba(0,0,0,0.9); color:white;
-      display:flex; align-items:center; justify-content:center;
-      font-size:1.2rem; z-index:9999; text-align:center;
-    }
-  </style>
-</head>
-<body class="bg-gray-900 text-white">
-
-  <!-- Loading Screen -->
-  <div id="loadingScreen" class="fixed inset-0 flex flex-col items-center justify-center bg-gray-900 z-50">
-    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-500"></div>
-    <p class="mt-4 text-gray-300">Memuat aplikasi...</p>
-    <div class="w-64 bg-gray-700 h-2 rounded mt-4 overflow-hidden">
-      <div id="progressBar" class="bg-indigo-500 h-2 w-0"></div>
-    </div>
-  </div>
-
-  <!-- Main -->
-  <div id="app" class="hidden p-6 fade-in">
-
-    <!-- Username -->
-    <div class="absolute top-4 left-4 text-sm text-gray-400" id="usernameDisplay"></div>
-
-    <!-- Auth Section -->
-    <div id="authSection" class="max-w-md mx-auto mt-16 text-center">
-      <h1 class="text-3xl font-bold mb-6">🚀 NusaTask - Earning</h1>
-      <input id="email" type="email" placeholder="Email" class="w-full p-3 mb-3 rounded bg-gray-800 text-white">
-      <input id="password" type="password" placeholder="Password" class="w-full p-3 mb-3 rounded bg-gray-800 text-white">
-      <div class="flex space-x-2">
-        <button onclick="register()" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 p-3 rounded">Register</button>
-        <button onclick="login()" class="w-1/2 bg-green-600 hover:bg-green-700 p-3 rounded">Login</button>
-      </div>
-      <p id="authMessage" class="mt-4 text-sm text-red-400"></p>
-    </div>
-
-    <!-- Warning Section -->
-    <div id="warningSection" class="hidden text-center mt-20">
-      <h2 class="text-xl font-bold mb-4">⚠️ Peringatan</h2>
-      <p class="mb-6 text-gray-300">Segala bentuk hack, tuyul, cloning, atau kecurangan akan <span class="text-red-400">dibanned otomatis</span>.</p>
-      <button id="continueBtn" disabled class="bg-indigo-600 px-6 py-3 rounded opacity-50">Continue (5)</button>
-    </div>
-
-    <!-- Dashboard -->
-    <div id="dashboard" class="hidden text-center mt-20">
-      <h2 class="text-2xl font-bold mb-4">Saldo Anda</h2>
-      <p id="saldoDisplay" class="text-3xl mb-8">Rp 0</p>
-
-      <button id="earnBtn" class="block w-full bg-indigo-600 hover:bg-indigo-700 p-3 mb-4 rounded shadow">Menghasilkan</button>
-      <button id="bonusBtn" class="block w-full bg-green-600 hover:bg-green-700 p-3 mb-4 rounded shadow">Xstra Bonus</button>
-
-      <p id="statusMessage" class="mt-6 text-sm text-gray-400"></p>
-    </div>
-  </div>
-
-  <!-- Overlay Banned -->
-  <div id="bannedOverlay" class="overlay hidden">
-    🚫 Akun Anda diblokir<br>
-    Hubungi admin @nusataskproject
-  </div>
-
-  <script>
-    // ================= FIREBASE CONFIG =================
-    const firebaseConfig = {
-      apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
-      authDomain: "nusataskproject.firebaseapp.com",
-      databaseURL: "https://nusataskproject-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "nusataskproject",
-      storageBucket: "nusataskproject.firebasestorage.app",
-      messagingSenderId: "409602188456",
-      appId: "1:409602188456:web:6302d3030b763324e28e9d",
-      measurementId: "G-9389QL1WRE"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
-
-    // ================= LOADING SCREEN =================
-    let progress = 0;
-    const progressBar = document.getElementById("progressBar");
-    const loadingScreen = document.getElementById("loadingScreen");
-    const app = document.getElementById("app");
-    const loadingInterval = setInterval(() => {
-      progress += 20;
-      progressBar.style.width = progress + "%";
-      if (progress >= 100) {
-        clearInterval(loadingInterval);
-        loadingScreen.classList.add("hidden");
-        app.classList.remove("hidden");
-      }
-    }, 300);
-
-    // ================= AUTH =================
-    const authMessage = document.getElementById("authMessage");
-    function register() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-          const uid = userCredential.user.uid;
-          db.ref("users/" + uid).set({
-            email: email,
-            saldo: 0,
-            earning: { bot1: { clickCount: 0, lastClick: 0, lastReset: "" }},
-            banned: false
-          });
-          showWarning();
-        })
-        .catch(error => {
-          authMessage.textContent = error.message;
-        });
-    }
-
-    function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email, password)
-        .catch(error => {
-          authMessage.textContent = error.message;
-        });
-    }
-
-    // ================= AFTER LOGIN =================
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        const uid = user.uid;
-        db.ref("users/" + uid).on("value", snapshot => {
-          const data = snapshot.val();
-          if (!data) return;
-          if (data.banned) {
-            document.getElementById("bannedOverlay").classList.remove("hidden");
-            return;
+        // Validasi struktur data user
+        "email": {
+          ".validate": "newData.isString()"
+        },
+        "saldo": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "deviceId": {
+          ".validate": "newData.isString() && (data.exists() ? newData.val() === data.val() : true)"
+        },
+        "banned": {
+          ".validate": "newData.isBoolean()"
+        },
+        "earning": {
+          "menghasilkan": {
+            "count": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 25" },
+            "lastClick": { ".validate": "newData.isNumber()" },
+            "lastReset": { ".validate": "newData.isString()" }
+          },
+          "bonus": {
+            "count": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 30" },
+            "lastClick": { ".validate": "newData.isNumber()" },
+            "lastReset": { ".validate": "newData.isString()" }
           }
-          document.getElementById("usernameDisplay").textContent = data.email;
-          document.getElementById("saldoDisplay").textContent = "Rp " + data.saldo.toLocaleString();
-          if (!document.getElementById("dashboard").classList.contains("hidden")) {
-            document.getElementById("statusMessage").textContent = "";
-          }
-        });
-      }
-    });
-
-    // ================= UI HANDLERS =================
-    function showWarning() {
-      document.getElementById("authSection").classList.add("hidden");
-      document.getElementById("warningSection").classList.remove("hidden");
-      let countdown = 5;
-      const btn = document.getElementById("continueBtn");
-      const timer = setInterval(() => {
-        countdown--;
-        btn.textContent = "Continue (" + countdown + ")";
-        if (countdown <= 0) {
-          clearInterval(timer);
-          btn.disabled = false;
-          btn.classList.remove("opacity-50");
-          btn.textContent = "Continue";
-          btn.onclick = showDashboard;
         }
-      }, 1000);
+      }
+    },
+
+    // Admin section
+    "admins": {
+      "$adminUid": {
+        ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
+        ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
+      }
     }
-
-    function showDashboard() {
-      document.getElementById("authSection").classList.add("hidden");
-      document.getElementById("warningSection").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
-    }
-
-    // ================= EARNING SYSTEM =================
-    const earnBtn = document.getElementById("earnBtn");
-    const bonusBtn = document.getElementById("bonusBtn");
-    const statusMessage = document.getElementById("statusMessage");
-
-    function handleEarning(type) {
-      const user = auth.currentUser;
-      if (!user) return;
-      const uid = user.uid;
-
-      const offsetRef = db.ref(".info/serverTimeOffset");
-      offsetRef.once("value").then(snap => {
-        const serverTime = Date.now() + snap.val();
-        const today = new Date(serverTime).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" });
-
-        db.ref("users/" + uid + "/earning/bot1").once("value").then(snap => {
-          let data = snap.val() || { clickCount: 0, lastClick: 0, lastReset: today };
-
-          // Reset Harian
-          if (data.lastReset !== today) {
-            data.clickCount = 0;
-            data.lastReset = today;
-          }
-
-          // Cooldown 3 menit
-          if (serverTime - data.lastClick < 180000) {
-            statusMessage.textContent = "⏳ Harap tunggu cooldown...";
-            return;
-          }
-
-          // Limit 20 / hari
-          if (data.clickCount >= 20) {
-            statusMessage.textContent = "🚫 Limit harian tercapai. Reset jam 07:00 WIB.";
-            return;
-          }
-
-          // Update saldo
-          const updates = {};
-          updates["saldo"] = firebase.database.ServerValue.increment(30000);
-          updates["earning/bot1/clickCount"] = data.clickCount + 1;
-          updates["earning/bot1/lastClick"] = serverTime;
-          updates["earning/bot1/lastReset"] = today;
-
-          db.ref("users/" + uid).update(updates);
-          statusMessage.textContent = "✅ +Rp 30.000 berhasil ditambahkan";
-        });
-      });
-    }
-
-    earnBtn.onclick = () => handleEarning("main");
-    bonusBtn.onclick = () => handleEarning("bonus");
-  </script>
-</body>
-</html>
+  }
+}
