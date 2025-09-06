@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NusaTask – Earning</title>
 
-  <!-- Tailwind CDN -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     :root { --glass: rgba(255,255,255,0.06); --glass-b: rgba(255,255,255,0.12); }
-    body{font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Inter,sans-serif;
+    body{font-family:Inter,system-ui,sans-serif;
       background: radial-gradient(1200px 600px at 15% -20%, #3b82f6 0%, transparent 50%),
                   radial-gradient(1000px 500px at 110% 10%, #a855f7 0%, transparent 50%),
                   #0f1222;}
@@ -23,12 +23,12 @@
 </head>
 <body class="text-white min-h-screen">
 
-  <!-- User tag (kiri atas) -->
+  <!-- Tag user -->
   <div id="userTag" class="fixed top-3 left-3 px-3 py-1 rounded-full glass text-sm font-semibold hidden"></div>
 
-  <!-- Loading overlay -->
+  <!-- Loader -->
   <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90">
-    <div class="text-3xl font-extrabold tracking-wide fade">NusaTask</div>
+    <div class="text-3xl font-extrabold fade">NusaTask</div>
     <div class="w-14 h-14 mt-6 border-4 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
     <div class="w-56 h-2 bg-white/10 mt-6 rounded overflow-hidden">
       <div id="bar" class="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500" style="width:0%"></div>
@@ -45,7 +45,7 @@
     </div>
   </div>
 
-  <!-- Warning setelah registrasi -->
+  <!-- Warning registrasi -->
   <div id="warn" class="hidden fixed inset-0 z-40 bg-black/80 flex items-center justify-center">
     <div class="glass p-6 rounded-2xl max-w-md text-center fade">
       <h3 class="text-xl font-bold text-yellow-300">⚠️ Peringatan Penting</h3>
@@ -55,7 +55,7 @@
     </div>
   </div>
 
-  <!-- CARD AUTH -->
+  <!-- Auth -->
   <section id="auth" class="min-h-screen flex items-center justify-center p-6">
     <div class="glass w-full max-w-md rounded-3xl p-7 shadow-2xl fade">
       <div class="flex items-center gap-2 mb-6">
@@ -70,14 +70,13 @@
         <button id="loginBtn" class="py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 font-bold hover:opacity-90">Masuk</button>
         <button id="regBtn"   class="py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-600 font-bold hover:opacity-90">Daftar</button>
       </div>
-      <p class="text-xs text-white/60 mt-4">Anti-tuyul aktif • 1 Device • Maks 2 IP / 24 jam • Anti VPN/Proxy</p>
+      <p class="text-xs text-white/60 mt-4">Anti-tuyul • 1 Device • Maks 2 IP / 24 jam • Anti VPN/Proxy</p>
     </div>
   </section>
 
-  <!-- DASHBOARD -->
+  <!-- Dashboard -->
   <section id="dash" class="hidden p-6 max-w-2xl mx-auto">
     <h2 class="text-3xl font-extrabold mb-5">Dashboard</h2>
-
     <div class="glass rounded-2xl p-6 mb-6">
       <p class="text-white/80">Saldo</p>
       <p id="saldo" class="text-4xl font-extrabold text-emerald-400">0</p>
@@ -86,24 +85,22 @@
       </div>
       <p id="quota" class="mt-2 text-sm text-white/70">0 / 20 klik hari ini</p>
     </div>
-
     <div class="grid gap-4">
       <button onclick="earn('monetag')"   class="py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 font-bold hover:opacity-90">🚀 Menghasilkan</button>
       <button onclick="earn('klikadila')" class="py-4 rounded-2xl bg-gradient-to-r from-pink-600 to-rose-600 font-bold hover:opacity-90">🎁 Xstra Bonus</button>
     </div>
   </section>
 
-  <!-- Toast container -->
+  <!-- Toast -->
   <div id="toasts" class="fixed bottom-5 right-5 space-y-2 z-50"></div>
 
-  <!-- Firebase (ESM) -->
+  <!-- Firebase -->
   <script type="module">
-    // Firebase v10 ESM
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getDatabase, ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    // --- Config ---
+    // --- Firebase config ---
     const firebaseConfig = {
       apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
       authDomain: "nusataskproject.firebaseapp.com",
@@ -111,231 +108,84 @@
       projectId: "nusataskproject",
       storageBucket: "nusataskproject.firebasestorage.app",
       messagingSenderId: "409602188456",
-      appId: "1:409602188456:web:6302d3030b763324e28e9d",
-      measurementId: "G-9389QL1WRE"
+      appId: "1:409602188456:web:6302d3030b763324e28e9d"
     };
 
-    // --- Init ---
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db   = getDatabase(app);
 
-    // --- UI helpers ---
-    const $ = (id)=>document.getElementById(id);
-    function toast(msg, type="info"){
+    // helpers
+    const $=(id)=>document.getElementById(id);
+    function toast(msg,type="info"){
       const el=document.createElement("div");
       el.className=`toast px-4 py-2 rounded-xl shadow-2xl ${type==="success"?"bg-emerald-500":type==="error"?"bg-rose-500":"bg-slate-700"}`;
-      el.textContent=msg; $("toasts").appendChild(el); setTimeout(()=>el.remove(), 4200);
+      el.textContent=msg; $("toasts").appendChild(el); setTimeout(()=>el.remove(),4200);
     }
-    function show(id){ $(id).classList.remove("hidden"); }
-    function hide(id){ $(id).classList.add("hidden"); }
-    function deviceId(){
-      let id=localStorage.getItem("nt_device");
-      if(!id){ id="dev-"+Math.random().toString(36).slice(2,11); localStorage.setItem("nt_device", id); }
-      return id;
-    }
-    function setLoading(text="Memuat…", p=100){
-      $("loadText").innerText=text;
-      $("bar").style.width=p+"%";
-    }
-    function closeWarn(){ hide("warn"); }
+    function show(id){$(id).classList.remove("hidden");}
+    function hide(id){$(id).classList.add("hidden");}
+    function deviceId(){let id=localStorage.getItem("nt_dev"); if(!id){id="dev-"+Math.random().toString(36).slice(2,11); localStorage.setItem("nt_dev",id);} return id;}
+    function setLoading(t="Memuat…",p=100){$("loadText").innerText=t;$("bar").style.width=p+"%";}
+    function closeWarn(){hide("warn");}
 
-    // --- Domain guard (peringatan jika bukan domain terotorisasi) ---
-    const allowedDomains=["localhost","nusataskproject.firebaseapp.com","nusataskproject.web.app","sketch.github.io"];
-    if(!allowedDomains.includes(location.hostname)){
-      toast("Domain tidak terotorisasi: "+location.hostname,"error");
-    }
+    // --- Domain guard otomatis (ambil hostname aktif) ---
+    const currentDomain=location.hostname;
+    console.log("Running on domain:",currentDomain);
 
-    // --- Server time via offset (Realtime DB) ---
+    // --- Server time (WIB) ---
     async function serverNowWIB(){
-      // Ambil offset
-      const snap = await get(ref(db, ".info/serverTimeOffset"));
-      const offset = snap.exists() ? snap.val() : 0;
-      const serverNow = new Date(Date.now()+offset);
-      // Konversi WIB
-      const utcMs = serverNow.getTime() + serverNow.getTimezoneOffset()*60000;
-      return new Date(utcMs + 7*60*60000);
+      const snap=await get(ref(db,".info/serverTimeOffset"));
+      const offset=snap.exists()?snap.val():0;
+      const serverNow=new Date(Date.now()+offset);
+      const utc=serverNow.getTime()+serverNow.getTimezoneOffset()*60000;
+      return new Date(utc+7*60*60000);
     }
-    function todayResetWIB(now){
-      const t=new Date(now); t.setHours(7,0,0,0); return t.getTime();
-    }
+    function todayResetWIB(now){const t=new Date(now);t.setHours(7,0,0,0);return t.getTime();}
 
-    // --- Anti VPN/Proxy + IP fetch (HTTPS endpoints) ---
+    // --- IP check ---
     async function getIpInfo(){
-      // ipapi.co supports HTTPS and simple JSON; privacy endpoint may fail → fall back.
       try{
-        const r = await fetch("https://ipapi.co/json/");
-        const j = await r.json();
-        let privacy = {};
-        try{
-          const rp = await fetch(`https://ipapi.co/${j.ip}/privacy/`);
-          if(rp.ok) privacy = await rp.json();
-        }catch(e){}
-        return { ip:j.ip, org:j.org, country:j.country, privacy };
-      }catch(e){
-        return { ip:null, org:null, country:null, privacy:{} };
-      }
+        const r=await fetch("https://ipapi.co/json/");
+        const j=await r.json();
+        let privacy={};try{const rp=await fetch(`https://ipapi.co/${j.ip}/privacy/`);if(rp.ok)privacy=await rp.json();}catch(e){}
+        return {ip:j.ip,org:j.org,country:j.country,privacy};
+      }catch(e){return {ip:null,privacy:{}};}
     }
-
     async function antiVPNAndIPLimit(uid){
-      const info = await getIpInfo();
-      const now  = await serverNowWIB();
-      const nowMs = now.getTime();
-
-      // 1) Anti VPN/Proxy (best-effort)
-      const isVpn  = !!info?.privacy?.vpn;
-      const isProxy= !!info?.privacy?.proxy;
-      const isTor  = !!info?.privacy?.tor;
-      if(isVpn||isProxy||isTor){
-        await update(ref(db, "users/"+uid), { banned:true, banReason:"vpn_proxy" });
-        show("banned"); await signOut(auth); return false;
-      }
-
-      // 2) IP limit: max 2 IP dalam 24 jam (rolling)
-      const uref = ref(db, "users/"+uid);
-      const snap = await get(uref);
-      const data = snap.exists()? snap.val() : {};
-      const iplog = Array.isArray(data.ipLog) ? data.ipLog : [];
-
-      // bersihkan >24 jam
-      const cutoff = nowMs - 24*60*60*1000;
-      const fresh = iplog.filter(x => x && x.ip && x.ts >= cutoff);
-
-      // tambahkan entri saat ini jika IP ada
-      if(info.ip){
-        // jika IP berbeda dari entri terakhir -> push
-        const last = fresh[fresh.length-1];
-        if(!last || last.ip !== info.ip){
-          fresh.push({ ip:info.ip, ts:nowMs });
-        }else{
-          // update timestamp terakhir
-          fresh[fresh.length-1].ts = nowMs;
-        }
-      }
-
-      // hitung jumlah IP unik
-      const uniq = [...new Set(fresh.map(x=>x.ip))];
-      if(uniq.length > 2){
-        await update(uref, { banned:true, banReason:"ip_over_quota", ipLog:fresh });
-        show("banned"); await signOut(auth); return false;
-      }
-
-      await update(uref, { ipLog:fresh });
-      return true;
+      const info=await getIpInfo();const now=await serverNowWIB();const nowMs=now.getTime();
+      const isVpn=info?.privacy?.vpn,isProxy=info?.privacy?.proxy,isTor=info?.privacy?.tor;
+      if(isVpn||isProxy||isTor){await update(ref(db,"users/"+uid),{banned:true,banReason:"vpn"});show("banned");await signOut(auth);return false;}
+      const uref=ref(db,"users/"+uid);const snap=await get(uref);const data=snap.exists()?snap.val():{};const iplog=Array.isArray(data.ipLog)?data.ipLog:[];
+      const cutoff=nowMs-24*60*60*1000;const fresh=iplog.filter(x=>x&&x.ip&&x.ts>=cutoff);
+      if(info.ip){const last=fresh[fresh.length-1];if(!last||last.ip!==info.ip)fresh.push({ip:info.ip,ts:nowMs});else fresh[fresh.length-1].ts=nowMs;}
+      const uniq=[...new Set(fresh.map(x=>x.ip))];if(uniq.length>2){await update(uref,{banned:true,banReason:"ip_over",ipLog:fresh});show("banned");await signOut(auth);return false;}
+      await update(uref,{ipLog:fresh});return true;
     }
 
-    // --- Login & Register buttons ---
-    $("loginBtn").onclick = async ()=>{
-      try{
-        setLoading("Masuk…", 35); show("loader");
-        const email=$("email").value.trim(), pass=$("pass").value;
-        const cred = await signInWithEmailAndPassword(auth, email, pass);
-        setLoading("Memuat akun…", 70);
-        // lanjut ke state handler
-      }catch(e){ hide("loader"); toast(e.message,"error"); }
-    };
-
-    $("regBtn").onclick = async ()=>{
-      try{
-        setLoading("Mendaftarkan…", 35); show("loader");
-        const email=$("email").value.trim(), pass=$("pass").value;
-        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-        const uid = cred.user.uid;
-        await set(ref(db, "users/"+uid), {
-          email: cred.user.email,
-          saldo: 0,
-          lastClick: 0,
-          count: 0,
-          lastReset: 0,
-          device: deviceId(),
-          banned: false,
-          createdAt: (await serverNowWIB()).getTime(),
-          ipLog: []
-        });
-        toast("Registrasi berhasil","success");
-        show("warn"); // peringatan anti-tuyul
-      }catch(e){ toast(e.message,"error"); hide("loader"); }
-      finally{ hide("loader"); }
-    };
+    // --- Login & Register ---
+    $("loginBtn").onclick=async()=>{try{setLoading("Masuk…",35);show("loader");const email=$("email").value.trim(),pass=$("pass").value;await signInWithEmailAndPassword(auth,email,pass);}catch(e){hide("loader");toast(e.message,"error");}};
+    $("regBtn").onclick=async()=>{try{setLoading("Daftar…",35);show("loader");const email=$("email").value.trim(),pass=$("pass").value;const cred=await createUserWithEmailAndPassword(auth,email,pass);const uid=cred.user.uid;await set(ref(db,"users/"+uid),{email:cred.user.email,saldo:0,lastClick:0,count:0,lastReset:0,device:deviceId(),banned:false,createdAt:(await serverNowWIB()).getTime(),ipLog:[]});toast("Registrasi berhasil","success");show("warn");}catch(e){toast(e.message,"error");hide("loader");}finally{hide("loader");}};
 
     // --- Auth state ---
-    onAuthStateChanged(auth, async (user)=>{
-      if(!user) return;
-      try{
-        setLoading("Sinkronisasi…", 55); show("loader");
-        const uid = user.uid;
-        const uref = ref(db, "users/"+uid);
-        const snap = await get(uref);
-        let data = snap.exists()? snap.val() : null;
+    onAuthStateChanged(auth,async(user)=>{if(!user)return;try{setLoading("Sinkronisasi…",55);show("loader");const uid=user.uid;const uref=ref(db,"users/"+uid);const snap=await get(uref);let data=snap.exists()?snap.val():null;
+      if(data?.banned){show("banned");await signOut(auth);hide("loader");return;}
+      if(data?.device&&data.device!==deviceId()){await update(uref,{banned:true,banReason:"multi_device"});show("banned");await signOut(auth);hide("loader");return;}
+      await update(uref,{device:deviceId()});
+      setLoading("Cek keamanan…",75);const ok=await antiVPNAndIPLimit(uid);if(!ok){hide("loader");return;}
+      hide("auth");show("dash");$("userTag").textContent=(user.email||"").split("@")[0];show("userTag");
+      onValue(ref(db,"users/"+uid+"/saldo"),s=>{const val=s.exists()?s.val():0;$("saldo").textContent=val;$("saldoBar").style.width=Math.min(100,(val/600000)*100)+"%";});
+      const uSnap=await get(uref);data=uSnap.val();$("quota").textContent=`${data.count||0} / 20 klik hari ini`;hide("loader");
+    }catch(e){hide("loader");toast(e.message,"error");}});
 
-        // Ban check
-        if(data?.banned){ show("banned"); await signOut(auth); hide("loader"); return; }
+    // --- Earning ---
+    async function earn(source){const user=auth.currentUser;if(!user)return;const uid=user.uid;const uref=ref(db,"users/"+uid);const nowWIB=await serverNowWIB();const nowMs=nowWIB.getTime();const snap=await get(uref);let d=snap.exists()?snap.val():{saldo:0,lastClick:0,count:0,lastReset:0};
+      const resetAt=todayResetWIB(nowWIB);if(nowMs>=resetAt&&(!d.lastReset||d.lastReset<resetAt)){d.count=0;d.lastReset=nowMs;}
+      if(d.count>=20){toast("Limit harian tercapai","error");return;}
+      if(nowMs-(d.lastClick||0)<180000){toast("Cooldown 3 menit","error");return;}
+      d.saldo=(d.saldo||0)+30000;d.lastClick=nowMs;d.count=(d.count||0)+1;await set(uref,d);$("quota").textContent=`${d.count} / 20 klik hari ini`;toast(`+30.000 poin (${source})`,"success");}
+    window.earn=earn;
 
-        // Device lock
-        if(data?.device && data.device !== deviceId()){
-          await update(uref, { banned:true, banReason:"multi_device" });
-          show("banned"); await signOut(auth); hide("loader"); return;
-        }
-        await update(uref, { device: deviceId() });
-
-        // Anti VPN + IP limit (maks 2 IP / 24 jam)
-        setLoading("Pemeriksaan keamanan…", 75);
-        const ok = await antiVPNAndIPLimit(uid);
-        if(!ok){ hide("loader"); return; }
-
-        // UI switch
-        hide("auth"); show("dash"); $("userTag").textContent=(user.email||"").split("@")[0]; show("userTag");
-
-        // Realtime saldo
-        onValue(ref(db, "users/"+uid+"/saldo"), s=>{
-          const val = s.exists()? s.val() : 0;
-          $("saldo").textContent = val;
-          $("saldoBar").style.width = Math.min(100, (val/600000)*100) + "%";
-        });
-
-        // Update kuota tampil
-        const uSnap = await get(uref);
-        data = uSnap.val();
-        $("quota").textContent = `${data.count||0} / 20 klik hari ini`;
-
-        hide("loader");
-      }catch(e){ hide("loader"); toast(e.message,"error"); }
-    });
-
-    // --- EARN ---
-    async function earn(source){
-      const user = auth.currentUser; if(!user) return;
-      const uid = user.uid; const uref = ref(db,"users/"+uid);
-
-      // waktu server (anti ubah tanggal HP)
-      const nowWIB = await serverNowWIB(); const nowMs = nowWIB.getTime();
-
-      const snap = await get(uref);
-      let d = snap.exists()? snap.val() : { saldo:0, lastClick:0, count:0, lastReset:0 };
-
-      // Reset harian jam 07:00 WIB (server)
-      const resetAt = todayResetWIB(nowWIB);
-      if(nowMs >= resetAt && (!d.lastReset || d.lastReset < resetAt)){
-        d.count = 0; d.lastReset = nowMs;
-      }
-
-      // Batas & cooldown
-      if(d.count >= 20){ toast("Limit harian tercapai","error"); return; }
-      if(nowMs - (d.lastClick||0) < 180000){ toast("Cooldown 3 menit","error"); return; }
-
-      // Tambahkan saldo
-      d.saldo = (d.saldo||0) + 30000;
-      d.lastClick = nowMs;
-      d.count = (d.count||0) + 1;
-
-      await set(uref, d);
-      $("quota").textContent = `${d.count} / 20 klik hari ini`;
-      toast(`+30.000 poin (${source})`,"success");
-    }
-    window.earn = earn; // for HTML buttons
-
-    // --- Hide loader after first paint ---
-    window.addEventListener("load", ()=>{ setTimeout(()=>{ hide("loader"); }, 600); });
+    window.addEventListener("load",()=>{setTimeout(()=>{hide("loader");},600);});
   </script>
 </body>
 </html>
