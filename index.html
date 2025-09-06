@@ -1,106 +1,89 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NusaTask – Earning</title>
+  <meta charset="UTF-8">
+  <title>NusaTask - Bot Earning</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Tailwind -->
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    :root { --glass: rgba(255,255,255,0.06); --glass-b: rgba(255,255,255,0.12); }
-    body{font-family:Inter,system-ui,sans-serif;
-      background: radial-gradient(1200px 600px at 15% -20%, #3b82f6 0%, transparent 50%),
-                  radial-gradient(1000px 500px at 110% 10%, #a855f7 0%, transparent 50%),
-                  #0f1222;}
-    .glass{background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--glass-b);}
-    @keyframes fade {from{opacity:.0;transform:translateY(14px)}to{opacity:1;transform:none}}
-    .fade{animation:fade .6s ease forwards}
-    @keyframes toast{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-    .toast{animation:toast .25s ease forwards}
+    body { font-family: 'Inter', sans-serif; }
+    .fade-in { animation: fadeIn 1s ease-in-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .overlay {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.9); color:white;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.2rem; z-index:9999; text-align:center;
+    }
   </style>
 </head>
-<body class="text-white min-h-screen">
+<body class="bg-gray-900 text-white">
 
-  <!-- Tag user -->
-  <div id="userTag" class="fixed top-3 left-3 px-3 py-1 rounded-full glass text-sm font-semibold hidden"></div>
-
-  <!-- Loader -->
-  <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90">
-    <div class="text-3xl font-extrabold fade">NusaTask</div>
-    <div class="w-14 h-14 mt-6 border-4 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
-    <div class="w-56 h-2 bg-white/10 mt-6 rounded overflow-hidden">
-      <div id="bar" class="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500" style="width:0%"></div>
-    </div>
-    <p id="loadText" class="mt-3 text-white/80">Memuat…</p>
-  </div>
-
-  <!-- Banned screen -->
-  <div id="banned" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/90">
-    <div class="glass p-7 rounded-2xl shadow-2xl max-w-md text-center fade">
-      <h2 class="text-2xl font-bold text-red-400">🚫 Akun Diblokir</h2>
-      <p class="mt-3">Aktivitas mencurigakan / pelanggaran anti-tuyul terdeteksi.</p>
-      <p class="mt-4">Hubungi admin: <span class="font-bold text-indigo-300">@nusataskproject</span></p>
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="fixed inset-0 flex flex-col items-center justify-center bg-gray-900 z-50">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-500"></div>
+    <p class="mt-4 text-gray-300">Memuat aplikasi...</p>
+    <div class="w-64 bg-gray-700 h-2 rounded mt-4 overflow-hidden">
+      <div id="progressBar" class="bg-indigo-500 h-2 w-0"></div>
     </div>
   </div>
 
-  <!-- Warning registrasi -->
-  <div id="warn" class="hidden fixed inset-0 z-40 bg-black/80 flex items-center justify-center">
-    <div class="glass p-6 rounded-2xl max-w-md text-center fade">
-      <h3 class="text-xl font-bold text-yellow-300">⚠️ Peringatan Penting</h3>
-      <p class="mt-3">Segala bentuk hack, nuyul, cloning, atau VPN/proxy <b>tidak dibenarkan</b>.
-        Pelanggaran akan <b>dibanned otomatis</b>.</p>
-      <button onclick="closeWarn()" class="mt-5 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 font-semibold hover:opacity-90">Saya Mengerti</button>
+  <!-- Main -->
+  <div id="app" class="hidden p-6 fade-in">
+
+    <!-- Username -->
+    <div class="absolute top-4 left-4 text-sm text-gray-400" id="usernameDisplay"></div>
+
+    <!-- Auth Section -->
+    <div id="authSection" class="max-w-md mx-auto mt-16 text-center">
+      <h1 class="text-3xl font-bold mb-6">🚀 NusaTask - Earning</h1>
+      <input id="email" type="email" placeholder="Email" class="w-full p-3 mb-3 rounded bg-gray-800 text-white">
+      <input id="password" type="password" placeholder="Password" class="w-full p-3 mb-3 rounded bg-gray-800 text-white">
+      <div class="flex space-x-2">
+        <button onclick="register()" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 p-3 rounded">Register</button>
+        <button onclick="login()" class="w-1/2 bg-green-600 hover:bg-green-700 p-3 rounded">Login</button>
+      </div>
+      <p id="authMessage" class="mt-4 text-sm text-red-400"></p>
+    </div>
+
+    <!-- Warning Section -->
+    <div id="warningSection" class="hidden text-center mt-20">
+      <h2 class="text-xl font-bold mb-4">⚠️ Peringatan</h2>
+      <p class="mb-6 text-gray-300">Segala bentuk hack, tuyul, cloning, atau kecurangan akan <span class="text-red-400">dibanned otomatis</span>.</p>
+      <button id="continueBtn" disabled class="bg-indigo-600 px-6 py-3 rounded opacity-50">Continue (5)</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden text-center mt-20">
+      <h2 class="text-2xl font-bold mb-4">Saldo Anda</h2>
+      <p id="saldoDisplay" class="text-3xl mb-8">Rp 0</p>
+
+      <button id="earnBtn" class="block w-full bg-indigo-600 hover:bg-indigo-700 p-3 mb-4 rounded shadow">Menghasilkan</button>
+      <button id="bonusBtn" class="block w-full bg-green-600 hover:bg-green-700 p-3 mb-4 rounded shadow">Xstra Bonus</button>
+
+      <p id="statusMessage" class="mt-6 text-sm text-gray-400"></p>
     </div>
   </div>
 
-  <!-- Auth -->
-  <section id="auth" class="min-h-screen flex items-center justify-center p-6">
-    <div class="glass w-full max-w-md rounded-3xl p-7 shadow-2xl fade">
-      <div class="flex items-center gap-2 mb-6">
-        <span class="text-2xl">🔐</span>
-        <h1 class="text-2xl font-extrabold">NusaTask</h1>
-      </div>
-      <div class="space-y-3">
-        <input id="email" type="email" placeholder="Email" class="w-full px-4 py-3 rounded-xl text-black" />
-        <input id="pass" type="password" placeholder="Password (min 6)" class="w-full px-4 py-3 rounded-xl text-black" />
-      </div>
-      <div class="grid grid-cols-2 gap-3 mt-5">
-        <button id="loginBtn" class="py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 font-bold hover:opacity-90">Masuk</button>
-        <button id="regBtn"   class="py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-600 font-bold hover:opacity-90">Daftar</button>
-      </div>
-      <p class="text-xs text-white/60 mt-4">Anti-tuyul • 1 Device • Maks 2 IP / 24 jam • Anti VPN/Proxy</p>
-    </div>
-  </section>
+  <!-- Overlay Banned -->
+  <div id="bannedOverlay" class="overlay hidden">
+    🚫 Akun Anda diblokir<br>
+    Hubungi admin @nusataskproject
+  </div>
 
-  <!-- Dashboard -->
-  <section id="dash" class="hidden p-6 max-w-2xl mx-auto">
-    <h2 class="text-3xl font-extrabold mb-5">Dashboard</h2>
-    <div class="glass rounded-2xl p-6 mb-6">
-      <p class="text-white/80">Saldo</p>
-      <p id="saldo" class="text-4xl font-extrabold text-emerald-400">0</p>
-      <div class="w-full h-2 bg-white/10 rounded mt-3 overflow-hidden">
-        <div id="saldoBar" class="h-full bg-emerald-500 transition-all" style="width:0%"></div>
-      </div>
-      <p id="quota" class="mt-2 text-sm text-white/70">0 / 20 klik hari ini</p>
-    </div>
-    <div class="grid gap-4">
-      <button onclick="earn('monetag')"   class="py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 font-bold hover:opacity-90">🚀 Menghasilkan</button>
-      <button onclick="earn('klikadila')" class="py-4 rounded-2xl bg-gradient-to-r from-pink-600 to-rose-600 font-bold hover:opacity-90">🎁 Xstra Bonus</button>
-    </div>
-  </section>
-
-  <!-- Toast -->
-  <div id="toasts" class="fixed bottom-5 right-5 space-y-2 z-50"></div>
-
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getDatabase, ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    // --- Firebase config ---
+  <script>
+    // ================= FIREBASE CONFIG =================
     const firebaseConfig = {
       apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
       authDomain: "nusataskproject.firebaseapp.com",
@@ -108,84 +91,154 @@
       projectId: "nusataskproject",
       storageBucket: "nusataskproject.firebasestorage.app",
       messagingSenderId: "409602188456",
-      appId: "1:409602188456:web:6302d3030b763324e28e9d"
+      appId: "1:409602188456:web:6302d3030b763324e28e9d",
+      measurementId: "G-9389QL1WRE"
     };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db   = getDatabase(app);
+    // ================= LOADING SCREEN =================
+    let progress = 0;
+    const progressBar = document.getElementById("progressBar");
+    const loadingScreen = document.getElementById("loadingScreen");
+    const app = document.getElementById("app");
+    const loadingInterval = setInterval(() => {
+      progress += 20;
+      progressBar.style.width = progress + "%";
+      if (progress >= 100) {
+        clearInterval(loadingInterval);
+        loadingScreen.classList.add("hidden");
+        app.classList.remove("hidden");
+      }
+    }, 300);
 
-    // helpers
-    const $=(id)=>document.getElementById(id);
-    function toast(msg,type="info"){
-      const el=document.createElement("div");
-      el.className=`toast px-4 py-2 rounded-xl shadow-2xl ${type==="success"?"bg-emerald-500":type==="error"?"bg-rose-500":"bg-slate-700"}`;
-      el.textContent=msg; $("toasts").appendChild(el); setTimeout(()=>el.remove(),4200);
-    }
-    function show(id){$(id).classList.remove("hidden");}
-    function hide(id){$(id).classList.add("hidden");}
-    function deviceId(){let id=localStorage.getItem("nt_dev"); if(!id){id="dev-"+Math.random().toString(36).slice(2,11); localStorage.setItem("nt_dev",id);} return id;}
-    function setLoading(t="Memuat…",p=100){$("loadText").innerText=t;$("bar").style.width=p+"%";}
-    function closeWarn(){hide("warn");}
-
-    // --- Domain guard otomatis (ambil hostname aktif) ---
-    const currentDomain=location.hostname;
-    console.log("Running on domain:",currentDomain);
-
-    // --- Server time (WIB) ---
-    async function serverNowWIB(){
-      const snap=await get(ref(db,".info/serverTimeOffset"));
-      const offset=snap.exists()?snap.val():0;
-      const serverNow=new Date(Date.now()+offset);
-      const utc=serverNow.getTime()+serverNow.getTimezoneOffset()*60000;
-      return new Date(utc+7*60*60000);
-    }
-    function todayResetWIB(now){const t=new Date(now);t.setHours(7,0,0,0);return t.getTime();}
-
-    // --- IP check ---
-    async function getIpInfo(){
-      try{
-        const r=await fetch("https://ipapi.co/json/");
-        const j=await r.json();
-        let privacy={};try{const rp=await fetch(`https://ipapi.co/${j.ip}/privacy/`);if(rp.ok)privacy=await rp.json();}catch(e){}
-        return {ip:j.ip,org:j.org,country:j.country,privacy};
-      }catch(e){return {ip:null,privacy:{}};}
-    }
-    async function antiVPNAndIPLimit(uid){
-      const info=await getIpInfo();const now=await serverNowWIB();const nowMs=now.getTime();
-      const isVpn=info?.privacy?.vpn,isProxy=info?.privacy?.proxy,isTor=info?.privacy?.tor;
-      if(isVpn||isProxy||isTor){await update(ref(db,"users/"+uid),{banned:true,banReason:"vpn"});show("banned");await signOut(auth);return false;}
-      const uref=ref(db,"users/"+uid);const snap=await get(uref);const data=snap.exists()?snap.val():{};const iplog=Array.isArray(data.ipLog)?data.ipLog:[];
-      const cutoff=nowMs-24*60*60*1000;const fresh=iplog.filter(x=>x&&x.ip&&x.ts>=cutoff);
-      if(info.ip){const last=fresh[fresh.length-1];if(!last||last.ip!==info.ip)fresh.push({ip:info.ip,ts:nowMs});else fresh[fresh.length-1].ts=nowMs;}
-      const uniq=[...new Set(fresh.map(x=>x.ip))];if(uniq.length>2){await update(uref,{banned:true,banReason:"ip_over",ipLog:fresh});show("banned");await signOut(auth);return false;}
-      await update(uref,{ipLog:fresh});return true;
+    // ================= AUTH =================
+    const authMessage = document.getElementById("authMessage");
+    function register() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          const uid = userCredential.user.uid;
+          db.ref("users/" + uid).set({
+            email: email,
+            saldo: 0,
+            earning: { bot1: { clickCount: 0, lastClick: 0, lastReset: "" }},
+            banned: false
+          });
+          showWarning();
+        })
+        .catch(error => {
+          authMessage.textContent = error.message;
+        });
     }
 
-    // --- Login & Register ---
-    $("loginBtn").onclick=async()=>{try{setLoading("Masuk…",35);show("loader");const email=$("email").value.trim(),pass=$("pass").value;await signInWithEmailAndPassword(auth,email,pass);}catch(e){hide("loader");toast(e.message,"error");}};
-    $("regBtn").onclick=async()=>{try{setLoading("Daftar…",35);show("loader");const email=$("email").value.trim(),pass=$("pass").value;const cred=await createUserWithEmailAndPassword(auth,email,pass);const uid=cred.user.uid;await set(ref(db,"users/"+uid),{email:cred.user.email,saldo:0,lastClick:0,count:0,lastReset:0,device:deviceId(),banned:false,createdAt:(await serverNowWIB()).getTime(),ipLog:[]});toast("Registrasi berhasil","success");show("warn");}catch(e){toast(e.message,"error");hide("loader");}finally{hide("loader");}};
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .catch(error => {
+          authMessage.textContent = error.message;
+        });
+    }
 
-    // --- Auth state ---
-    onAuthStateChanged(auth,async(user)=>{if(!user)return;try{setLoading("Sinkronisasi…",55);show("loader");const uid=user.uid;const uref=ref(db,"users/"+uid);const snap=await get(uref);let data=snap.exists()?snap.val():null;
-      if(data?.banned){show("banned");await signOut(auth);hide("loader");return;}
-      if(data?.device&&data.device!==deviceId()){await update(uref,{banned:true,banReason:"multi_device"});show("banned");await signOut(auth);hide("loader");return;}
-      await update(uref,{device:deviceId()});
-      setLoading("Cek keamanan…",75);const ok=await antiVPNAndIPLimit(uid);if(!ok){hide("loader");return;}
-      hide("auth");show("dash");$("userTag").textContent=(user.email||"").split("@")[0];show("userTag");
-      onValue(ref(db,"users/"+uid+"/saldo"),s=>{const val=s.exists()?s.val():0;$("saldo").textContent=val;$("saldoBar").style.width=Math.min(100,(val/600000)*100)+"%";});
-      const uSnap=await get(uref);data=uSnap.val();$("quota").textContent=`${data.count||0} / 20 klik hari ini`;hide("loader");
-    }catch(e){hide("loader");toast(e.message,"error");}});
+    // ================= AFTER LOGIN =================
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const uid = user.uid;
+        db.ref("users/" + uid).on("value", snapshot => {
+          const data = snapshot.val();
+          if (!data) return;
+          if (data.banned) {
+            document.getElementById("bannedOverlay").classList.remove("hidden");
+            return;
+          }
+          document.getElementById("usernameDisplay").textContent = data.email;
+          document.getElementById("saldoDisplay").textContent = "Rp " + data.saldo.toLocaleString();
+          if (!document.getElementById("dashboard").classList.contains("hidden")) {
+            document.getElementById("statusMessage").textContent = "";
+          }
+        });
+      }
+    });
 
-    // --- Earning ---
-    async function earn(source){const user=auth.currentUser;if(!user)return;const uid=user.uid;const uref=ref(db,"users/"+uid);const nowWIB=await serverNowWIB();const nowMs=nowWIB.getTime();const snap=await get(uref);let d=snap.exists()?snap.val():{saldo:0,lastClick:0,count:0,lastReset:0};
-      const resetAt=todayResetWIB(nowWIB);if(nowMs>=resetAt&&(!d.lastReset||d.lastReset<resetAt)){d.count=0;d.lastReset=nowMs;}
-      if(d.count>=20){toast("Limit harian tercapai","error");return;}
-      if(nowMs-(d.lastClick||0)<180000){toast("Cooldown 3 menit","error");return;}
-      d.saldo=(d.saldo||0)+30000;d.lastClick=nowMs;d.count=(d.count||0)+1;await set(uref,d);$("quota").textContent=`${d.count} / 20 klik hari ini`;toast(`+30.000 poin (${source})`,"success");}
-    window.earn=earn;
+    // ================= UI HANDLERS =================
+    function showWarning() {
+      document.getElementById("authSection").classList.add("hidden");
+      document.getElementById("warningSection").classList.remove("hidden");
+      let countdown = 5;
+      const btn = document.getElementById("continueBtn");
+      const timer = setInterval(() => {
+        countdown--;
+        btn.textContent = "Continue (" + countdown + ")";
+        if (countdown <= 0) {
+          clearInterval(timer);
+          btn.disabled = false;
+          btn.classList.remove("opacity-50");
+          btn.textContent = "Continue";
+          btn.onclick = showDashboard;
+        }
+      }, 1000);
+    }
 
-    window.addEventListener("load",()=>{setTimeout(()=>{hide("loader");},600);});
+    function showDashboard() {
+      document.getElementById("authSection").classList.add("hidden");
+      document.getElementById("warningSection").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+    }
+
+    // ================= EARNING SYSTEM =================
+    const earnBtn = document.getElementById("earnBtn");
+    const bonusBtn = document.getElementById("bonusBtn");
+    const statusMessage = document.getElementById("statusMessage");
+
+    function handleEarning(type) {
+      const user = auth.currentUser;
+      if (!user) return;
+      const uid = user.uid;
+
+      const offsetRef = db.ref(".info/serverTimeOffset");
+      offsetRef.once("value").then(snap => {
+        const serverTime = Date.now() + snap.val();
+        const today = new Date(serverTime).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" });
+
+        db.ref("users/" + uid + "/earning/bot1").once("value").then(snap => {
+          let data = snap.val() || { clickCount: 0, lastClick: 0, lastReset: today };
+
+          // Reset Harian
+          if (data.lastReset !== today) {
+            data.clickCount = 0;
+            data.lastReset = today;
+          }
+
+          // Cooldown 3 menit
+          if (serverTime - data.lastClick < 180000) {
+            statusMessage.textContent = "⏳ Harap tunggu cooldown...";
+            return;
+          }
+
+          // Limit 20 / hari
+          if (data.clickCount >= 20) {
+            statusMessage.textContent = "🚫 Limit harian tercapai. Reset jam 07:00 WIB.";
+            return;
+          }
+
+          // Update saldo
+          const updates = {};
+          updates["saldo"] = firebase.database.ServerValue.increment(30000);
+          updates["earning/bot1/clickCount"] = data.clickCount + 1;
+          updates["earning/bot1/lastClick"] = serverTime;
+          updates["earning/bot1/lastReset"] = today;
+
+          db.ref("users/" + uid).update(updates);
+          statusMessage.textContent = "✅ +Rp 30.000 berhasil ditambahkan";
+        });
+      });
+    }
+
+    earnBtn.onclick = () => handleEarning("main");
+    bonusBtn.onclick = () => handleEarning("bonus");
   </script>
 </body>
 </html>
