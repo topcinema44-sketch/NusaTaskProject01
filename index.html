@@ -1,269 +1,417 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>NusaTask - Bot Earning</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NusaTask • Earning</title>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<!-- Font modern -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <!-- TailwindCSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#0f172a; --bg2:#1e293b; --card:#0b1220; --muted:#9aa4b2;
+    --pri1:#6366f1; --pri2:#4f46e5; --sec1:#22c55e; --sec2:#16a34a;
+    --warn:#f59e0b; --err:#ef4444; --ok:#10b981;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:'Poppins',sans-serif; color:#fff;
+    background: radial-gradient(1200px 1200px at 10% -10%,#1f2445 0,#121827 45%), linear-gradient(135deg,var(--bg1),var(--bg2));
+  }
 
-  <style>
-    body { font-family: 'Poppins', sans-serif; }
-    .fade-in { animation: fadeIn 1s ease-in-out; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .overlay {
-      position: fixed; top:0; left:0; width:100%; height:100%;
-      background: rgba(0,0,0,0.9); color:white;
-      display:flex; align-items:center; justify-content:center;
-      font-size:1.2rem; z-index:9999; text-align:center;
-    }
-  </style>
+  /* header mini – email pojok kiri */
+  .topbar{
+    position:fixed; left:0; top:0; right:0; z-index:30;
+    display:flex; align-items:center; gap:10px;
+    padding:12px 16px; background: linear-gradient(0deg,transparent,rgba(0,0,0,.25));
+    backdrop-filter: blur(6px);
+  }
+  .avatar{width:34px;height:34px;border-radius:50%;background:#20293a; display:grid;place-items:center}
+  .avatar::after{content:"👤";}
+  .user-email{font-size:13px;color:#d1d5db;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70vw}
+
+  /* layar */
+  .wrap{max-width:820px;margin:84px auto 48px;padding:0 16px}
+  .card{
+    background: linear-gradient(180deg,#0c1222, #0a1020);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:18px; padding:22px; box-shadow:0 12px 40px rgba(0,0,0,.35);
+    animation: fadein .5s ease both;
+  }
+  @keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* title */
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .logo{width:22px;height:22px;border-radius:8px;background:linear-gradient(135deg,var(--pri1),var(--pri2));box-shadow:0 0 0 2px rgba(255,255,255,.08) inset}
+  .brand h1{font-size:18px;margin:0}
+
+  /* auth */
+  .grid-auth{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .inpt{width:100%;background:#0c1528;border:1px solid rgba(255,255,255,.08);color:#e5e7eb;
+        padding:14px 14px;border-radius:12px;outline:none}
+  .inpt::placeholder{color:#7b8794}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;width:100%;
+    border:0;border-radius:12px;padding:14px 16px;font-weight:700;color:#fff;cursor:pointer;
+    box-shadow:0 8px 22px rgba(0,0,0,.25); transition:.2s;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .btn-pri{background:linear-gradient(90deg,var(--pri1),var(--pri2))}
+  .btn-sec{background:linear-gradient(90deg,var(--sec1),var(--sec2))}
+  .note{font-size:12px;color:var(--muted);margin-top:10px}
+
+  /* saldo & aksi */
+  .saldo{font-size:28px;font-weight:700;margin:8px 0 18px}
+  .btn-big{padding:16px 18px;border-radius:14px;font-size:16px}
+  .stack{display:grid;gap:12px}
+  .hint{font-size:13px;color:#d1d5db;text-align:center;margin-top:10px}
+
+  /* snackbar notif */
+  .snack{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+    background:#0c1220;border:1px solid rgba(255,255,255,.08);
+    padding:12px 16px;border-radius:12px;display:none;z-index:100;box-shadow:0 10px 30px rgba(0,0,0,.35)
+  }
+  .snack.show{display:block;animation:fadein .2s ease both}
+  .snack.ok{border-color:rgba(16,185,129,.45)}
+  .snack.err{border-color:rgba(239,68,68,.45)}
+  .snack .small{font-size:12px;color:#9aa4b2}
+
+  /* overlay banned */
+  .ban-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter: blur(3px);
+    display:none;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:200
+  }
+  .ban-card{background:#0b1220;border:1px solid rgba(255,255,255,.08);padding:20px 18px;border-radius:16px;max-width:380px}
+  .ban-card h3{margin:0 0 8px}
+  .progress{height:4px;border-radius:8px;background:#0d1426;overflow:hidden;margin-top:12px}
+  .progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--pri1),var(--pri2));width:0%}
+
+  /* spinner minimal */
+  .spinner{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.25);
+           border-top-color:#a7b0ff; animation:spin .8s linear infinite;margin-left:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
 </head>
-<body class="bg-gray-900 text-white">
+<body>
 
-  <!-- Loading -->
-  <div id="loadingScreen" class="fixed inset-0 flex flex-col items-center justify-center bg-gray-900 z-50">
-    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-500"></div>
-    <p class="mt-4 text-gray-300">Memuat aplikasi...</p>
-    <div class="w-64 bg-gray-700 h-2 rounded mt-4 overflow-hidden">
-      <div id="progressBar" class="bg-indigo-500 h-2 w-0"></div>
+<!-- email pojok kiri -->
+<div class="topbar">
+  <div class="avatar"></div>
+  <div class="user-email" id="miniEmail">Memuat…</div>
+</div>
+
+<div class="wrap">
+  <!-- kartu auth -->
+  <div class="card" id="authCard">
+    <div class="brand"><div class="logo"></div><h1>NusaTask • Masuk/Daftar</h1></div>
+    <input id="email" class="inpt" type="email" placeholder="Email">
+    <input id="password" class="inpt" type="password" placeholder="Password (min 6)">
+    <div class="grid-auth">
+      <button id="btnLogin" class="btn btn-pri">Masuk</button>
+      <button id="btnRegister" class="btn btn-sec">Daftar</button>
     </div>
+    <div class="note">Anti-tuyul aktif • 1 Device • Maks 2 IP / 24 jam • Anti VPN/Proxy • Reset 06:00 WIB</div>
   </div>
 
-  <!-- Main App -->
-  <div id="app" class="hidden p-6 fade-in">
+  <!-- kartu earning -->
+  <div class="card" id="earnCard" style="display:none">
+    <div class="brand"><div class="logo"></div><h1>NusaTask • Earning</h1></div>
+    <div class="saldo" id="saldo">Saldo: Rp 0</div>
 
-    <!-- Profil -->
-    <div id="profileSection" class="hidden text-center mb-6">
-      <h2 class="text-xl font-bold">👤 Profil</h2>
-      <p id="profileEmail" class="text-gray-400"></p>
-      <p id="profileUID" class="text-gray-500 text-xs"></p>
-      <h3 class="text-2xl mt-2">Saldo: <span id="saldoDisplay">Rp 0</span></h3>
+    <div class="stack">
+      <button id="btnEarn"  class="btn btn-pri btn-big">Menghasilkan (Monetag)</button>
+      <button id="btnBonus" class="btn btn-sec btn-big">Xstra Bonus (Klik Adila)</button>
     </div>
+    <div class="hint" id="hint">Ketuk tombol untuk mulai. Cooldown tampil di tombol.</div>
 
-    <!-- Auth -->
-    <div id="authSection" class="max-w-md mx-auto mt-12 text-center">
-      <h1 class="text-3xl font-bold mb-6">🚀 NusaTask - Earning</h1>
-      <input id="email" type="email" placeholder="Email" class="w-full p-3 mb-3 rounded bg-gray-800 text-white">
-      <input id="password" type="password" placeholder="Password" class="w-full p-3 mb-3 rounded bg-gray-800 text-white">
-      <div class="flex space-x-2">
-        <button onclick="register()" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 p-3 rounded">Register</button>
-        <button onclick="login()" class="w-1/2 bg-green-600 hover:bg-green-700 p-3 rounded">Login</button>
-      </div>
-      <p id="authMessage" class="mt-4 text-sm text-red-400"></p>
-    </div>
-
-    <!-- Dashboard -->
-    <div id="dashboard" class="hidden text-center mt-10">
-      <button id="earnBtn" class="block w-full bg-indigo-600 hover:bg-indigo-700 p-3 mb-4 rounded shadow">
-        Menghasilkan (Monetag)
-      </button>
-      <button id="bonusBtn" class="block w-full bg-green-600 hover:bg-green-700 p-3 mb-4 rounded shadow">
-        Xstra Bonus (Klik Adila)
-      </button>
-      <p id="statusMessage" class="mt-6 text-sm text-gray-400"></p>
-    </div>
+    <!-- progress bar kecil saat update -->
+    <div class="progress"><i id="bar" style="width:0%"></i></div>
   </div>
+</div>
 
-  <!-- Overlay Banned -->
-  <div id="bannedOverlay" class="overlay hidden">
-    🚫 Akun Anda diblokir<br>Hubungi admin @nusataskproject
+<!-- snackbar -->
+<div id="snack" class="snack"><div id="snackMsg">Siap!</div><div class="small" id="snackSub"></div></div>
+
+<!-- overlay banned -->
+<div class="ban-overlay" id="banScreen">
+  <div class="ban-card">
+    <h3>Akun diblokir</h3>
+    <div class="small" style="margin-bottom:10px">Hubungi admin <b>@nusataskproject</b></div>
   </div>
+</div>
 
-  <script>
-    // ================= FIREBASE CONFIG =================
-    const firebaseConfig = {
-      apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
-      authDomain: "nusataskproject.firebaseapp.com",
-      databaseURL: "https://nusataskproject-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "nusataskproject",
-      storageBucket: "nusataskproject.firebasestorage.app",
-      messagingSenderId: "409602188456",
-      appId: "1:409602188456:web:6302d3030b763324e28e9d",
-      measurementId: "G-9389QL1WRE"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+<!-- Firebase v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-    // ================= LOADING SCREEN =================
-    let progress = 0;
-    const progressBar = document.getElementById("progressBar");
-    const loadingScreen = document.getElementById("loadingScreen");
-    const app = document.getElementById("app");
-    const loadingInterval = setInterval(() => {
-      progress += 25;
-      progressBar.style.width = progress + "%";
-      if (progress >= 100) {
-        clearInterval(loadingInterval);
-        loadingScreen.classList.add("hidden");
-        app.classList.remove("hidden");
-      }
-    }, 300);
+<script>
+/* ====== CONFIG FIREBASE KAMU ====== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
+  authDomain: "nusataskproject.firebaseapp.com",
+  databaseURL: "https://nusataskproject-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "nusataskproject",
+  storageBucket: "nusataskproject.firebasestorage.app",
+  messagingSenderId: "409602188456",
+  appId: "1:409602188456:web:6302d3030b763324e28e9d",
+  measurementId: "G-9389QL1WRE"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.database();
 
-    // ================= DEVICE ID GENERATOR =================
-    function getDeviceId() {
-      let id = localStorage.getItem("deviceId");
-      if (!id) {
-        id = "dev-" + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem("deviceId", id);
-      }
-      return id;
-    }
+/* ====== KONSTAN EARNING ====== */
+const REWARD_EARN  = 30000;  // Monetag
+const REWARD_BONUS = 30000;  // Klik Adila
+const CD_MS        = 3*60*1000; // 3 menit
+const MAX_EARN     = 25;
+const MAX_BONUS    = 30;
+/* Reset harian 06:00 WIB. WIB = UTC+7 */
+function wibDate(d){ // d: timestamp (ms)
+  const k = new Date(d || Date.now());
+  // pakai offset manual agar tidak tergantung jam HP: asumsikan UTC, tambah 7 jam
+  return new Date(k.getTime() + (7*60*60*1000));
+}
+function todayKey(ts){
+  const t = wibDate(ts);
+  return t.toISOString().slice(0,10); // YYYY-MM-DD (WIB)
+}
 
-    // ================= AUTH =================
-    const authMessage = document.getElementById("authMessage");
-    function register() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-          const uid = userCredential.user.uid;
-          const deviceId = getDeviceId();
-          db.ref("users/" + uid).set({
-            email: email,
-            saldo: 0,
-            deviceId: deviceId,
-            banned: false,
-            earning: {
-              menghasilkan: { count: 0, lastClick: 0, lastReset: "" },
-              bonus: { count: 0, lastClick: 0, lastReset: "" }
-            }
-          });
-        })
-        .catch(error => {
-          authMessage.textContent = error.message;
-        });
-    }
+/* ====== UTIL ====== */
+const $ = (id)=>document.getElementById(id);
+function money(n){return "Rp " + (n||0).toLocaleString("id-ID");}
+function toast(msg, sub="", type="ok"){
+  const s=$("snack"); $("snackMsg").textContent=msg; $("snackSub").textContent=sub;
+  s.className="snack show " + (type==="err"?"err":"ok");
+  setTimeout(()=>s.className="snack",2600);
+}
+function setProgress(p){$("bar").style.width = Math.max(0,Math.min(100,p))+"%";}
 
-    function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email, password)
-        .catch(error => {
-          authMessage.textContent = error.message;
-        });
-    }
+/* ====== DEVICE & IP GUARD ====== */
+const deviceId = (()=> {
+  const key="NT_deviceId"; let d=localStorage.getItem(key);
+  if(!d){ d = crypto.getRandomValues(new Uint32Array(4)).join("-"); localStorage.setItem(key,d); }
+  return d;
+})();
+let currentIP=null, ipListRef=null;
+async function fetchIP(){
+  try{
+    // ipify (versi IPv4/IPv6)
+    const res = await fetch("https://api64.ipify.org?format=json",{cache:"no-store"});
+    const j = await res.json(); return j.ip || null;
+  }catch(e){ return null; }
+}
 
-    // ================= AFTER LOGIN =================
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        const uid = user.uid;
-        db.ref("users/" + uid).once("value").then(snap => {
-          const data = snap.val();
-          if (!data) return;
+// simple anti-vpn/proxy (indikasi – opsional, tidak 100% akurat)
+async function isLikelyVPN(){
+  try{
+    const r = await fetch("https://ipapi.co/json/",{cache:"no-store"});
+    const j = await r.json();
+    // bila asn/organization mengandung 'vpn','proxy','hosting'
+    const org = (j.org||"").toLowerCase();
+    return /vpn|proxy|hosting|data-center|datacenter|colo/.test(org);
+  }catch(e){return false;}
+}
 
-          if (data.banned) {
-            document.getElementById("bannedOverlay").classList.remove("hidden");
-            return;
-          }
-
-          // tampil profil
-          document.getElementById("authSection").classList.add("hidden");
-          document.getElementById("profileSection").classList.remove("hidden");
-          document.getElementById("dashboard").classList.remove("hidden");
-          document.getElementById("profileEmail").textContent = data.email;
-          document.getElementById("profileUID").textContent = uid;
-          document.getElementById("saldoDisplay").textContent = "Rp " + data.saldo.toLocaleString();
-
-          // sync realtime saldo
-          db.ref("users/" + uid + "/saldo").on("value", s => {
-            document.getElementById("saldoDisplay").textContent = "Rp " + (s.val() || 0).toLocaleString();
-          });
-        });
+/* ====== AUTH UI ====== */
+const state = { user:null, userRef:null, earnRef:null, bonusRef:null };
+$("miniEmail").textContent = "Belum login";
+$("btnLogin").onclick = async ()=>{
+  const e=$("email").value.trim(), p=$("password").value;
+  if(!e || p.length<6) return toast("Periksa input","Email & password wajib.", "err");
+  $("btnLogin").disabled=true; $("btnLogin").innerHTML='Masuk <span class="spinner"></span>';
+  try{ await auth.signInWithEmailAndPassword(e,p); }
+  catch(err){ toast("Gagal masuk", err.message,"err"); }
+  $("btnLogin").disabled=false; $("btnLogin").textContent="Masuk";
+};
+$("btnRegister").onclick = async ()=>{
+  const e=$("email").value.trim(), p=$("password").value;
+  if(!e || p.length<6) return toast("Periksa input","Email & password wajib.", "err");
+  $("btnRegister").disabled=true; $("btnRegister").innerHTML='Daftar <span class="spinner"></span>';
+  try{
+    const cred = await auth.createUserWithEmailAndPassword(e,p);
+    // init user node
+    const uid = cred.user.uid;
+    const ref = db.ref("users/"+uid);
+    await ref.set({
+      email:e, saldo:0, deviceId, banned:false,
+      ipLog:{}, // {YYYY-MM-DD: {ip: count}}
+      earning:{
+        menghasilkan:{count:0,lastClick:0,lastReset: todayKey(Date.now())},
+        bonus:{count:0,lastClick:0,lastReset: todayKey(Date.now())}
       }
     });
+    toast("Pendaftaran berhasil","Jaga etika. Segala bentuk tuyul/hack diblokir otomatis.");
+  }catch(err){ toast("Gagal daftar", err.message,"err"); }
+  $("btnRegister").disabled=false; $("btnRegister").textContent="Daftar";
+};
 
-    // ================= COOLDOWN UI =================
-    function startCooldown(btn, normalText, cooldownMs) {
-      btn.disabled = true;
-      let sisa = cooldownMs / 1000; // detik
-      btn.textContent = `${normalText} (Cooldown ${sisa}s)`;
-      const interval = setInterval(() => {
-        sisa--;
-        if (sisa > 0) {
-          btn.textContent = `${normalText} (Cooldown ${sisa}s)`;
-        } else {
-          clearInterval(interval);
-          btn.disabled = false;
-          btn.textContent = normalText;
-        }
-      }, 1000);
-    }
+/* ====== SESSION ====== */
+auth.onAuthStateChanged(async (user)=>{
+  state.user=user;
+  if(!user){ // show auth
+    $("authCard").style.display="block";
+    $("earnCard").style.display="none";
+    $("miniEmail").textContent = "Belum login";
+    return;
+  }
+  $("miniEmail").textContent = user.email || "Pengguna";
+  $("authCard").style.display="none";
+  $("earnCard").style.display="block";
+  state.userRef = db.ref("users/"+user.uid);
+  state.earnRef = state.userRef.child("earning/menghasilkan");
+  state.bonusRef= state.userRef.child("earning/bonus");
+  // guard: init jika kosong
+  const snap = await state.userRef.once("value");
+  if(!snap.exists()){
+    await state.userRef.set({
+      email:user.email, saldo:0, deviceId, banned:false, ipLog:{},
+      earning:{
+        menghasilkan:{count:0,lastClick:0,lastReset: todayKey(Date.now())},
+        bonus:{count:0,lastClick:0,lastReset: todayKey(Date.now())}
+      }
+    });
+  }
+  // device lock
+  const dev = (await state.userRef.child("deviceId").once("value")).val();
+  if(dev && dev!==deviceId){ showBanned("Login ditolak: perangkat berbeda terdeteksi."); return; }
 
-    // ================= EARNING SYSTEM =================
-    const earnBtn = document.getElementById("earnBtn");
-    const bonusBtn = document.getElementById("bonusBtn");
-    const statusMessage = document.getElementById("statusMessage");
+  // IP log & anti-VPN
+  currentIP = await fetchIP();
+  if(await isLikelyVPN()){ showBanned("VPN/Proxy terdeteksi. Matikan dan muat ulang."); return; }
+  if(currentIP){ await enforceIPLimit(currentIP); }
 
-    function handleEarning(type) {
-      const user = auth.currentUser;
-      if (!user) return;
-      const uid = user.uid;
+  // listen saldo realtime
+  state.userRef.child("saldo").on("value", s=>{
+    $("saldo").textContent = "Saldo: " + money(s.val()||0);
+  });
 
-      const offsetRef = db.ref(".info/serverTimeOffset");
-      offsetRef.once("value").then(snap => {
-        const serverTime = Date.now() + snap.val();
-        const today = new Date(serverTime).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" });
+  // cek banned realtime
+  state.userRef.child("banned").on("value", s=>{
+    if(s.val()===true) showBanned("Akun diblokir. Hubungi admin @nusataskproject");
+    else hideBanned();
+  });
 
-        db.ref("users/" + uid + "/earning/" + type).once("value").then(snap => {
-          let data = snap.val() || { count: 0, lastClick: 0, lastReset: today };
+  refreshCooldownUI(); // set teks tombol saat masuk
+});
 
-          // Reset harian jam 6 pagi
-          const now = new Date(serverTime);
-          const jam = now.getHours();
-          if (data.lastReset !== today && jam >= 6) {
-            data.count = 0;
-            data.lastReset = today;
-          }
+/* ====== IP: maks 2 IP / 24 jam ====== */
+async function enforceIPLimit(ip){
+  const key = todayKey(Date.now());
+  const node = state.userRef.child("ipLog").child(key);
+  const snap = await node.once("value");
+  let map = snap.val() || {};
+  // hitung berapa IP unik hari ini
+  const ips = Object.keys(map);
+  const exists = ips.includes(ip);
+  if(!exists && ips.length>=2){
+    await state.userRef.child("banned").set(true);
+    showBanned("Terlalu banyak IP dalam 24 jam.");
+    return;
+  }
+  // increment
+  map[ip] = (map[ip]||0) + 1;
+  await node.set(map);
+}
 
-          // Aturan
-          let limit = type === "menghasilkan" ? 25 : 30;
-          let reward = type === "menghasilkan" ? 30000 : 50000;
-          let normalText = type === "menghasilkan" ? "Menghasilkan (Monetag)" : "Xstra Bonus (Klik Adila)";
-          const btn = type === "menghasilkan" ? earnBtn : bonusBtn;
+/* ====== BAN OVERLAY ====== */
+function showBanned(msg){
+  $("banScreen").style.display="flex";
+  toast("Akses dibatasi", msg, "err");
+  $("btnEarn").disabled=true; $("btnBonus").disabled=true;
+}
+function hideBanned(){
+  $("banScreen").style.display="none";
+  $("btnEarn").disabled=false; $("btnBonus").disabled=false;
+}
 
-          // Cek cooldown
-          if (serverTime - data.lastClick < 180000) {
-            statusMessage.textContent = "⏳ Masih cooldown...";
-            return;
-          }
+/* ====== RESET 06:00 WIB ====== */
+async function ensureDailyReset(){
+  const now = Date.now();
+  const today = todayKey(now);
+  const e = (await state.earnRef.once("value")).val() || {};
+  const b = (await state.bonusRef.once("value")).val()||{};
+  const updates = {};
+  if(e.lastReset !== today){ updates["earning/menghasilkan/count"]=0; updates["earning/menghasilkan/lastReset"]=today; }
+  if(b.lastReset !== today){ updates["earning/bonus/count"]=0; updates["earning/bonus/lastReset"]=today; }
+  if(Object.keys(updates).length){ await state.userRef.update(updates); }
+}
 
-          // Cek limit
-          if (data.count >= limit) {
-            statusMessage.textContent = "🚫 Limit harian tercapai. Reset jam 06:00 WIB.";
-            return;
-          }
+/* ====== COOLDOWN ====== */
+async function refreshCooldownUI(){
+  await ensureDailyReset();
+  const [eSnap,bSnap] = await Promise.all([state.earnRef.once("value"), state.bonusRef.once("value")]);
+  const e = eSnap.val()||{count:0,lastClick:0}; const b=bSnap.val()||{count:0,lastClick:0};
+  setBtnCooldownUI($("btnEarn"),  "Menghasilkan (Monetag)", e.lastClick, MAX_EARN, e.count);
+  setBtnCooldownUI($("btnBonus"), "Xstra Bonus (Klik Adila)", b.lastClick, MAX_BONUS, b.count);
+}
+function setBtnCooldownUI(btn, label, lastClick, maxCount, count){
+  let remain = CD_MS - (Date.now() - (lastClick||0));
+  if(count>=maxCount){ btn.disabled=true; btn.textContent = `${label} (Limit habis)`; return; }
+  if(remain>0){
+    btn.disabled=true;
+    const end = Date.now()+remain;
+    const tick = ()=>{
+      const left = Math.max(0, end - Date.now());
+      const s = Math.ceil(left/1000);
+      btn.textContent = `${label} (${s}s)`;
+      if(left<=0){ btn.textContent=label; btn.disabled=false; clearInterval(t); }
+    };
+    tick(); const t=setInterval(tick,1000);
+  }else{
+    btn.disabled=false; btn.textContent=label;
+  }
+}
 
-          // Update saldo & data
-          const updates = {};
-          updates["saldo"] = firebase.database.ServerValue.increment(reward);
-          updates[`earning/${type}/count`] = data.count + 1;
-          updates[`earning/${type}/lastClick`] = serverTime;
-          updates[`earning/${type}/lastReset`] = today;
+/* ====== AKSI KLIK ====== */
+$("btnEarn").onclick  = ()=>handleAction("earn");
+$("btnBonus").onclick = ()=>handleAction("bonus");
 
-          db.ref("users/" + uid).update(updates);
-          statusMessage.textContent = `✅ +Rp ${reward.toLocaleString()} berhasil`;
+async function handleAction(type){
+  const isEarn = type==="earn";
+  const ref     = isEarn ? state.earnRef : state.bonusRef;
+  const maxCnt  = isEarn ? MAX_EARN     : MAX_BONUS;
+  const reward  = isEarn ? REWARD_EARN  : REWARD_BONUS;
+  const label   = isEarn ? "Menghasilkan (Monetag)" : "Xstra Bonus (Klik Adila)";
+  const btn     = isEarn ? $("btnEarn") : $("btnBonus");
 
-          // Mulai cooldown UI
-          startCooldown(btn, normalText, 180000);
-        });
-      });
-    }
+  btn.disabled=true; $("hint").textContent="Memproses…"; setProgress(30);
 
-    earnBtn.onclick = () => handleEarning("menghasilkan");
-    bonusBtn.onclick = () => handleEarning("bonus");
-  </script>
+  // baca snapshot terbaru
+  const snap = await ref.once("value");
+  const data = snap.val()||{count:0,lastClick:0,lastReset: todayKey(Date.now())};
+
+  // reset harian jika perlu
+  await ensureDailyReset();
+
+  // validasi count & cooldown
+  const now = Date.now();
+  if(data.count>=maxCnt){ toast("Limit harian tercapai", "Coba lagi setelah reset 06:00 WIB","err"); setProgress(0); refreshCooldownUI(); return; }
+  if(now - (data.lastClick||0) < CD_MS){ refreshCooldownUI(); setProgress(0); return; }
+
+  // Simulasikan buka iklan (ganti URL dengan URL Monetag / KlikAdila kamu)
+  try{
+    const adUrl = isEarn ? "https://example.com/monetag" : "https://example.com/klikadila";
+    window.open(adUrl,"_blank","noopener");
+  }catch(e){/* abaikan */ }
+
+  // commit atomik
+  const updates = {};
+  updates[(isEarn?"earning/menghasilkan":"earning/bonus")+"/count"] = (data.count||0)+1;
+  updates[(isEarn?"earning/menghasilkan":"earning/bonus")+"/lastClick"] = firebase.database.ServerValue.TIMESTAMP;
+  updates["saldo"] = firebase.database.ServerValue.increment(reward);
+  await state.userRef.update(updates);
+
+  setProgress(100);
+  toast(`+${money(reward)} ditambahkan`, `Tindakan: ${isEarn?"Menghasilkan":"Xstra Bonus"}`);
+  refreshCooldownUI();
+  setTimeout(()=>setProgress(0),600);
+}
+</script>
 </body>
 </html>
