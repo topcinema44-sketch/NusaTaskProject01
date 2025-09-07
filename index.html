@@ -5,14 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>NUSA TASK — Final (Super Premium)</title>
 
-  <!-- Font & SweetAlert2 -->
+  <!-- Fonts & SweetAlert2 -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     :root{
       --bg:#05060a; --card:#0e1620; --muted:#98a1a8; --accent1:#00ffd0; --accent2:#2b7cff;
-      --glass: rgba(255,255,255,0.03);
     }
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;font-family:'Poppins',system-ui,Roboto,Arial;color:#e6eef1;background:linear-gradient(180deg,#03040a,#07101a)}
@@ -24,39 +23,39 @@
     .loading-track{width:320px;height:10px;border-radius:999px;background:rgba(255,255,255,0.04);overflow:hidden}
     .loading-bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent1),var(--accent2));transition:width 0.2s linear}
 
-    /* App container */
-    .wrap{max-width:980px;margin:28px auto;padding:18px}
+    /* App */
+    .wrap{max-width:820px;margin:28px auto;padding:18px}
     header{display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{font-weight:700}
     .profile{display:flex;align-items:center;gap:12px}
     .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#071826,#0b2b35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#cfeee7}
     .email{font-size:13px;color:var(--muted)}
 
-    /* layout */
     .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:18px;max-width:720px;margin-left:auto;margin-right:auto}
     .card{background:var(--card);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 40px rgba(2,6,14,0.6)}
     .title{font-weight:700;color:var(--accent1)}
+    .small{font-size:13px;color:var(--muted)}
+    .saldo{font-weight:800;font-size:18px}
 
-    /* buttons */
     .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:12px;border:none;cursor:pointer;font-weight:700}
-    .btn-large{width:100%;padding:16px;border-radius:14px;font-size:16px}
+    .btn-large{width:100%;padding:14px;border-radius:12px;font-size:15px}
     .btn-earn{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#021018}
     .btn-xtra1{background:linear-gradient(135deg,#6ee7b7,#60a5fa);color:#021018}
     .btn-xtra2{background:linear-gradient(135deg,#f9a8d4,#a78bfa);color:#021018}
     .disabled{background:#4b5563!important;color:#cfcfcf!important;cursor:not-allowed!important;opacity:.85!important}
 
-    .small{font-size:13px;color:var(--muted)}
-    .saldo{font-weight:800;font-size:22px}
-
-    /* progress bars (daily progress) */
     .progress-wrap{height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;margin-top:8px}
     .progress-bar{height:100%;width:0%;transition:width .5s ease;border-radius:999px}
 
-    /* counters */
     .counter{font-size:13px;color:var(--muted);margin-top:8px;text-align:center}
 
-    /* responsive */
-    @media(min-width:820px){ .grid{grid-template-columns:1fr 360px} }
+    /* Banned overlay */
+    #bannedOverlay{position:fixed;inset:0;background:rgba(2,6,11,0.92);display:none;z-index:10000;align-items:center;justify-content:center;color:#fff;flex-direction:column;gap:12px}
+    #bannedOverlay .msg{max-width:440px;text-align:center}
+
+    /* Admin panel */
+    #adminPanel{display:none;position:fixed;right:18px;bottom:18px;width:360px;z-index:30}
+    @media(min-width:820px){ .grid{grid-template-columns:1fr 320px} }
   </style>
 </head>
 <body>
@@ -68,6 +67,14 @@
     <div class="small">Menyiapkan NUSA TASK…</div>
   </div>
 
+  <!-- Banned Overlay -->
+  <div id="bannedOverlay" class="center">
+    <div class="msg">
+      <h2 style="color:#ff6b6b;margin:0">Akun Diblokir</h2>
+      <p class="small" style="margin-top:8px">Akun Anda telah dibanned otomatis karena terdeteksi aktivitas yang melanggar aturan. Hubungi admin jika ingin dibuka.</p>
+    </div>
+  </div>
+
   <!-- App -->
   <div class="wrap" id="app" style="display:none">
     <header>
@@ -77,9 +84,11 @@
       </div>
 
       <div class="profile">
-        <div class="saldo" id="saldoDisplay">Rp 0</div>
         <div class="avatar" id="avatar">NT</div>
-        <div class="email" id="emailDisplay">—</div>
+        <div style="text-align:right">
+          <div id="emailDisplay" class="email">—</div>
+          <div id="saldoDisplay" class="saldo">Rp 0</div>
+        </div>
       </div>
     </header>
 
@@ -90,7 +99,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between">
             <div>
               <div class="title">Earning</div>
-              <div class="small">Tekan tombol untuk membuka iklan / klaim reward.</div>
+              <div class="small">Tekan tombol untuk klaim reward (setiap klaim membuka iklan, lalu kredit).</div>
             </div>
           </div>
 
@@ -99,82 +108,71 @@
           <!-- Earn -->
           <div style="margin-bottom:14px">
             <button id="btnEarn" class="btn btn-large btn-earn">Menghasilkan (Rp 20.000)</button>
-            <div class="progress-wrap" id="earnProgressWrap"><div id="earnProgress" class="progress-bar" style="background:linear-gradient(90deg,#00ffd0,#2b7cff)"></div></div>
-            <div class="counter" id="earnCounter">0 / 20 hari ini</div>
+            <div class="progress-wrap"><div id="progressEarn" class="progress-bar" style="background:linear-gradient(90deg,#00ffd0,#2b7cff)"></div></div>
+            <div class="counter" id="counterEarn">0 / 20 hari ini</div>
           </div>
 
           <!-- Bonus 1 -->
           <div style="margin-bottom:14px">
-            <button id="btnBonus1" class="btn btn-large btn-xtra1">Xstra Bonus 1 (Rp 10.000)</button>
-            <div class="progress-wrap" id="b1ProgressWrap"><div id="b1Progress" class="progress-bar" style="background:linear-gradient(90deg,#60a5fa,#34d399)"></div></div>
-            <div class="counter" id="b1Counter">0 / 10 hari ini</div>
+            <button id="btnX1" class="btn btn-large btn-xtra1">Xstra Bonus 1 (Rp 10.000)</button>
+            <div class="progress-wrap"><div id="progressX1" class="progress-bar" style="background:linear-gradient(90deg,#60a5fa,#34d399)"></div></div>
+            <div class="counter" id="counterX1">0 / 10 hari ini</div>
           </div>
 
           <!-- Bonus 2 -->
           <div style="margin-bottom:6px">
-            <button id="btnBonus2" class="btn btn-large btn-xtra2">Xstra Bonus 2 (Rp 10.000)</button>
-            <div class="progress-wrap" id="b2ProgressWrap"><div id="b2Progress" class="progress-bar" style="background:linear-gradient(90deg,#f472b6,#a78bfa)"></div></div>
-            <div class="counter" id="b2Counter">0 / 10 hari ini</div>
+            <button id="btnX2" class="btn btn-large btn-xtra2">Xstra Bonus 2 (Rp 10.000)</button>
+            <div class="progress-wrap"><div id="progressX2" class="progress-bar" style="background:linear-gradient(90deg,#f472b6,#a78bfa)"></div></div>
+            <div class="counter" id="counterX2">0 / 10 hari ini</div>
           </div>
 
           <div style="margin-top:12px"><div id="statusMsg" class="small"></div></div>
         </div>
       </div>
 
-      <!-- Right: account info -->
+      <!-- Right: minimal (info hidden from user) -->
       <div>
         <div class="card">
-          <div class="title">Informasi Akun</div>
+          <div class="title">Profil</div>
           <div style="margin-top:10px" class="small">
             <div><strong>Email:</strong> <span id="infoEmail">—</span></div>
-            <div><strong>Device ID:</strong> <span id="infoDevice">—</span></div>
-            <div><strong>IP Publik:</strong> <span id="infoIP">—</span></div>
             <div><strong>Status:</strong> <span id="infoBanned">—</span></div>
-            <div><strong>Last IP Change:</strong> <span id="infoIpChange">—</span></div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <div class="title">Aturan Anti-Tuyul</div>
-          <div class="small" style="margin-top:8px;line-height:1.5">
-            • 1 device = 1 akun. • 1 akun = 1 device. • 1 IP = 1 device. • Duplikasi akan di-ban otomatis.<br>
-            • Reset harian: <strong>06:00 WIB</strong>.<br>
-            • Jika ganti jaringan (IP) sekali dalam 6 jam masih dianggap normal.
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- AUTH Modal (hidden until needed) -->
-  <div id="authModal" style="display:none;position:fixed;inset:0;z-index:999;align-items:center;justify-content:center" class="center">
-    <div style="width:92%;max-width:420px;background:var(--card);padding:18px;border-radius:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(2,6,14,0.6)">
-      <div style="text-align:center">
-        <div style="font-size:28px;font-weight:800;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">NT</div>
-        <div class="small" style="margin-top:6px">Masuk / Daftar</div>
+  <!-- Admin panel (hidden unless admin) -->
+  <div id="adminPanel">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:700">Admin Panel</div>
+        <button id="closeAdmin" class="btn" style="padding:6px 8px">Close</button>
       </div>
-
-      <form id="authForm" style="margin-top:12px;display:grid;gap:8px">
-        <input id="inputEmail" type="email" placeholder="Email" required style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#0a0f13;color:#fff">
-        <input id="inputPass" type="password" placeholder="Password" required style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#0a0f13;color:#fff">
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
-          <button type="button" id="btnAuth" class="btn btn-earn" style="padding:10px 14px">Login / Register</button>
+      <div style="margin-top:10px">
+        <input id="queryUid" placeholder="Cari UID / email" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:#071018;color:#fff">
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button id="btnFetchUser" class="btn btn-large" style="padding:8px 10px">Fetch</button>
+          <button id="btnUnban" class="btn btn-large" style="padding:8px 10px;background:#f97316;color:#021018">Unban</button>
         </div>
-      </form>
+        <div id="adminInfo" class="small" style="margin-top:10px"></div>
+      </div>
     </div>
   </div>
 
 <script type="module">
-/* =========================================================
-   NUSA TASK — Final script
-   - Firebase Auth (email/password)
-   - Realtime DB for user state + cooldown persistence
-   - Auto login (onAuthStateChanged)
-   - Anti-tuyul: deviceId + IP checks, auto-ban logic
-   - Reset daily at 06:00 WIB (client-triggered, robust on login)
-   - Cooldown persisted in DB (lastEarn, lastBonus1, lastBonus2)
-   - Progress bars show daily usage
-   ========================================================= */
+/* Final script with fixes:
+ - Auth (email/password), auto-login
+ - Realtime DB: user document fields initialised
+ - Cooldown persisted in DB (lastEarn, lastX1, lastX2)
+ - runTransaction used to increment balance
+ - Progress bars represent daily usage (earnToday / limits)
+ - Reset at 06:00 local time (client scheduled + login check)
+ - Anti-tuyul aggressive (devices, ips nodes), auto-ban
+ - Banned overlay locks UI
+ - Admin panel (manual unban) controlled by ADMIN_EMAILS
+*/
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
@@ -195,103 +193,79 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-const COOLDOWN = 3 * 60 * 1000; // 3 minutes
+// configs
+const COOLDOWN = 3 * 60 * 1000;
 const EARN_REWARD = 20000;
 const XTRA_REWARD = 10000;
 const EARN_LIMIT = 20;
 const XTRA_LIMIT = 10;
 
-// Small helpers
+// replace with your admin emails
+const ADMIN_EMAILS = ['you@domain.com'];
+
+// UI refs
 const $ = id => document.getElementById(id);
+const loading = $('loading'), loadingBar = $('loadingBar'), appWrap = $('app');
+const bannedOverlay = $('bannedOverlay');
+const authModal = $('authModal'), inputEmail = $('inputEmail'), inputPass = $('inputPass'), btnAuth = $('btnAuth');
+const btnEarn = $('btnEarn'), btnX1 = $('btnX1'), btnX2 = $('btnX2');
+const progressEarn = $('progressEarn'), progressX1 = $('progressX1'), progressX2 = $('progressX2');
+const counterEarn = $('counterEarn'), counterX1 = $('counterX1'), counterX2 = $('counterX2');
+const statusMsg = $('statusMsg'), emailDisplay = $('emailDisplay'), saldoDisplay = $('saldoDisplay');
+const infoEmail = $('infoEmail'), infoBanned = $('infoBanned');
+
+const adminPanel = $('adminPanel'), queryUid = $('queryUid'), btnFetchUser = $('btnFetchUser'), btnUnban = $('btnUnban'), adminInfo = $('adminInfo'), closeAdmin = $('closeAdmin');
+
+// helper format
 const fmt = n => 'Rp ' + Number(n||0).toLocaleString('id-ID');
 
-// UI elements
-const loading = $('loading');
-const loadingBar = $('loadingBar');
-const appWrap = $('app');
-const authModal = $('authModal');
-const btnAuth = $('btnAuth');
-const inputEmail = $('inputEmail');
-const inputPass = $('inputPass');
-
-const btnEarn = $('btnEarn');
-const btnBonus1 = $('btnBonus1');
-const btnBonus2 = $('btnBonus2');
-const earnProgress = $('earnProgress');
-const b1Progress = $('b1Progress');
-const b2Progress = $('b2Progress');
-const earnCounter = $('earnCounter');
-const b1Counter = $('b1Counter');
-const b2Counter = $('b2Counter');
-const statusMsg = $('statusMsg');
-
-const saldoDisplay = $('saldoDisplay');
-const emailDisplay = $('emailDisplay');
-const infoEmail = $('infoEmail');
-const infoDevice = $('infoDevice');
-const infoIP = $('infoIP');
-const infoBanned = $('infoBanned');
-const infoIpChange = $('infoIpChange');
-
-// Device ID (persistent)
+// device id
 function getDeviceId(){
   let d = localStorage.getItem('nusa_device_id');
   if(!d){
-    if(window.crypto && crypto.randomUUID) d = crypto.randomUUID();
-    else d = 'dev-' + Math.random().toString(36).slice(2,12);
+    d = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'dev-'+Math.random().toString(36).slice(2,12);
     localStorage.setItem('nusa_device_id', d);
   }
   return d;
 }
 const deviceId = getDeviceId();
-infoDevice.textContent = deviceId;
 
-// Smooth loading animation (3s)
-function runLoadingThenShowAuth(){
-  // animate loadingBar to 100% via CSS animation already set; ensure it reaches 100%
-  setTimeout(()=> {
-    loading.style.display = 'none';
-    // show auth modal (auto login if session exists handled below)
-    authModal.style.display = 'flex';
-  }, 3200);
-}
-runLoadingThenShowAuth();
+// animate loading bar to 100% (3s) then show auth/login
+(function animateLoading(){
+  let w = 0; const step = 100/50; const iv = setInterval(()=>{
+    w += step; loadingBar.style.width = Math.min(100, w) + '%';
+    if(w >= 100){ clearInterval(iv); setTimeout(()=>{ loading.style.display='none'; authModal.style.display='flex'; }, 300); }
+  }, 60);
+})();
 
-// fetch IP
+// fetch public IP
 async function fetchIP(){
   try{
-    const r = await fetch('https://api.ipify.org?format=json');
-    const j = await r.json(); return j.ip;
-  }catch(e){
-    console.warn('ipify fail',e); return '0.0.0.0';
-  }
+    const r = await fetch('https://api.ipify.org?format=json'); const j = await r.json(); return j.ip;
+  }catch(e){ console.warn('ip fail',e); return '0.0.0.0'; }
 }
 
-// AUTH flow (login or register)
-btnAuth.addEventListener('click', async ()=> {
-  const email = inputEmail.value.trim();
-  const pass = inputPass.value.trim();
-  if(!email || !pass){ Swal.fire('Lengkapi form','Isi email & password','warning'); return; }
-
+// AUTH: login or register using email+password button in modal
+btnAuth.addEventListener('click', async ()=>{
+  const email = inputEmail.value.trim(); const pass = inputPass.value.trim();
+  if(!email || !pass) return Swal.fire('Isi form','Email & password diperlukan','warning');
   try{
-    // try sign in
-    const signIn = await signInWithEmailAndPassword(auth, email, pass);
-    // signed in -> modal will auto close by onAuthStateChanged
+    await signInWithEmailAndPassword(auth, email, pass);
+    // success handled by onAuthStateChanged
   }catch(err){
     // register
     try{
-      const reg = await createUserWithEmailAndPassword(auth, email, pass);
-      // new user created -> onAuthStateChanged will init user record
+      await createUserWithEmailAndPassword(auth, email, pass);
+      // user created; onAuthStateChanged will handle record creation
     }catch(e){
       Swal.fire('Error', e.message, 'error');
     }
   }
 });
 
-// onAuthStateChanged => auto login
-onAuthStateChanged(auth, async (user) => {
+// onAuth state -> init or show UI
+onAuthStateChanged(auth, async (user)=>{
   if(user){
-    // hide auth modal
     authModal.style.display = 'none';
     appWrap.style.display = 'block';
     const uid = user.uid;
@@ -299,12 +273,10 @@ onAuthStateChanged(auth, async (user) => {
     emailDisplay.textContent = email;
     infoEmail.textContent = email;
 
-    // initialize user record if not exist
-    const uRef = ref(db, 'users/' + uid);
+    // initialize DB user if missing (ensure fields exist)
+    const uRef = ref(db, 'users/'+uid);
     const snap = await get(uRef);
-    const now = Date.now();
     if(!snap.exists()){
-      // create user
       await set(uRef, {
         email,
         balance: 0,
@@ -318,291 +290,283 @@ onAuthStateChanged(auth, async (user) => {
         banned: false
       });
     } else {
-      // ensure deviceId is set (only once)
+      // if deviceId missing, set once
       const data = snap.val();
-      if(!data.deviceId){
-        await update(uRef, { deviceId });
-      }
+      if(!data.deviceId) await update(uRef, { deviceId });
     }
 
-    // run anti-tuyul checks + update IP
-    try{
-      await antiTuyulAndRegister(uid);
-    }catch(e){
-      // banned in antiTuyul
-      console.warn('Anti-tuyul triggered:', e.message);
-      Swal.fire('Akun dibanned', 'Sistem mendeteksi kecurangan — akun dibanned.', 'error');
+    // anti-tuyul checks and register device/ip mappings
+    try{ await antiTuyulRegister(uid); } catch(e){
+      console.warn('antiTuyul:', e.message);
+      // after ban, UI update will show overlay via onValue listener
     }
 
-    // realtime listener for user data (update UI)
-    onValue(ref(db, 'users/' + uid), (s) => {
+    // realtime listener for user's node -> update UI & cooldowns
+    onValue(ref(db, 'users/'+uid), (s)=>{
       if(!s.exists()) return;
       const d = s.val();
-      updateUI(d);
-      // if banned -> show message and disable buttons
-      if(d.banned){
-        disableAll('Akun dibanned');
-      }else{
-        enableButtons();
-      }
+      refreshUI(d);
+      if(d.banned) showBannedOverlay();
+      else hideBannedOverlay();
     });
 
-    // schedule reset at next 06:00 WIB (client-side guard)
-    scheduleDailyReset(uid);
+    // schedule reset at next 06:00 local
+    scheduleReset06(uid);
+
+    // if admin, show admin panel
+    if(ADMIN_EMAILS.includes(email.toLowerCase())){
+      adminPanel.style.display = 'block';
+    } else adminPanel.style.display = 'none';
 
   } else {
-    // signed out
+    // not logged in
     appWrap.style.display = 'none';
     authModal.style.display = 'flex';
+    adminPanel.style.display = 'none';
   }
 });
 
-// Anti-Tuyul logic (client-side checks + DB updates)
-// - 1 device = 1 account (deviceId bind)
-// - 1 account = 1 device (if account used on other device => ban)
-// - 1 IP = 1 device (if multiple devices on same IP => ban)
-// - Distinguish normal IP change: allow if last change > 6 hours
-async function antiTuyulAndRegister(uid){
+// Anti-tuyul: map devices and ips, apply ban rules
+async function antiTuyulRegister(uid){
   const ip = await fetchIP();
-  infoIP.textContent = ip;
-  const uRef = ref(db, 'users/' + uid);
+  const now = Date.now();
+  const uRef = ref(db, 'users/'+uid);
   const snap = await get(uRef);
-  if(!snap.exists()) throw new Error('User not found');
+  if(!snap.exists()) throw new Error('user-missing');
+  const user = snap.val();
 
-  const data = snap.val();
-
-  // 1) device change: if user already has deviceId different -> banned
-  if(data.deviceId && data.deviceId !== deviceId){
-    // if account used on another device -> ban account
+  // 1) if user's deviceId exists and differs from current device -> ban user
+  if(user.deviceId && user.deviceId !== deviceId){
     await update(uRef, { banned: true });
     throw new Error('device-mismatch');
   }
 
-  // 2) device record mapping (devices/{deviceId} => uid)
-  const devRef = ref(db, 'devices/' + deviceId);
+  // 2) devices/{deviceId} mapping
+  const devRef = ref(db, 'devices/'+deviceId);
   const devSnap = await get(devRef);
   if(!devSnap.exists()){
-    // create device record mapping -> uid
-    await set(devRef, { uid, ip, ts: Date.now() });
+    // bind device => uid
+    await set(devRef, { uid, ip, ts: now });
   } else {
     const dv = devSnap.val();
     if(dv.uid && dv.uid !== uid){
-      // device already mapped to another uid => ban the new uid (clone)
+      // device used by different uid => ban both sides (aggressive)
+      // ban current uid
       await update(uRef, { banned: true });
-      throw new Error('device-used-by-other');
+      // also ban the other account conservatively:
+      if(dv.uid) await update(ref(db, 'users/'+dv.uid), { banned: true });
+      throw new Error('device-in-use-by-other');
+    } else {
+      // update device ip+ts
+      await update(devRef, { ip, ts: now, uid });
     }
-    // update ip/ts for device
-    await update(devRef, { ip, ts: Date.now() });
   }
 
-  // 3) IP mapping: ips/{ipKey} list of deviceIds in last 24h
+  // 3) ips/{ipKey} mapping to list of deviceIds in 24h
   const ipKey = ip.replace(/\./g,'-');
-  const ipRef = ref(db, 'ips/' + ipKey);
+  const ipRef = ref(db, 'ips/'+ipKey);
   const ipSnap = await get(ipRef);
   let list = ipSnap.exists() ? ipSnap.val().list || [] : [];
+  const DAY = 24*60*60*1000;
+  list = list.filter(x => now - (x.ts||0) < DAY);
 
-  // filter entries older than 24h
-  const now = Date.now();
-  list = list.filter(it => now - (it.ts||0) < 24*60*60*1000);
-
-  // if this ip already used by different deviceId (and deviceId different)
+  // if same IP used by other devices -> ban all involved (as requested)
   const otherDevices = list.map(x=>x.deviceId).filter(d=>d && d !== deviceId);
   if(otherDevices.length > 0){
-    // aggressive rule: multiple devices on same IP -> ban account (as requested)
+    // ban current user
     await update(uRef, { banned: true });
-    throw new Error('ip-shared-multiple-devices');
+    // ban the other users mapped to those devices
+    for(const od of otherDevices){
+      const dvSnap = await get(ref(db, 'devices/'+od));
+      if(dvSnap.exists() && dvSnap.val().uid) await update(ref(db, 'users/'+dvSnap.val().uid), { banned: true });
+    }
+    throw new Error('multiple-devices-same-ip');
   }
 
-  // push current device to ip list
+  // push this device into ip list
   list.push({ deviceId, uid, ts: now });
   await set(ipRef, { list });
 
-  // 4) Update user ip & ipHistory & lastIpChangeTime
-  let updateData = {};
-  if(!data.ip || data.ip !== ip){
-    // if user already had ip and changed recently -> check grace
-    const lastChange = data.lastIpChangeTime || 0;
-    const SIX_HOURS = 6 * 60 * 60 * 1000;
+  // 4) update user ip & ipHistory & lastIpChangeTime with grace logic
+  let updates = {};
+  if(!user.ip || user.ip !== ip){
+    const lastChange = user.lastIpChangeTime || 0;
+    const SIX_HOURS = 6*60*60*1000;
     if(lastChange && (now - lastChange) < SIX_HOURS){
-      // changed IP again within 6 hours => suspicious => ban
+      // frequent IP changes -> ban
       await update(uRef, { banned: true });
       throw new Error('frequent-ip-change');
     }
-    updateData.ip = ip;
-    updateData.lastIpChangeTime = now;
-    // add to ipHistory
-    const hist = data.ipHistory || {};
+    updates.ip = ip;
+    updates.lastIpChangeTime = now;
+    const hist = user.ipHistory || {};
     hist[now] = { ip, deviceId };
-    updateData.ipHistory = hist;
+    updates.ipHistory = hist;
   }
-  await update(uRef, updateData);
+  if(Object.keys(updates).length) await update(uRef, updates);
 }
 
-// Update UI with user data
-function updateUI(d){
+// Refresh UI: saldo, counters, progress, cooldown states
+function refreshUI(d){
   saldoDisplay.textContent = fmt(d.balance || 0);
   emailDisplay.textContent = d.email || '—';
   infoEmail.textContent = d.email || '—';
   infoBanned.textContent = d.banned ? 'BANNED' : 'ACTIVE';
-  if(d.lastIpChangeTime) infoIpChange.textContent = new Date(d.lastIpChangeTime).toLocaleString();
 
-  // update counters & progress bars (daily)
-  const e = d.earnToday || 0;
-  const b1 = d.bonus1Today || 0;
-  const b2 = d.bonus2Today || 0;
+  const e = d.earnToday || 0, x1 = d.bonus1Today || 0, x2 = d.bonus2Today || 0;
+  counterEarn.textContent = `${e} / ${EARN_LIMIT} hari ini`;
+  counterX1.textContent = `${x1} / ${XTRA_LIMIT} hari ini`;
+  counterX2.textContent = `${x2} / ${XTRA_LIMIT} hari ini`;
 
-  earnCounter.textContent = `${e} / ${EARN_LIMIT} hari ini`;
-  b1Counter.textContent = `${b1} / ${XTRA_LIMIT} hari ini`;
-  b2Counter.textContent = `${b2} / ${XTRA_LIMIT} hari ini`;
+  progressEarn.style.width = Math.min(100, Math.round((e / EARN_LIMIT) * 100)) + '%';
+  progressX1.style.width = Math.min(100, Math.round((x1 / XTRA_LIMIT) * 100)) + '%';
+  progressX2.style.width = Math.min(100, Math.round((x2 / XTRA_LIMIT) * 100)) + '%';
 
-  // progress percentages
-  earnProgress.style.width = Math.min(100, Math.round((e / EARN_LIMIT) * 100)) + '%';
-  b1Progress.style.width = Math.min(100, Math.round((b1 / XTRA_LIMIT) * 100)) + '%';
-  b2Progress.style.width = Math.min(100, Math.round((b2 / XTRA_LIMIT) * 100)) + '%';
-
-  // cooldowns - disable buttons if within cooldown (based on last timestamps)
+  // cooldown UI from persisted timestamps
   const now = Date.now();
-  // Earn
-  if(d.lastEarn && (now - d.lastEarn) < COOLDOWN){
-    startCooldownUI(btnEarn, d.lastEarn, COOLDOWN, "Menghasilkan (Rp 20.000)");
-  } else {
-    enableButton(btnEarn, "Menghasilkan (Rp 20.000)");
-  }
-  // bonus1
-  if(d.lastBonus1 && (now - d.lastBonus1) < COOLDOWN){
-    startCooldownUI(btnBonus1, d.lastBonus1, COOLDOWN, "Xstra Bonus 1 (Rp 10.000)");
-  } else {
-    enableButton(btnBonus1, "Xstra Bonus 1 (Rp 10.000)");
-  }
-  // bonus2
-  if(d.lastBonus2 && (now - d.lastBonus2) < COOLDOWN){
-    startCooldownUI(btnBonus2, d.lastBonus2, COOLDOWN, "Xstra Bonus 2 (Rp 10.000)");
-  } else {
-    enableButton(btnBonus2, "Xstra Bonus 2 (Rp 10.000)");
-  }
+  if(d.lastEarn && (now - d.lastEarn) < COOLDOWN) startCooldownBtn(btnEarn, d.lastEarn, COOLDOWN, 'Menghasilkan (Rp 20.000)');
+  else resetBtn(btnEarn, 'Menghasilkan (Rp 20.000)');
+  if(d.lastBonus1 && (now - d.lastBonus1) < COOLDOWN) startCooldownBtn(btnX1, d.lastBonus1, COOLDOWN, 'Xstra Bonus 1 (Rp 10.000)');
+  else resetBtn(btnX1, 'Xstra Bonus 1 (Rp 10.000)');
+  if(d.lastBonus2 && (now - d.lastBonus2) < COOLDOWN) startCooldownBtn(btnX2, d.lastBonus2, COOLDOWN, 'Xstra Bonus 2 (Rp 10.000)');
+  else resetBtn(btnX2, 'Xstra Bonus 2 (Rp 10.000)');
 }
 
-// disable all
-function disableAll(msg){
-  btnEarn.classList.add('disabled');
-  btnBonus1.classList.add('disabled');
-  btnBonus2.classList.add('disabled');
-  statusMsg.textContent = msg || '';
+// disable all UI and show banned overlay
+function showBannedOverlay(){
+  bannedOverlay.style.display = 'flex';
+  // disable buttons
+  btnEarn.classList.add('disabled'); btnX1.classList.add('disabled'); btnX2.classList.add('disabled');
 }
-function enableButtons(){ btnEarn.classList.remove('disabled'); btnBonus1.classList.remove('disabled'); btnBonus2.classList.remove('disabled'); statusMsg.textContent=''; }
-function enableButton(btn, text){ btn.classList.remove('disabled'); btn.innerText = text; }
+// hide overlay
+function hideBannedOverlay(){ bannedOverlay.style.display = 'none'; }
 
-// start cooldown UI given lastTimestamp persisted
-function startCooldownUI(btn, lastTs, duration, originalText){
+// cooldown UI helpers
+function startCooldownBtn(btn, lastTs, duration, originalText){
   const remaining = Math.max(0, duration - (Date.now() - lastTs));
-  if(remaining <= 0){ enableButton(btn, originalText); return; }
+  if(remaining <= 0){ resetBtn(btn, originalText); return; }
   btn.classList.add('disabled');
   let end = Date.now() + remaining;
-  btn.innerText = formatRemaining(remaining);
-  const interval = setInterval(()=> {
+  btn.innerText = formatRem(remaining);
+  const iv = setInterval(()=>{
     const rem = end - Date.now();
-    if(rem <= 0){
-      clearInterval(interval);
-      enableButton(btn, originalText);
-    } else {
-      btn.innerText = formatRemaining(rem);
-    }
+    if(rem <= 0){ clearInterval(iv); resetBtn(btn, originalText); }
+    else btn.innerText = formatRem(rem);
   }, 1000);
 }
-function formatRemaining(ms){
-  const mm = Math.floor(ms/60000);
-  const ss = Math.floor((ms%60000)/1000);
-  return `Cooldown (${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')})`;
-}
+function resetBtn(btn, text){ btn.classList.remove('disabled'); btn.innerText = text; }
+function formatRem(ms){ const mm = Math.floor(ms/60000); const ss = Math.floor((ms%60000)/1000); return `Cooldown (${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')})`; }
 
-// schedule daily reset at 06:00 WIB (client-side): if user active, reset values at 06:00 local
-function scheduleDailyReset(uid){
-  // compute ms until next 06:00 local time
+// schedule daily reset at next 06:00 local time
+function scheduleReset06(uid){
   const now = new Date();
   const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0, 0);
   if(now >= target) target.setDate(target.getDate() + 1);
   const ms = target.getTime() - now.getTime();
-  setTimeout(async ()=> {
-    // reset daily counters in DB
+  setTimeout(async ()=>{
     try{
-      await update(ref(db, 'users/' + uid), {
-        earnToday: 0, bonus1Today: 0, bonus2Today: 0,
-        lastReset: new Date().toDateString()
-      });
-    }catch(e){ console.warn('daily reset failed', e); }
-    // schedule next
-    scheduleDailyReset(uid);
-  }, ms + 2000); // small buffer
+      await update(ref(db, 'users/'+uid), { earnToday: 0, bonus1Today: 0, bonus2Today: 0, lastReset: new Date().toDateString() });
+    }catch(e){ console.warn('reset error', e); }
+    scheduleReset06(uid);
+  }, ms + 2000);
 }
 
-// claim reward logic (atomic-ish: using runTransaction on balance)
-async function claimReward(uid, type){
-  const uRef = ref(db, 'users/' + uid);
+// claim reward (atomic balance update using runTransaction)
+async function claim(uid, type){
+  const uRef = ref(db, 'users/'+uid);
   const snap = await get(uRef);
-  if(!snap.exists()) return;
-  const data = snap.val();
-  if(data.banned) { Swal.fire('Akun dibanned','Anda tidak dapat melakukan klaim','error'); return; }
+  if(!snap.exists()) return Swal.fire('Error','User data not found','error');
+  const d = snap.val();
+  if(d.banned) return Swal.fire('Akun dibanned','Kontak admin','error');
 
-  // ensure reset if needed (in case lastReset not today; uses 06:00 rule)
+  // ensure daily reset if needed
   const today = new Date().toDateString();
-  if(data.lastReset !== today){
-    data.earnToday = 0; data.bonus1Today = 0; data.bonus2Today = 0; data.lastReset = today;
+  if(d.lastReset !== today){
+    d.earnToday = 0; d.bonus1Today = 0; d.bonus2Today = 0; d.lastReset = today;
   }
-
   const now = Date.now();
 
-  // check limits & cooldowns
+  // earn
   if(type === 'earn'){
-    if((data.earnToday||0) >= EARN_LIMIT){ Swal.fire('Limit Tercapai', 'Sudah mencapai limit harian', 'warning'); return; }
-    if(data.lastEarn && (now - data.lastEarn) < COOLDOWN){ Swal.fire('Cooldown', 'Tunggu beberapa saat', 'info'); return; }
-    // apply: increase balance and update counters & lastEarn
-    await runTransaction(ref(db, 'users/' + uid + '/balance'), (cur) => (cur||0) + EARN_REWARD);
-    await update(uRef, { earnToday: (data.earnToday||0) + 1, lastEarn: now });
-    startCooldownUI(btnEarn, now, COOLDOWN, 'Menghasilkan (Rp 20.000)');
-    Swal.fire('Berhasil 🎉', 'Reward Rp 20.000 telah dikreditkan', 'success');
+    if((d.earnToday||0) >= EARN_LIMIT) return Swal.fire('Limit','Sudah capai limit harian','warning');
+    if(d.lastEarn && (now - d.lastEarn) < COOLDOWN) return Swal.fire('Cooldown','Tunggu beberapa saat','info');
+
+    // increment balance atomically
+    await runTransaction(ref(db, 'users/'+uid+'/balance'), cur => (cur||0)+EARN_REWARD);
+    await update(uRef, { earnToday: (d.earnToday||0)+1, lastEarn: now });
+    startCooldownBtn(btnEarn, now, COOLDOWN, 'Menghasilkan (Rp 20.000)');
+    Swal.fire('Berhasil','Rp 20.000 telah dikreditkan','success');
+    return;
   }
 
-  if(type === 'bonus1'){
-    if((data.bonus1Today||0) >= XTRA_LIMIT){ Swal.fire('Limit Tercapai', 'Bonus1 sudah habis hari ini', 'warning'); return; }
-    if(data.lastBonus1 && (now - data.lastBonus1) < COOLDOWN){ Swal.fire('Cooldown', 'Tunggu beberapa saat', 'info'); return; }
-    await runTransaction(ref(db, 'users/' + uid + '/balance'), (cur) => (cur||0) + XTRA_REWARD);
-    await update(uRef, { bonus1Today: (data.bonus1Today||0) + 1, lastBonus1: now });
-    startCooldownUI(btnBonus1, now, COOLDOWN, 'Xstra Bonus 1 (Rp 10.000)');
-    Swal.fire('Berhasil 🎉', 'Bonus Rp 10.000 telah dikreditkan', 'success');
+  // bonus1
+  if(type === 'x1'){
+    if((d.bonus1Today||0) >= XTRA_LIMIT) return Swal.fire('Limit','Bonus1 sudah capai hari ini','warning');
+    if(d.lastBonus1 && (now - d.lastBonus1) < COOLDOWN) return Swal.fire('Cooldown','Tunggu beberapa saat','info');
+
+    await runTransaction(ref(db, 'users/'+uid+'/balance'), cur => (cur||0)+XTRA_REWARD);
+    await update(uRef, { bonus1Today: (d.bonus1Today||0)+1, lastBonus1: now });
+    startCooldownBtn(btnX1, now, COOLDOWN, 'Xstra Bonus 1 (Rp 10.000)');
+    Swal.fire('Berhasil','Rp 10.000 telah dikreditkan','success');
+    return;
   }
 
-  if(type === 'bonus2'){
-    if((data.bonus2Today||0) >= XTRA_LIMIT){ Swal.fire('Limit Tercapai', 'Bonus2 sudah habis hari ini', 'warning'); return; }
-    if(data.lastBonus2 && (now - data.lastBonus2) < COOLDOWN){ Swal.fire('Cooldown', 'Tunggu beberapa saat', 'info'); return; }
-    await runTransaction(ref(db, 'users/' + uid + '/balance'), (cur) => (cur||0) + XTRA_REWARD);
-    await update(uRef, { bonus2Today: (data.bonus2Today||0) + 1, lastBonus2: now });
-    startCooldownUI(btnBonus2, now, COOLDOWN, 'Xstra Bonus 2 (Rp 10.000)');
-    Swal.fire('Berhasil 🎉', 'Bonus Rp 10.000 telah dikreditkan', 'success');
+  // bonus2
+  if(type === 'x2'){
+    if((d.bonus2Today||0) >= XTRA_LIMIT) return Swal.fire('Limit','Bonus2 sudah capai hari ini','warning');
+    if(d.lastBonus2 && (now - d.lastBonus2) < COOLDOWN) return Swal.fire('Cooldown','Tunggu beberapa saat','info');
+
+    await runTransaction(ref(db, 'users/'+uid+'/balance'), cur => (cur||0)+XTRA_REWARD);
+    await update(uRef, { bonus2Today: (d.bonus2Today||0)+1, lastBonus2: now });
+    startCooldownBtn(btnX2, now, COOLDOWN, 'Xstra Bonus 2 (Rp 10.000)');
+    Swal.fire('Berhasil','Rp 10.000 telah dikreditkan','success');
+    return;
   }
 }
 
-// button handlers guarded by auth
+// button click handlers
 btnEarn.addEventListener('click', async ()=>{
-  const u = auth.currentUser;
-  if(!u) return Swal.fire('Login dulu','Silakan login untuk klaim','info');
-  await claimReward(u.uid, 'earn');
+  const u = auth.currentUser; if(!u) return Swal.fire('Login','Silakan login','info');
+  await claim(u.uid, 'earn');
 });
-btnBonus1.addEventListener('click', async ()=>{
-  const u = auth.currentUser;
-  if(!u) return Swal.fire('Login dulu','Silakan login untuk klaim','info');
-  await claimReward(u.uid, 'bonus1');
-});
-btnBonus2.addEventListener('click', async ()=>{
-  const u = auth.currentUser;
-  if(!u) return Swal.fire('Login dulu','Silakan login untuk klaim','info');
-  await claimReward(u.uid, 'bonus2');
-});
+btnX1.addEventListener('click', async ()=>{ const u = auth.currentUser; if(!u) return Swal.fire('Login','Silakan login','info'); await claim(u.uid, 'x1'); });
+btnX2.addEventListener('click', async ()=>{ const u = auth.currentUser; if(!u) return Swal.fire('Login','Silakan login','info'); await claim(u.uid, 'x2'); });
 
-/* Small polish: hide loading bar progress update to 100% smoothly (already CSS animated),
-   but also animate set width for older browsers */
-(function animateLoadingBar(){ // fill gradually if CSS didn't
-  let w = 0; const iv = setInterval(()=>{ w += 2; if(w>100){ w=100; clearInterval(iv); } loadingBar.style.width = w + '%'; }, 60);
-})();
+// Admin panel logic
+closeAdmin.addEventListener('click', ()=> adminPanel.style.display = 'none');
+btnFetchUser.addEventListener('click', async ()=>{
+  const q = queryUid.value.trim();
+  if(!q) return adminInfo.innerText = 'Masukkan UID atau email.';
+  // try find by uid first
+  let snap = await get(ref(db, 'users/'+q));
+  if(!snap.exists()){
+    // search by email (inefficient - for demo only)
+    const all = await get(ref(db, 'users'));
+    if(all.exists()){
+      const users = all.val();
+      let foundUid = null, foundData = null;
+      for(const k of Object.keys(users)){
+        if(users[k].email && users[k].email.toLowerCase() === q.toLowerCase()){
+          foundUid = k; foundData = users[k]; break;
+        }
+      }
+      if(!foundUid) return adminInfo.innerText = 'User tidak ditemukan.';
+      snap = { exists: ()=>true, val: ()=>foundData, key: foundUid };
+      adminInfo.innerText = `UID: ${foundUid}\nEmail: ${foundData.email}\nBanned: ${foundData.banned}`;
+      adminInfo.dataset.uid = foundUid;
+    } else return adminInfo.innerText = 'User tidak ditemukan.';
+  } else {
+    adminInfo.innerText = `UID: ${q}\nEmail: ${snap.val().email}\nBanned: ${snap.val().banned}`;
+    adminInfo.dataset.uid = q;
+  }
+});
+btnUnban.addEventListener('click', async ()=>{
+  const uid = adminInfo.dataset.uid;
+  if(!uid) return adminInfo.innerText = 'Tidak ada user terpilih.';
+  await update(ref(db, 'users/'+uid), { banned: false });
+  adminInfo.innerText = `UID: ${uid}\nUNBANNED`;
+  Swal.fire('Sukses','User telah di-unban','success');
+});
 
 </script>
 </body>
