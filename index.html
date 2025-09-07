@@ -1,417 +1,230 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>NusaTask — Final Premium</title>
-
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
-<!-- Firebase v8 -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-<style>
-  :root{
-    --bg1:#05060a;--bg2:#07121b;
-    --muted:#9aa7b6;--grad1:#7c5cff;--grad2:#06b6d4;--gold:#FFD700;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Poppins,system-ui,Arial;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:#e6eef6;min-height:100vh;display:flex;justify-content:center}
-  .wrap{width:100%;max-width:480px;padding:20px}
-  /* splash */
-  #splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#020305,#06101b);z-index:9999}
-  .logoNT{font-family:Orbitron;font-size:56px;background:linear-gradient(90deg,var(--grad1),var(--grad2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:logoPulse 1.6s ease-in-out infinite}
-  @keyframes logoPulse{0%{transform:scale(.98)}50%{transform:scale(1.03)}100%{transform:scale(.98)}}
-  .splashText{color:var(--muted);margin-top:12px}
-  header{display:flex;flex-direction:column;align-items:center;margin-top:46px}
-  .brand{font-family:Orbitron;font-size:28px;background:linear-gradient(90deg,var(--grad1),var(--grad2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-  .tag{color:var(--muted);font-size:13px;margin-top:6px}
-  .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:16px;padding:18px;margin-top:18px;backdrop-filter:blur(8px);box-shadow:0 14px 40px rgba(0,0,0,0.6)}
-  .top{display:flex;justify-content:space-between;align-items:center}
-  .saldo{color:var(--gold);font-weight:800}
-  .btn{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--grad1),var(--grad2));color:#fff;font-weight:700;cursor:pointer;margin-top:12px;transition:transform .12s,box-shadow .12s}
-  .btn:active{transform:translateY(1px)}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-  .btn.disabled{opacity:.52;pointer-events:none}
-  .progress-wrap{height:12px;background:rgba(255,255,255,0.04);border-radius:12px;overflow:hidden;margin-top:10px}
-  .progress{height:100%;width:0;background:linear-gradient(90deg,var(--grad1),var(--grad2));background-size:200% 100%;animation:move 2s linear infinite;transition:width .45s ease}
-  @keyframes move{0%{background-position:0 0}100%{background-position:200% 0}}
-  .small{font-size:13px;color:var(--muted);margin-top:8px;display:block}
-  /* modal */
-  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:999}
-  .modal .box{width:min(420px,92%);background:linear-gradient(180deg,#07101a,#0c1722);padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
-  .input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:inherit;margin-top:10px}
-  /* toast */
-  #toast{position:fixed;left:50%;top:28px;transform:translateX(-50%);min-width:220px;padding:12px 16px;border-radius:12px;background:linear-gradient(90deg,var(--grad1),var(--grad2));color:#fff;display:none;z-index:10000;text-align:center;font-weight:700}
-  /* warning + banned */
-  #warningWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);z-index:9998}
-  .warnBox{background:#071224;padding:20px;border-radius:12px;color:#e6eef6;text-align:center;width:min(460px,92%)}
-  #banned{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.96);z-index:10001;color:#ff7b7b;text-align:center;padding:20px}
-  @media(max-width:460px){ .logoNT{font-size:44px} }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NusaTask - Earning</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0e1220; font-family: 'Poppins', sans-serif; color: white; }
+    .card { max-width: 420px; margin: 20px auto; padding: 20px; border-radius: 20px; background: #151b2b; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    .saldo-box { background: linear-gradient(135deg, #8e2de2, #4a00e0); border-radius: 15px; text-align: center; padding: 30px 20px; margin-bottom: 20px; }
+    .saldo-box h2 { font-size: 1rem; font-weight: 400; }
+    .saldo-box h1 { font-size: 2rem; margin-top: 5px; font-weight: 600; }
+    .section-title { font-size: 1.1rem; margin: 10px 0; font-weight: 600; }
+    .btn { display: block; width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: none; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform .2s ease, opacity .2s ease; }
+    .btn:hover { transform: scale(1.03); opacity: .9; }
+    .btn-green { background: linear-gradient(135deg, #11998e, #38ef7d); color: white; }
+    .btn-disabled { background: #555 !important; cursor: not-allowed; }
+  </style>
 </head>
 <body>
 
-<!-- Splash -->
-<div id="splash">
-  <div class="logoNT">NT</div>
-  <div class="splashText">Menghubungkan NusaTask — Silakan tunggu...</div>
-</div>
-
-<div class="wrap">
-  <header>
-    <div class="brand">NusaTask</div>
-    <div class="tag">Premium • Secure</div>
-  </header>
-
   <div class="card">
-    <div class="top">
-      <div>
-        <div style="font-weight:800">Dashboard</div>
-        <div class="small">Tekan tombol untuk mengumpulkan. Cooldown 3 menit.</div>
+    <!-- Form Login / Register -->
+    <div id="authBox">
+      <h2 class="text-lg font-bold mb-2">Login / Register</h2>
+      <input id="email" type="email" placeholder="Email" class="w-full p-2 mb-2 rounded text-black">
+      <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-2 rounded text-black">
+      <button id="btnRegister" class="btn btn-green">Register + Login</button>
+      <button id="btnLogin" class="btn btn-green">Login</button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainBox" style="display:none;">
+      <div class="saldo-box">
+        <h2>Saldo Anda</h2>
+        <h1 id="saldo">Rp0</h1>
       </div>
-      <div class="saldo">Saldo: <span id="saldo">0</span></div>
+
+      <div class="section-title">Tugas Harian</div>
+      <button id="btnTask1" class="btn btn-green">Kerjakan Tugas 1</button>
     </div>
-
-    <div style="margin-top:18px">
-      <button id="earnBtn" class="btn">Earn (+1)</button>
-      <div class="progress-wrap"><div id="earnBar" class="progress"></div></div>
-      <div class="small">Terpakai hari ini: <span id="earnUsed">0</span>/<span id="earnMax">25</span></div>
-
-      <button id="bonusBtn" class="btn">Xstra Bonus (+30)</button>
-      <div class="progress-wrap"><div id="bonusBar" class="progress"></div></div>
-      <div class="small">Terpakai hari ini: <span id="bonusUsed">0</span>/<span id="bonusMax">25</span></div>
-    </div>
-
-    <div style="height:10px"></div>
-    <div class="small">Jika dibanned hubungi admin: <a href="https://t.me/nusataskproject" style="color:var(--grad2)">t.me/nusataskproject</a></div>
   </div>
-</div>
 
-<!-- Auth modal -->
-<div id="authModal" class="modal" aria-hidden="true">
-  <div class="box">
-    <h3 style="font-family:Orbitron;margin:0 0 8px 0">Masuk / Daftar</h3>
-    <input id="mEmail" class="input" type="email" placeholder="Email">
-    <input id="mPass" class="input" type="password" placeholder="Password (min 6)">
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button id="btnLogin" class="btn" style="flex:1">Login</button>
-      <button id="btnRegister" class="btn ghost" style="flex:1">Register</button>
-    </div>
-    <div class="small" style="margin-top:10px">Dengan mendaftar, segala bentuk hack/nuyul akan dibanned otomatis.</div>
-  </div>
-</div>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { 
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getDatabase, ref, onValue, runTransaction, get, set } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-<!-- Warning after register -->
-<div id="warningWrap">
-  <div class="warnBox">
-    <div style="font-weight:800;font-size:18px">Peringatan Penting</div>
-    <div class="small" style="margin-top:8px">Segala bentuk hack / multi-akun dari 1 device atau 1 IP akan menyebabkan banned otomatis.</div>
-    <div style="margin-top:14px"><button id="continueBtn" class="btn disabled">LANJUTKAN (5s)</button></div>
-  </div>
-</div>
+    // 🔹 Config Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdlvPMWThdEUk2D92Tg_mQSHbGO4LG2AE",
+      authDomain: "nusa-7a52a.firebaseapp.com",
+      projectId: "nusa-7a52a",
+      storageBucket: "nusa-7a52a.firebasestorage.app",
+      messagingSenderId: "72016839114",
+      appId: "1:72016839114:web:0bc8978a826619f7ad8f33",
+      measurementId: "G-HBZN4WGKWX"
+    };
 
-<!-- Toast -->
-<div id="toast"></div>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-<!-- Banned overlay -->
-<div id="banned">
-  <div style="font-weight:800;font-size:20px">🚫 AKUN DIBANNED</div>
-  <div class="small" style="margin-top:8px">Hubungi admin: <a href="https://t.me/nusataskproject" style="color:var(--grad2)">t.me/nusataskproject</a></div>
-</div>
-
-<script>
-/* ---------------- CONFIG ---------------- */
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
-  authDomain: "nusataskproject.firebaseapp.com",
-  databaseURL: "https://nusataskproject-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "nusataskproject",
-  storageBucket: "nusataskproject.firebasestorage.app",
-  messagingSenderId: "409602188456",
-  appId: "1:409602188456:web:6302d3030b763324e28e9d",
-  measurementId: "G-9389QL1WRE"
-};
-firebase.initializeApp(FIREBASE_CONFIG);
-const auth = firebase.auth();
-const rdb = firebase.database();
-const fs = firebase.firestore();
-
-/* ---------------- CONSTANTS ---------------- */
-const COOLDOWN = 3 * 60 * 1000; // 3 menit
-const EARN_MAX = 25;
-const BONUS_MAX = 25;
-
-/* ---------------- UI refs ---------------- */
-const splash = document.getElementById('splash');
-const authModal = document.getElementById('authModal');
-const mEmail = document.getElementById('mEmail');
-const mPass = document.getElementById('mPass');
-const btnLogin = document.getElementById('btnLogin');
-const btnRegister = document.getElementById('btnRegister');
-const toastEl = document.getElementById('toast');
-const warningWrap = document.getElementById('warningWrap');
-const continueBtn = document.getElementById('continueBtn');
-const bannedEl = document.getElementById('banned');
-
-const saldoEl = document.getElementById('saldo');
-const earnBtn = document.getElementById('earnBtn');
-const bonusBtn = document.getElementById('bonusBtn');
-const earnBar = document.getElementById('earnBar');
-const bonusBar = document.getElementById('bonusBar');
-const earnUsedEl = document.getElementById('earnUsed');
-const bonusUsedEl = document.getElementById('bonusUsed');
-document.getElementById('earnMax').innerText = EARN_MAX;
-document.getElementById('bonusMax').innerText = BONUS_MAX;
-
-/* ---------------- helpers ---------------- */
-function showToast(txt, t=2600){ toastEl.innerText = txt; toastEl.style.display='block'; setTimeout(()=>toastEl.style.display='none', t); }
-function getDeviceId(){ let id = localStorage.getItem('nusatask_device'); if(!id){ id='dev-'+Math.random().toString(36).slice(2,12); localStorage.setItem('nusatask_device', id);} return id; }
-const deviceId = getDeviceId();
-
-async function fetchIP(){ try{ const res = await fetch('https://api.ipify.org?format=json'); const j = await res.json(); return j.ip || 'unknown'; } catch { return 'unknown'; } }
-
-/* server-time offset (cache) */
-let _offset = null;
-async function getServerTime(){
-  if(_offset === null){
-    const snap = await rdb.ref('.info/serverTimeOffset').once('value');
-    _offset = snap.val() || 0;
-  }
-  return Date.now() + _offset;
-}
-
-/* ---------------- auth UI ---------------- */
-function openAuth(){ authModal.style.display='flex'; mEmail.focus(); }
-function closeAuth(){ authModal.style.display='none'; }
-
-btnLogin.addEventListener('click', async ()=>{
-  const em = mEmail.value.trim(), pw = mPass.value;
-  if(!em || pw.length < 6){ showToast('Email & password minimal 6 karakter'); return; }
-  showToast('Masuk…');
-  try{ await auth.signInWithEmailAndPassword(em,pw); closeAuth(); }
-  catch(e){ showToast('Login gagal: '+e.message,4000); console.error(e); }
-});
-btnRegister.addEventListener('click', async ()=>{
-  const em = mEmail.value.trim(), pw = mPass.value;
-  if(!em || pw.length < 6){ showToast('Email & password minimal 6 karakter'); return; }
-  showToast('Mendaftar…');
-  try{
-    await auth.createUserWithEmailAndPassword(em,pw);
-    localStorage.setItem('nusatask_justRegistered','1');
-    closeAuth();
-  }catch(e){ showToast('Register gagal: '+e.message,4000); console.error(e); }
-});
-
-/* ---------------- security checks ---------------- */
-async function performSecurityChecks(uid){
-  const ip = await fetchIP();
-  const userRef = rdb.ref('users/'+uid);
-
-  // device binding check
-  const devSnap = await rdb.ref('devices/'+deviceId).once('value');
-  if(devSnap.exists() && devSnap.val().uid !== uid){
-    await userRef.set({banned:true});
-    return {ok:false,reason:'device_conflict'};
-  }
-
-  // ip check
-  const ipRoot = rdb.ref('iplog/'+ip);
-  const ipSnap = await ipRoot.once('value');
-  if(ipSnap.exists()){
-    const keys = Object.keys(ipSnap.val()||{});
-    for(const otherUid of keys){
-      if(otherUid === uid) continue;
-      const otherDeviceSnap = await rdb.ref('users/'+otherUid+'/deviceId').once('value');
-      const otherDevice = otherDeviceSnap.exists()?otherDeviceSnap.val():null;
-      // strict policy: one device = one account, and one IP cannot host multiple different devices/accounts
-      if(otherDevice === deviceId){
-        await userRef.set({banned:true}); return {ok:false,reason:'multi_email_same_device'};
-      } else {
-        await userRef.set({banned:true}); return {ok:false,reason:'ip_conflict'};
+    // 🔹 Ambil IP Publik
+    async function getUserIP() {
+      try {
+        const res = await fetch("https://api.ipify.org?format=json");
+        const data = await res.json();
+        return data.ip;
+      } catch {
+        return "0.0.0.0";
       }
     }
-  }
 
-  // bind device & log ip
-  await rdb.ref('devices/'+deviceId).set({uid,createdAt:Date.now()});
-  await ipRoot.child(uid).set({ts:Date.now()});
-  return {ok:true,ip};
-}
+    // 🔹 Anti Tuyul Security
+    async function checkSecurity(uid) {
+      const ip = await getUserIP();
+      const deviceId = uid + navigator.userAgent + screen.width + "x" + screen.height;
+      const today = new Date().toISOString().split("T")[0];
+      const secRef = ref(db, "users/" + uid + "/security");
 
-/* ---------------- ensure user init (prevents false limit on first use) ---------------- */
-async function ensureUserInit(uid, ip){
-  const userRef = rdb.ref('users/'+uid);
-  const snap = await userRef.once('value');
-  const serverNow = await getServerTime();
-  if(!snap.exists()){
-    const base = {
-      email: auth.currentUser.email || null,
-      balance: 0,
-      banned: false,
-      deviceId,
-      ip: ip || 'unknown',
-      earnUsedToday: 0,
-      bonusUsedToday: 0,
-      nextEarnAt: 0,
-      nextBonusAt: 0,
-      lastResetAt: serverNow,
-      createdAt: serverNow
-    };
-    await userRef.set(base);
-    return base;
-  } else {
-    const data = snap.val();
-    const updates = {};
-    if(!('balance' in data)) updates.balance = 0;
-    if(!('banned' in data)) updates.banned = false;
-    if(!('deviceId' in data)) updates.deviceId = deviceId;
-    if(!('earnUsedToday' in data)) updates.earnUsedToday = 0;
-    if(!('bonusUsedToday' in data)) updates.bonusUsedToday = 0;
-    if(!('nextEarnAt' in data)) updates.nextEarnAt = 0;
-    if(!('nextBonusAt' in data)) updates.nextBonusAt = 0;
-    if(!('lastResetAt' in data)) updates.lastResetAt = serverNow;
-    if(Object.keys(updates).length) await userRef.update(updates);
-    return Object.assign({}, data, updates);
-  }
-}
+      const snap = await get(secRef);
+      let secData = snap.exists() ? snap.val() : { ipHistory: {} };
 
-/* ---------------- auth state handler ---------------- */
-let currentRef = null;
-auth.onAuthStateChanged(async user=>{
-  if(!user){
-    // hide splash after small delay then show modal
-    setTimeout(()=>{ if(splash) splash.style.display='none'; }, 700);
-    setTimeout(()=>openAuth(), 900);
-    return;
-  }
-  closeAuth();
-  // hide splash quickly
-  if(splash) splash.style.display='none';
-  const uid = user.uid;
-  const sec = await performSecurityChecks(uid);
-  if(!sec.ok){ showBanned(); return; }
-  await ensureUserInit(uid, sec.ip);
-  if(localStorage.getItem('nusatask_justRegistered')==='1'){
-    localStorage.removeItem('nusatask_justRegistered');
-    await showWarningFlow();
-  }
-  startUserListener(uid);
-});
+      if (secData.banned) { showBanned(); return false; }
 
-/* ---------------- warning flow ---------------- */
-async function showWarningFlow(){
-  warningWrap.style.display='flex';
-  continueBtn.disabled = true; continueBtn.classList.add('disabled');
-  let t=5;
-  while(t>0){ continueBtn.innerText = `LANJUTKAN (${t}s)`; await new Promise(r=>setTimeout(r,1000)); t--; }
-  continueBtn.innerText = 'LANJUTKAN'; continueBtn.disabled=false; continueBtn.classList.remove('disabled');
-  await new Promise(resolve=>{ continueBtn.onclick = ()=>{ warningWrap.style.display='none'; continueBtn.onclick=null; resolve(); }; });
-}
+      let ips = secData.ipHistory[today] || [];
 
-/* ---------------- realtime listener ---------------- */
-async function startUserListener(uid){
-  if(currentRef) currentRef.off();
-  currentRef = rdb.ref('users/'+uid);
-  currentRef.on('value', async snap=>{
-    const data = snap.val(); if(!data) return;
-    if(data.banned){ showBanned(); return; }
+      if (!ips.includes(ip)) {
+        if (ips.length >= 2) {
+          await set(secRef, { ...secData, banned: true });
+          showBanned();
+          return false;
+        }
+        ips.push(ip);
+      }
 
-    // server-based daily reset (06:00)
-    const serverNow = await getServerTime();
-    const resetBoundary = (()=>{ const d=new Date(serverNow); d.setHours(6,0,0,0); if(serverNow < d.getTime()) d.setDate(d.getDate()-1); return d.getTime(); })();
-    if(!data.lastResetAt || data.lastResetAt < resetBoundary){
-      await currentRef.update({earnUsedToday:0,bonusUsedToday:0,lastResetAt:serverNow});
-      data.earnUsedToday = 0; data.bonusUsedToday = 0;
+      const allUsersRef = ref(db, "users");
+      const allUsersSnap = await get(allUsersRef);
+      if (allUsersSnap.exists()) {
+        const users = allUsersSnap.val();
+        for (let otherId in users) {
+          if (otherId !== uid && users[otherId].security?.ipHistory?.[today]?.includes(ip)) {
+            await set(secRef, { ...secData, banned: true });
+            showBanned();
+            return false;
+          }
+        }
+      }
+
+      secData.deviceId = deviceId;
+      secData.ipHistory[today] = ips;
+      await set(secRef, secData);
+      return true;
     }
 
-    // update UI
-    saldoEl.innerText = data.balance || 0;
-    earnUsedEl.innerText = data.earnUsedToday || 0;
-    bonusUsedEl.innerText = data.bonusUsedToday || 0;
-    earnBar.style.width = ((data.earnUsedToday||0)/EARN_MAX*100) + '%';
-    bonusBar.style.width = ((data.bonusUsedToday||0)/BONUS_MAX*100) + '%';
+    // 🔹 Overlay Banned
+    function showBanned() {
+      document.body.innerHTML = `
+        <div style="background:#000c;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;text-align:center;z-index:9999;">
+          <h1 style="font-size:2rem;color:red;">❌ Akun anda di banned</h1>
+          <p>Hubungi admin</p>
+          <a href="https://t.me/nusataskproject" style="color:#00aced;font-size:1.2rem;">t.me/nusataskproject</a>
+        </div>
+      `;
+    }
 
-    // cooldown control using server time
-    const serverNow2 = await getServerTime();
-    if(serverNow2 < (data.nextEarnAt||0)) earnBtn.classList.add('disabled'); else earnBtn.classList.remove('disabled');
-    if(serverNow2 < (data.nextBonusAt||0)) bonusBtn.classList.add('disabled'); else bonusBtn.classList.remove('disabled');
-  });
-}
+    // 🔹 Register
+    document.getElementById("btnRegister").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+      createUserWithEmailAndPassword(auth, email, pass)
+        .then(() => console.log("Registrasi berhasil"))
+        .catch(err => alert(err.message));
+    });
 
-/* ---------------- write history to Firestore (best-effort) ---------------- */
-async function writeHistory(doc){
-  try{ await fs.collection('transactions').add(doc); } catch(e){ console.warn('Firestore backup failed', e); }
-}
+    // 🔹 Login
+    document.getElementById("btnLogin").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, pass)
+        .catch(err => alert(err.message));
+    });
 
-/* ---------------- earn & bonus actions (transaction) ---------------- */
-earnBtn.addEventListener('click', async ()=>{
-  const user = auth.currentUser; if(!user){ showToast('Silakan login'); openAuth(); return; }
-  if(earnBtn.classList.contains('disabled')){ showToast('Masih cooldown atau limit'); return; }
-  const userRef = rdb.ref('users/'+user.uid);
-  const serverNow = await getServerTime();
+    // 🔹 Listener Auth
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const uid = user.uid;
 
-  userRef.transaction(data=>{
-    if(!data) return;
-    // in-transaction reset (safety)
-    const resetBoundary = (()=>{ const d=new Date(serverNow); d.setHours(6,0,0,0); if(serverNow < d.getTime()) d.setDate(d.getDate()-1); return d.getTime(); })();
-    if(!data.lastResetAt || data.lastResetAt < resetBoundary){ data.earnUsedToday=0; data.bonusUsedToday=0; data.lastResetAt = serverNow; }
-    if((data.earnUsedToday||0) >= EARN_MAX) return;
-    if(serverNow < (data.nextEarnAt||0)) return;
-    data.balance = (data.balance||0) + 1;
-    data.earnUsedToday = (data.earnUsedToday||0) + 1;
-    data.nextEarnAt = serverNow + COOLDOWN;
-    data.lastActionAt = serverNow;
-    return data;
-  }, async (err, committed, snapshot)=>{
-    if(err){ console.error(err); showToast('Kesalahan transaksi'); return; }
-    if(!committed){ showToast('Gagal: cooldown/limit'); return; }
-    showToast('+1 berhasil');
-    const doc = { uid:user.uid, type:'earn', amount:1, ts: await getServerTime(), deviceId, ip: await fetchIP(), source:'earn_button' };
-    writeHistory(doc);
-  });
-});
+        const safe = await checkSecurity(uid);
+        if (!safe) return;
 
-bonusBtn.addEventListener('click', async ()=>{
-  const user = auth.currentUser; if(!user){ showToast('Silakan login'); openAuth(); return; }
-  if(bonusBtn.classList.contains('disabled')){ showToast('Masih cooldown atau limit'); return; }
-  const userRef = rdb.ref('users/'+user.uid);
-  const serverNow = await getServerTime();
+        document.getElementById("authBox").style.display = "none";
+        document.getElementById("mainBox").style.display = "block";
 
-  userRef.transaction(data=>{
-    if(!data) return;
-    const resetBoundary = (()=>{ const d=new Date(serverNow); d.setHours(6,0,0,0); if(serverNow < d.getTime()) d.setDate(d.getDate()-1); return d.getTime(); })();
-    if(!data.lastResetAt || data.lastResetAt < resetBoundary){ data.earnUsedToday=0; data.bonusUsedToday=0; data.lastResetAt = serverNow; }
-    if((data.bonusUsedToday||0) >= BONUS_MAX) return;
-    if(serverNow < (data.nextBonusAt||0)) return;
-    data.balance = (data.balance||0) + 30;
-    data.bonusUsedToday = (data.bonusUsedToday||0) + 1;
-    data.nextBonusAt = serverNow + COOLDOWN;
-    data.lastActionAt = serverNow;
-    return data;
-  }, async (err, committed, snapshot)=>{
-    if(err){ console.error(err); showToast('Kesalahan transaksi'); return; }
-    if(!committed){ showToast('Gagal: cooldown/limit'); return; }
-    showToast('+30 berhasil');
-    const doc = { uid:auth.currentUser.uid, type:'bonus', amount:30, ts: await getServerTime(), deviceId, ip: await fetchIP(), source:'bonus_button' };
-    writeHistory(doc);
-  });
-});
+        const saldoRef = ref(db, "users/" + uid + "/saldo");
+        const dailyRef = ref(db, "daily/" + uid);
 
-/* ---------------- banned overlay ---------------- */
-function showBanned(){ bannedEl.style.display='flex'; showToast('Akun dibanned',4000); }
+        onValue(saldoRef, (snap) => {
+          const saldo = snap.exists() ? snap.val() : 0;
+          document.getElementById("saldo").innerText = "Rp" + saldo.toLocaleString("id-ID");
+        });
 
-/* ---------------- initial flow ---------------- */
-window.addEventListener('load', ()=>{
-  // hide splash after short time (allow server-time fetch)
-  setTimeout(()=>{ if(splash) splash.style.display='none'; }, 900);
-  // open auth if not authed
-  setTimeout(()=>{ if(!auth.currentUser) openAuth(); }, 1100);
-});
-</script>
+        // 🔹 Tombol Tugas 1
+        const el = document.getElementById("btnTask1");
+        el.addEventListener("click", async () => {
+          const dailySnap = await get(dailyRef);
+          const dailyData = dailySnap.exists() ? dailySnap.val() : {};
+          const count = dailyData["btnTask1"]?.count || 0;
+          const last = dailyData["btnTask1"]?.last || 0;
+          const now = Date.now();
+
+          if (count >= 20) { alert("❌ Limit harian tercapai."); return; }
+          if (now - last < 120000) { alert("⏳ Masih cooldown, tunggu 2 menit."); return; }
+
+          const ip = await getUserIP();
+
+          runTransaction(saldoRef, (saldo) => (saldo || 0) + 500);
+
+          set(ref(db, `daily/${uid}/btnTask1`), { count: count + 1, last: now });
+
+          // 🔹 Simpan log
+          const today = new Date().toISOString().split("T")[0];
+          const logRef = ref(db, `logs/${uid}/${today}/${Date.now()}`);
+          set(logRef, {
+            task: "btnTask1",
+            reward: 500,
+            ip: ip,
+            time: new Date().toISOString()
+          });
+
+          startCooldown(el, 120);
+        });
+
+        function startCooldown(button, seconds) {
+          button.disabled = true;
+          button.classList.add("btn-disabled");
+          let remaining = seconds;
+          const original = button.innerText;
+          const interval = setInterval(() => {
+            button.innerText = `Cooldown ${remaining}s`;
+            remaining--;
+            if (remaining < 0) {
+              clearInterval(interval);
+              button.disabled = false;
+              button.classList.remove("btn-disabled");
+              button.innerText = original;
+            }
+          }, 1000);
+        }
+
+        // 🔹 Reset Daily 03:00 WIB
+        function checkResetDaily() {
+          const now = new Date();
+          const resetTime = new Date();
+          resetTime.setHours(3, 0, 0, 0);
+          if (now > resetTime) resetTime.setDate(resetTime.getDate() + 1);
+          const msUntilReset = resetTime - now;
+          setTimeout(() => { set(dailyRef, {}); checkResetDaily(); }, msUntilReset);
+        }
+        checkResetDaily();
+      }
+    });
+  </script>
 </body>
 </html>
