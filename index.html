@@ -1,128 +1,429 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NusaTask - Earning</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NUSA TASK — Bot Earning (Final)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    body { background: #0e1220; font-family: sans-serif; color: white; }
-    .card { max-width: 420px; margin: 20px auto; padding: 20px; border-radius: 20px; background: #151b2b; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-    .saldo-box { background: linear-gradient(135deg, #8e2de2, #4a00e0); border-radius: 15px; text-align: center; padding: 30px 20px; margin-bottom: 20px; }
-    .saldo-box h2 { font-size: 1rem; font-weight: 400; }
-    .saldo-box h1 { font-size: 2rem; margin-top: 5px; font-weight: 600; }
-    .btn { display: block; width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; }
-    .btn-green { background: linear-gradient(135deg, #11998e, #38ef7d); color: white; }
-    .btn-yellow { background: linear-gradient(135deg, #f7971e, #ffd200); color: #111; }
-    .btn-disabled { background: #555 !important; cursor: not-allowed; }
-    .input { width: 100%; padding: 10px; margin: 6px 0; border-radius: 10px; border: none; }
+    :root{
+      --bg:#05060a; --card:#0e1620; --muted:#98a1a8; --accent1:#00ffd0; --accent2:#2b7cff; --glass:rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Poppins,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#03040a 0%, #07101a 100%);color:#e6eef1;-webkit-font-smoothing:antialiased}/* layout */
+.wrap{max-width:980px;margin:28px auto;padding:18px}
+header{display:flex;align-items:center;justify-content:space-between}
+h1{margin:0;font-size:20px}
+.muted{color:var(--muted)}
+
+/* Splash */
+#splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:linear-gradient(180deg,rgba(0,0,0,0.85),rgba(1,6,12,0.9));z-index:120}
+.logo-nt{width:120px;height:120px;border-radius:22px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:44px;color:#021018;background:linear-gradient(135deg,var(--accent1),var(--accent2));box-shadow:0 12px 40px rgba(43,124,255,0.12)}
+.sublabel{color:var(--muted)}
+.progress-bar{width:300px;height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden}
+.progress-bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent1),var(--accent2));border-radius:999px;transition:width 1.6s ease}
+
+/* Glass modal */
+.overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(3,6,10,0.6);backdrop-filter:blur(6px);z-index:200}
+.modal{width:90%;max-width:420px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:22px;border-radius:16px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 60px rgba(2,8,20,0.6)}
+.modal h2{margin:0;color:var(--accent1)}
+.modal p{color:var(--muted);margin-top:8px}
+.field{display:flex;gap:8px;margin-top:12px}
+.field input{flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#0b1116;color:#eaf6f2;outline:none;font-size:15px}
+.field .icon{width:44px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border-radius:10px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;border:none;cursor:pointer;font-weight:700}
+.btn.primary{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#021018}
+.btn.ghost{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
+
+/* Warning box */
+.countdown{display:flex;align-items:center;gap:12px;margin-top:12px}
+.countdown .circle{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,0.02);font-weight:700}
+.countdown p{margin:0;color:var(--muted)}
+
+/* Dashboard */
+.card{background:var(--card);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 30px rgba(2,6,14,0.6)}
+.grid{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-top:18px}
+.avatar{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#071826,#0b2b35);display:flex;align-items:center;justify-content:center;font-weight:800}
+.saldo{font-size:28px;font-weight:800}
+
+/* Buttons */
+.actionBtn{display:block;width:100%;padding:14px;border-radius:12px;border:none;font-weight:800;font-size:16px;cursor:pointer}
+.actionBtn.earn{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#021018}
+.actionBtn.xtra{background:linear-gradient(135deg,#ffd36b,#ff6b88);color:#021018}
+.actionBtn.disabled{opacity:0.45;pointer-events:none}
+.cooldownOverlay{position:absolute;inset:0;border-radius:12px;background:linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.6));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+
+/* history */
+.history{max-height:240px;overflow:auto;margin-top:10px}
+.history .item{padding:10px;border-bottom:1px dashed rgba(255,255,255,0.02)}
+
+/* footer */
+footer{margin-top:18px;color:var(--muted);text-align:center}
+
+/* responsive */
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+
   </style>
 </head>
 <body>
+  <!-- SPLASH -->
+  <div id="splash">
+    <div class="logo-nt">NT</div>
+    <div class="sublabel">NUSA TASK</div>
+    <div class="progress-bar"><i id="splashBar"></i></div>
+  </div>  <!-- REGISTRATION MODAL -->  <div id="registerModal" class="overlay">
+    <div class="modal">
+      <h2>Registrasi NUSA TASK</h2>
+      <p>Masukkan nomor telepon Anda untuk memulai. (contoh: 0812xxxx)</p>
+      <div class="field">
+        <div class="icon">📱</div>
+        <input id="phoneInput" type="tel" inputmode="tel" placeholder="0812xxxx" />
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+        <button id="showTerms" class="btn ghost">Syarat & Ketentuan</button>
+        <button id="doRegister" class="btn primary">Daftar Sekarang</button>
+      </div>
+    </div>
+  </div>  <!-- WARNING MODAL -->  <div id="warnModal" class="overlay">
+    <div class="modal">
+      <h2>Peringatan Anti Kecurangan</h2>
+      <p class="muted">Segala bentuk kecurangan (multi-akun, clone device, manipulasi IP) akan berakibat banned otomatis.</p>
+      <div class="countdown">
+        <div class="circle" id="countCircle">5</div>
+        <div>
+          <p class="muted">Tunggu selama hitungan berikut sebelum melanjutkan.</p>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:14px">
+        <button id="warnContinue" class="btn primary" disabled>Continue</button>
+      </div>
+    </div>
+  </div>  <!-- APP -->  <div class="wrap" id="app" style="display:none">
+    <header>
+      <div>
+        <h1>NUSA TASK</h1>
+        <div class="muted">Bot Earning — dapatkan reward harian</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="avatar">NT</div>
+        <div style="text-align:right">
+          <div id="profilePhone" class="muted">—</div>
+          <div class="small muted">Auto-login aktif</div>
+        </div>
+      </div>
+    </header><div class="grid">
+  <div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="muted">Saldo Anda</div>
+          <div class="saldo" id="saldo">Rp 0</div>
+        </div>
+        <div style="width:220px;position:relative">
+          <button id="btnEarn" class="actionBtn earn">Menghasilkan • Rp20.000</button>
+          <div id="earnOverlay" class="cooldownOverlay" style="display:none">Cooldown</div>
+        </div>
+      </div>
 
-  <!-- 🔑 Form Login/Registrasi -->
-  <div id="authCard" class="card">
-    <h2 class="text-lg font-bold mb-2">Login / Registrasi</h2>
-    <input id="email" type="email" placeholder="Email" class="input" />
-    <input id="password" type="password" placeholder="Password" class="input" />
-    <button onclick="register()" class="btn btn-green">Daftar</button>
-    <button onclick="login()" class="btn btn-yellow">Login</button>
+      <div style="height:12px"></div>
+      <div style="display:flex;gap:12px">
+        <div style="flex:1;position:relative">
+          <button id="btnXtra" class="actionBtn xtra">Xstra Bonus • Rp10.000</button>
+          <div id="xtraOverlay" class="cooldownOverlay" style="display:none">Cooldown</div>
+        </div>
+        <div style="width:120px" class="card small muted">
+          <div style="font-weight:700;text-align:center" id="limitsInfo">0/20 • 0/10</div>
+          <div style="text-align:center;color:var(--muted)">Daily limits</div>
+        </div>
+      </div>
+
+      <div class="history" id="history">
+        <div class="muted">Belum ada aktivitas.</div>
+      </div>
+    </div>
   </div>
 
-  <!-- 💰 Card Saldo + Task -->
-  <div id="appCard" class="card hidden">
-    <div class="saldo-box">
-      <h2>Saldo Anda</h2>
-      <h1 id="saldo">Rp0</h1>
+  <div>
+    <div class="card">
+      <h3>Informasi Akun</h3>
+      <div style="margin-top:10px" class="muted">Nomor, Device ID, IP Publik, Status</div>
+      <div style="margin-top:12px">
+        <div><strong>Nomor:</strong> <span id="infoPhone">—</span></div>
+        <div><strong>Device ID:</strong> <span id="infoDevice">—</span></div>
+        <div><strong>IP Publik:</strong> <span id="infoIP">—</span></div>
+        <div><strong>Status:</strong> <span id="infoStatus">—</span></div>
+      </div>
     </div>
 
-    <div class="section-title font-semibold">Tugas Harian</div>
-    <button onclick="claimTask('btnTask1')" class="btn btn-green">Kerjakan Tugas 1</button>
-    <button onclick="claimTask('btnTask2')" class="btn btn-green">Kerjakan Tugas 2</button>
-
-    <div class="section-title font-semibold">Bonus</div>
-    <button onclick="claimTask('btnBonus1')" class="btn btn-yellow">Ambil Bonus 1</button>
-    <button onclick="claimTask('btnBonus2')" class="btn btn-yellow">Ambil Bonus 2</button>
-
-    <button onclick="logout()" class="btn btn-disabled mt-4">Logout</button>
+    <div class="card" style="margin-top:12px">
+      <h4>Aturan</h4>
+      <div class="muted">• 1 Device = 1 Akun. • Cooldown 3 menit per tombol. • Max 20x (earn) & 10x (xtra) per hari.</div>
+    </div>
   </div>
+</div>
 
-  <script>
-    // 🔹 Supabase Project Config
-    const supabaseUrl = "https://tbxilkpykmkjopvpbpxg.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieGlsa3B5a21ram9wdnBicHhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyMjg4NjYsImV4cCI6MjA3MjgwNDg2Nn0.l5wgscrE3j5iHT62HJklRVigzNa2P2VeaXai_loaTU8";
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+<footer>
+  <div class="muted">NUSA TASK • Versi Final Demo — Jangan deploy ke produksi tanpa audit.</div>
+</footer>
 
-    // ================= AUTH =================
-    async function register() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) return alert("❌ Gagal daftar: " + error.message);
-      alert("✅ Registrasi berhasil, sudah auto login!");
+  </div>  <script type="module">
+    // CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyBpKWInCFVA_4-qyCT4QvW86e1uV5YtEA",
+      authDomain: "nusataskproject-872a1.firebaseapp.com",
+      projectId: "nusataskproject-872a1",
+      storageBucket: "nusataskproject-872a1.firebasestorage.app",
+      messagingSenderId: "669134125045",
+      appId: "1:669134125045:web:840b60f2f987aba8fcd2bc",
+      measurementId: "G-MX4259KDTG",
+      databaseURL: "https://nusataskproject-872a1-default-rtdb.firebaseio.com"
+    };
+
+    // ad links
+    const MONETAG_URL = 'https://example.com/monetag';
+    const ADILA_URL = 'https://example.com/adila';
+
+    // rewards & limits
+    const REWARD_EARN = 20000;
+    const REWARD_XTRA = 10000;
+    const COOLDOWN = 3 * 60 * 1000; // 3 minutes
+    const LIMIT_EARN = 20;
+    const LIMIT_XTRA = 10;
+
+    // Firebase
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+    import { getDatabase, ref, set, get, onValue, update, push, runTransaction } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // helpers
+    const $ = id=>document.getElementById(id);
+    const fmt = n=> 'Rp ' + Number(n||0).toLocaleString('id-ID');
+
+    // device id
+    function getDeviceId(){
+      let id = localStorage.getItem('nusa_device');
+      if(!id){ id = 'd-'+Math.random().toString(36).slice(2,12); localStorage.setItem('nusa_device', id); }
+      return id;
+    }
+    const deviceId = getDeviceId();
+
+    // fetch IP (ipify)
+    async function fetchIP(){
+      try{ const r = await fetch('https://api.ipify.org?format=json'); const j = await r.json(); return j.ip; }catch(e){ return '0.0.0.0'; }
     }
 
-    async function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return alert("❌ Login gagal: " + error.message);
-      alert("✅ Login sukses!");
+    // splash progress
+    const splashBar = $('splashBar');
+    let pct = 0; const splashInt = setInterval(()=>{ pct += Math.random()*40; if(pct>100) pct=100; splashBar.style.width = pct + '%'; if(pct>=100){ clearInterval(splashInt); setTimeout(()=>{ $('splash').style.display='none'; openRegistrationIfNeeded(); },600); } }, 400);
+
+    // registration modal
+    function openRegistrationIfNeeded(){
+      const saved = localStorage.getItem('nusa_phone');
+      if(saved){ initApp(saved); }else{ $('registerModal').style.display='flex'; $('phoneInput').focus(); }
     }
 
-    async function logout() {
-      await supabase.auth.signOut();
-      document.getElementById("authCard").classList.remove("hidden");
-      document.getElementById("appCard").classList.add("hidden");
-    }
+    $('doRegister').addEventListener('click', async ()=>{
+      const phoneRaw = $('phoneInput').value.trim();
+      const phone = phoneRaw.replace(/[^0-9+]/g,'');
+      if(!phone || phone.length < 8){ alert('Masukkan nomor telepon valid.'); return; }
 
-    // ================= TASK & SALDO =================
-    async function claimTask(taskId) {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        alert("Harus login dulu");
-        return;
+      // call IP and perform anti-tuyul quick checks
+      const ip = await fetchIP();
+
+      // check device reuse
+      const deviceRef = ref(db, 'devices/'+deviceId);
+      const devSnap = await get(deviceRef);
+      if(devSnap.exists()){
+        const d = devSnap.val();
+        if(d.phone && d.phone !== phone){
+          // device used by other phone -> auto ban
+          alert('Deteksi kecurangan: device ini sudah terdaftar untuk akun lain. Registrasi ditolak.');
+          await set(ref(db, 'banned/'+phone), { reason:'device-reuse', ts:Date.now(), deviceId, ip });
+          return;
+        }
       }
 
-      const res = await fetch(`${supabaseUrl}/functions/v1/claim-task`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${session.access_token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ taskId })
-      })
+      // IP flood check
+      const ipKey = ip.replace(/\./g,'-');
+      const ipRef = ref(db, 'ips/'+ipKey);
+      const ipSnap = await get(ipRef);
+      let list = ipSnap.exists() ? ipSnap.val().list || [] : [];
+      const now = Date.now();
+      list = list.filter(it=> now - (it.ts||0) < 24*60*60*1000);
+      if(list.length >= 3){ alert('Terlalu banyak pendaftaran dari jaringan ini. Coba jaringan lain.'); return; }
 
-      const result = await res.json()
-      if (result.success) {
-        alert(`🎉 Berhasil klaim! +Rp${result.reward}`)
-        loadSaldo()
-      } else {
-        alert("❌ Gagal: " + result.error)
-      }
-    }
+      // create user
+      const userRef = ref(db, 'users/'+phone);
+      await set(userRef, { phone, deviceId, ip, saldo:0, banned:false, createdAt:now });
+      // mark device
+      await set(deviceRef, { phone, ip, ts:now });
+      // update ip list
+      list.push({ deviceId, ts:now });
+      await set(ipRef, { list });
 
-    async function loadSaldo() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data } = await supabase.from("users").select("saldo").eq("id", user.id).single()
-        document.getElementById("saldo").innerText = "Rp" + (data?.saldo || 0).toLocaleString("id-ID")
-      }
-    }
-
-    // ================= LISTENER AUTH =================
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        document.getElementById("authCard").classList.add("hidden");
-        document.getElementById("appCard").classList.remove("hidden");
-        await loadSaldo();
-      } else {
-        document.getElementById("authCard").classList.remove("hidden");
-        document.getElementById("appCard").classList.add("hidden");
-      }
+      // save local + show warning for 5s
+      localStorage.setItem('nusa_phone', phone);
+      $('registerModal').style.display='none';
+      showWarningThenStart();
     });
-  </script>
 
-</body>
+    // Syarat & Ketentuan (simple)
+    $('showTerms').addEventListener('click', ()=>{ alert('Dengan mendaftar, Anda menyetujui aturan NUSA TASK. Kecurangan berakibat banned.'); });
+
+    // warn modal countdown
+    async function showWarningThenStart(){
+      $('warnModal').style.display='flex';
+      let t=5; $('countCircle').textContent = t; const iv = setInterval(()=>{ t--; $('countCircle').textContent = t; if(t<=0){ clearInterval(iv); $('warnContinue').disabled=false; $('warnContinue').textContent='Continue'; } },1000);
+      // also show a subtle progress visual on circle
+    }
+
+    $('warnContinue').addEventListener('click', ()=>{
+      $('warnModal').style.display='none'; initApp(localStorage.getItem('nusa_phone'));
+    });
+
+    // main app logic
+    async function initApp(phone){
+      $('app').style.display='block';
+      $('profilePhone').textContent = phone;
+      $('infoPhone').textContent = phone;
+      $('infoDevice').textContent = deviceId;
+
+      const ip = await fetchIP(); $('infoIP').textContent = ip;
+
+      const userRef = ref(db,'users/'+phone);
+      const snap = await get(userRef);
+      let user = snap.exists()? snap.val() : { saldo:0 };
+      $('saldo').textContent = fmt(user.saldo || 0);
+      $('infoStatus').textContent = user.banned? 'BANNED' : 'ACTIVE';
+
+      // listen history
+      const histRef = ref(db, 'history/'+phone);
+      const histSnap = await get(histRef);
+      renderHistory(histSnap.exists()? histSnap.val() : null);
+
+      // load daily counters
+      const today = new Date().toISOString().slice(0,10);
+      const dailyRef = ref(db, 'daily/'+phone+'/'+today);
+      const dailySnap = await get(dailyRef);
+      let daily = dailySnap.exists()? dailySnap.val() : { earn:0, xtra:0 };
+      updateLimitsUI(daily);
+
+      // attach buttons
+      const btnE = $('btnEarn'), btnX = $('btnXtra');
+
+      btnE.addEventListener('click', ()=> handleAd('earn'));
+      btnX.addEventListener('click', ()=> handleAd('xtra'));
+
+      // apply cooldown states from counters stored server-side (if exist)
+      const countersRef = ref(db, 'counters/'+phone);
+      const countersSnap = await get(countersRef);
+      const counters = countersSnap.exists()? countersSnap.val() : { earn:{last:0}, xtra:{last:0} };
+      applyCooldownFrom(counters);
+
+      // monitor anti-tuyul periodically
+      setInterval(()=> monitorAntiTuyul(phone, deviceId), 60*1000);
+    }
+
+    function renderHistory(data){
+      const h = $('history');
+      if(!data){ h.innerHTML = '<div class="muted">Belum ada aktivitas.</div>'; return; }
+      const items = Object.values(data).reverse();
+      h.innerHTML = items.map(it=>`<div class="item"><strong>${it.type}</strong> — ${fmt(it.amount)}<br><span class="muted">${new Date(it.ts).toLocaleString()}</span></div>`).join('');
+    }
+
+    function updateLimitsUI(daily){ $('limitsInfo').textContent = `${daily.earn||0}/${LIMIT_EARN} • ${daily.xtra||0}/${LIMIT_XTRA}` }
+
+    async function handleAd(type){
+      const phone = localStorage.getItem('nusa_phone');
+      if(!phone) return alert('User tidak terdaftar.');
+      const today = new Date().toISOString().slice(0,10);
+      const dayRef = ref(db, 'daily/'+phone+'/'+today);
+      const daySnap = await get(dayRef);
+      const daily = daySnap.exists()? daySnap.val() : { earn:0, xtra:0 };
+
+      const now = Date.now();
+      const countersRef = ref(db, 'counters/'+phone+'/'+type);
+      const countersSnap = await get(ref(db, 'counters/'+phone));
+      const counters = countersSnap.exists()? countersSnap.val() : { earn:{last:0}, xtra:{last:0} };
+      const last = (counters && counters[type] && counters[type].last) || 0;
+      if(now - last < COOLDOWN){ const s = Math.ceil((COOLDOWN - (now-last))/1000); return alert('Cooldown aktif. Tunggu '+s+' detik.'); }
+
+      if(type==='earn' && (daily.earn||0) >= LIMIT_EARN){ return alert('Batas harian untuk Menghasilkan telah tercapai.'); }
+      if(type==='xtra' && (daily.xtra||0) >= LIMIT_XTRA){ return alert('Batas harian untuk Xstra telah tercapai.'); }
+
+      // open ad (popup) — reward when closed
+      const url = type==='earn'? MONETAG_URL : ADILA_URL;
+      const w = window.open(url, '_blank');
+      if(!w){ return alert('Pop-up diblokir. Izinkan pop-up lalu coba lagi.'); }
+
+      // start cooldown UI
+      startCooldownUI(type);
+
+      const check = setInterval(async ()=>{
+        if(w.closed){ clearInterval(check);
+          // credit reward atomically
+          const reward = type==='earn'? REWARD_EARN: REWARD_XTRA;
+          await runTransaction(ref(db,'users/'+localStorage.getItem('nusa_phone')+'/saldo'), cur=> (cur||0) + reward);
+          // push history
+          await push(ref(db,'history/'+localStorage.getItem('nusa_phone')), { type: type==='earn'?'Menghasilkan':'Xstra Bonus', amount: reward, ts: Date.now(), deviceId });
+          // update counters
+          await update(ref(db,'counters/'+localStorage.getItem('nusa_phone')+'/'+type), { last: Date.now() });
+          // update daily
+          const todayRef = ref(db,'daily/'+localStorage.getItem('nusa_phone')+'/'+new Date().toISOString().slice(0,10));
+          const dSnap = await get(todayRef);
+          const d = dSnap.exists()? dSnap.val() : { earn:0, xtra:0 };
+          d[type] = (d[type]||0) + 1; await set(todayRef, d);
+
+          // refresh UI
+          const userSnap = await get(ref(db,'users/'+localStorage.getItem('nusa_phone')));
+          $('saldo').textContent = fmt(userSnap.exists()? userSnap.val().saldo : 0);
+          const daySnap2 = await get(ref(db,'daily/'+localStorage.getItem('nusa_phone')+'/'+new Date().toISOString().slice(0,10)));
+          updateLimitsUI(daySnap2.exists()? daySnap2.val() : { earn:0, xtra:0 });
+          const histSnap = await get(ref(db,'history/'+localStorage.getItem('nusa_phone'))); renderHistory(histSnap.exists()? histSnap.val() : null);
+
+          alert('Reward telah dikreditkan!');
+        }
+      },1500);
+    }
+
+    function startCooldownUI(type){
+      const overlay = type==='earn'? $('earnOverlay') : $('xtraOverlay');
+      const btn = type==='earn'? $('btnEarn') : $('btnXtra');
+      overlay.style.display='flex'; btn.classList.add('disabled');
+      setTimeout(()=>{ overlay.style.display='none'; btn.classList.remove('disabled'); }, COOLDOWN);
+    }
+
+    async function applyCooldownFrom(counters){
+      const now = Date.now();
+      ['earn','xtra'].forEach(k=>{
+        const last = (counters && counters[k] && counters[k].last) || 0;
+        const diff = now - last;
+        if(diff < COOLDOWN){
+          const remain = COOLDOWN - diff;
+          // show overlay for remain ms
+          const overlay = k==='earn'? $('earnOverlay') : $('xtraOverlay');
+          const btn = k==='earn'? $('btnEarn') : $('btnXtra');
+          overlay.style.display = 'flex'; btn.classList.add('disabled');
+          setTimeout(()=>{ overlay.style.display='none'; btn.classList.remove('disabled'); }, remain);
+        }
+      });
+    }
+
+    async function monitorAntiTuyul(phone, device){
+      try{
+        const devSnap = await get(ref(db,'devices/'+device));
+        if(devSnap.exists()){
+          const d = devSnap.val(); if(d.phone && d.phone !== phone){ await update(ref(db,'users/'+phone), { banned:true, banReason:'device-reuse' }); alert('Akun dibanned: device reuse terdeteksi.'); }
+        }
+        // IP flood detection
+        const ip = await fetchIP(); const ipKey = ip.replace(/\./g,'-');
+        const ipSnap = await get(ref(db,'ips/'+ipKey));
+        if(ipSnap.exists()){ const list = ipSnap.val().list || []; const unique = Array.from(new Set(list.map(i=>i.deviceId))); if(unique.length>6){ await update(ref(db,'users/'+phone), { flagged:true, flagReason:'ip-flood' }); }
+        }
+      }catch(e){ console.warn('monitorAntiTuyul error', e); }
+    }
+
+  </script></body>
 </html>
