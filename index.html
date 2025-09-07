@@ -3,106 +3,139 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>NusaTask — Final (RTDB + Firestore)</title>
-
+<title>NusaTask — Final Premium</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-<!-- Firebase (v8) -->
+<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <style>
-/* compact premium styling (same look from previous versions) */
-:root{--grad1:#8b5cf6;--grad2:#06b6d4;--grad3:#10b981;--gold:#FFD700;--muted:#9aa7b6}
-body{margin:0;font-family:Poppins,system-ui;background:linear-gradient(180deg,#07070b,#0f1724);color:#e6eef6;display:flex;justify-content:center;min-height:100vh}
-.container{width:100%;max-width:420px;padding:20px}
-.header{display:flex;flex-direction:column;align-items:center;margin-top:36px;gap:6px}
-.brand{font-family:Orbitron;font-size:28px;background:linear-gradient(90deg,var(--grad1),var(--grad2),var(--grad3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.tag{color:var(--muted);font-size:13px}
-.card{background:linear-gradient(180deg,rgba(255,255,255,0.03),transparent);border-radius:14px;padding:18px;margin-top:18px;backdrop-filter:blur(8px);box-shadow:0 12px 40px rgba(0,0,0,0.6)}
-.top{display:flex;justify-content:space-between;align-items:center}
-.saldo{color:var(--gold);font-weight:800;text-shadow:0 6px 18px rgba(255,215,0,0.06)}
-.btn{width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--grad1),var(--grad2));color:#fff;font-weight:700;cursor:pointer;margin-top:12px;transition:transform .12s}
-.btn:active{transform:translateY(1px)}
-.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-.progress-wrap{height:12px;background:rgba(255,255,255,0.04);border-radius:12px;overflow:hidden;margin-top:10px}
-.progress{height:100%;width:0;background:linear-gradient(90deg,var(--grad1),var(--grad2),var(--grad3));background-size:200% 100%;animation:move 2s linear infinite}
-@keyframes move{0%{background-position:0 0}100%{background-position:200% 0}}
-.muted{color:var(--muted);font-size:13px;margin-top:8px;text-align:center}
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:999}
-.box{width:min(420px,92%);background:linear-gradient(180deg,#061223,#0b1722);padding:18px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.6)}
-.input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:inherit;margin-top:10px}
-.toast{position:fixed;left:50%;top:28px;transform:translateX(-50%);min-width:220px;padding:12px 16px;border-radius:12px;background:linear-gradient(90deg,var(--grad1),var(--grad2));color:#fff;display:none;z-index:10000;text-align:center;font-weight:700}
-.warnbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6),rgba(2,6,23,0.85));z-index:9998}
-.warn{background:#071224;padding:18px;border-radius:12px;color:#e6eef6;max-width:420px;text-align:center}
-#banned{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.96);z-index:10001;color:#ff7b7b;text-align:center;padding:20px}
-.small{font-size:13px;color:var(--muted)}
+  :root{
+    --bg1:#06080b; --bg2:#0d1622;
+    --muted:#9aa7b6; --grad1:#7c5cff; --grad2:#06b6d4; --gold:#FFD700;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Poppins,system-ui,Arial;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:#e6eef6;min-height:100vh;display:flex;justify-content:center}
+  .wrap{width:100%;max-width:460px;padding:20px}
+
+  /* Splash */
+  #splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#030405,#071018);z-index:9999}
+  .logoNT{font-family:Orbitron,system-ui;font-size:56px;background:linear-gradient(90deg,var(--grad1),var(--grad2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:logoPulse 1.6s ease-in-out infinite}
+  @keyframes logoPulse{0%{transform:scale(0.98)}50%{transform:scale(1.03)}100%{transform:scale(0.98)}}
+  .splashText{color:var(--muted);margin-top:12px}
+
+  header{display:flex;flex-direction:column;align-items:center;margin-top:46px}
+  .brand{font-family:Orbitron;font-size:28px;background:linear-gradient(90deg,var(--grad1),var(--grad2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .tag{color:var(--muted);font-size:13px;margin-top:6px}
+
+  .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:16px;padding:18px;margin-top:18px;backdrop-filter:blur(8px);box-shadow:0 14px 40px rgba(0,0,0,0.6)}
+  .top{display:flex;justify-content:space-between;align-items:center}
+  .saldo{color:var(--gold);font-weight:800}
+
+  .btn{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--grad1),var(--grad2));color:#fff;font-weight:700;cursor:pointer;margin-top:12px;transition:transform .12s,box-shadow .12s}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+  .btn.disabled{opacity:.52;pointer-events:none}
+
+  .progress-wrap{height:12px;background:rgba(255,255,255,0.04);border-radius:12px;overflow:hidden;margin-top:10px}
+  .progress{height:100%;width:0;background:linear-gradient(90deg,var(--grad1),var(--grad2));background-size:200% 100%;animation:move 2s linear infinite;transition:width .45s ease}
+  @keyframes move{0%{background-position:0 0}100%{background-position:200% 0}}
+
+  .small{font-size:13px;color:var(--muted);margin-top:8px;display:block}
+
+  /* modal */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:999}
+  .modal .box{width:min(420px,92%);background:linear-gradient(180deg,#07101a,#0c1722);padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+  .input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:inherit;margin-top:10px}
+
+  /* toast */
+  #toast{position:fixed;left:50%;top:28px;transform:translateX(-50%);min-width:220px;padding:12px 16px;border-radius:12px;background:linear-gradient(90deg,var(--grad1),var(--grad2));color:#fff;display:none;z-index:10000;text-align:center;font-weight:700}
+
+  /* warning */
+  #warningWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);z-index:9998}
+  .warnBox{background:#071224;padding:20px;border-radius:12px;color:#e6eef6;text-align:center;width:min(460px,92%)}
+
+  /* banned */
+  #banned{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.96);z-index:10001;color:#ff7b7b;text-align:center;padding:20px}
+
+  @media(max-width:460px){ .logoNT{font-size:44px} }
 </style>
 </head>
 <body>
-
-<div class="container">
-  <div class="header">
-    <div class="brand">NusaTask</div>
-    <div class="tag">Premium • Realtime + Firestore</div>
+  <!-- Splash -->
+  <div id="splash">
+    <div class="logoNT">NT</div>
+    <div class="splashText">Memuat NusaTask — Premium</div>
   </div>
 
-  <div class="card">
-    <div class="top">
-      <div>
-        <div style="font-weight:800">Dashboard</div>
-        <div class="small">Tekan tombol untuk menghasilkan. Cooldown 3 menit.</div>
+  <div class="wrap">
+    <header>
+      <div class="brand">NusaTask</div>
+      <div class="tag">Premium • Secure</div>
+    </header>
+
+    <div class="card">
+      <div class="top">
+        <div>
+          <div style="font-weight:800">Dashboard</div>
+          <div class="small">Tekan tombol untuk mengumpulkan. Cooldown 3 menit.</div>
+        </div>
+        <div class="saldo">Saldo: <span id="saldo">0</span></div>
       </div>
-      <div class="saldo">Saldo: <span id="saldo">0</span></div>
+
+      <div style="margin-top:18px">
+        <button id="earnBtn" class="btn">Earn (+1)</button>
+        <div class="progress-wrap"><div id="earnBar" class="progress"></div></div>
+        <div class="small">Terpakai hari ini: <span id="earnUsed">0</span>/<span id="earnMax">25</span></div>
+
+        <button id="bonusBtn" class="btn">Xstra Bonus (+30)</button>
+        <div class="progress-wrap"><div id="bonusBar" class="progress"></div></div>
+        <div class="small">Terpakai hari ini: <span id="bonusUsed">0</span>/<span id="bonusMax">25</span></div>
+      </div>
+
+      <div style="height:10px"></div>
+      <div class="small">Jika dibanned hubungi admin: <a href="https://t.me/nusataskproject" style="color:var(--grad2)">t.me/nusataskproject</a></div>
     </div>
-
-    <div style="margin-top:18px">
-      <button id="earnBtn" class="btn">🎯 Earn (+1)</button>
-      <div class="progress-wrap"><div id="earnBar" class="progress"></div></div>
-      <div class="small" style="margin-top:8px">Terpakai hari ini: <span id="earnUsed">0</span>/<span id="earnMax">25</span></div>
-
-      <button id="bonusBtn" class="btn">💎 Xstra Bonus (+30)</button>
-      <div class="progress-wrap"><div id="bonusBar" class="progress"></div></div>
-      <div class="small" style="margin-top:8px">Terpakai hari ini: <span id="bonusUsed">0</span>/<span id="bonusMax">25</span></div>
-    </div>
-
-    <div style="height:12px"></div>
-    <div class="small">Jika dibanned hubungi admin: <a href="https://t.me/nusataskproject" style="color:#06b6d4">t.me/nusataskproject</a></div>
   </div>
-</div>
 
-<!-- Auth Modal -->
-<div id="authModal" class="modal" aria-hidden="true">
-  <div class="box">
-    <h3 style="font-family:Orbitron">Masuk / Daftar</h3>
-    <input id="email" class="input" type="email" placeholder="Email">
-    <input id="password" class="input" type="password" placeholder="Password (min 6)">
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button id="loginBtn" class="btn" style="flex:1">Login</button>
-      <button id="registerBtn" class="btn ghost" style="flex:1">Register</button>
+  <!-- Auth modal -->
+  <div id="authModal" class="modal" aria-hidden="true">
+    <div class="box">
+      <h3 style="font-family:Orbitron;margin:0 0 8px 0">Masuk / Daftar</h3>
+      <input id="mEmail" class="input" type="email" placeholder="Email">
+      <input id="mPass" class="input" type="password" placeholder="Password (min 6)">
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="btnLogin" class="btn" style="flex:1">Login</button>
+        <button id="btnRegister" class="btn ghost" style="flex:1">Register</button>
+      </div>
+      <div class="small" style="margin-top:10px">Dengan mendaftar, segala bentuk hack/nuyul akan dibanned otomatis.</div>
     </div>
-    <div class="small" style="margin-top:10px">Dengan mendaftar, segala bentuk hack/nuyul akan dibanned otomatis.</div>
   </div>
-</div>
 
-<!-- Warning after register -->
-<div id="warning" class="warnbox"><div class="warn">
-  <div style="font-weight:800;font-size:18px">Peringatan Penting</div>
-  <div class="small" style="margin-top:8px">Segala bentuk hack / multi-akun dari 1 device atau 1 IP akan menyebabkan banned otomatis.</div>
-  <div style="margin-top:12px"><button id="continueBtn" class="btn disabled">LANJUTKAN (5s)</button></div>
-</div></div>
+  <!-- Warning after register -->
+  <div id="warningWrap">
+    <div class="warnBox">
+      <div style="font-weight:800;font-size:18px">Peringatan Penting</div>
+      <div class="small" style="margin-top:8px">Segala bentuk hack / multi-akun dari 1 device atau 1 IP akan menyebabkan banned otomatis.</div>
+      <div style="margin-top:14px"><button id="continueBtn" class="btn disabled">LANJUTKAN (5s)</button></div>
+    </div>
+  </div>
 
-<!-- Toast -->
-<div id="toast" class="toast"></div>
+  <!-- Toast -->
+  <div id="toast"></div>
 
-<!-- Banned overlay -->
-<div id="banned"><div style="font-weight:800;font-size:20px">🚫 AKUN DIBANNED</div><div class="small" style="margin-top:8px">Hubungi admin: <a href="https://t.me/nusataskproject" style="color:#06b6d4">t.me/nusataskproject</a></div></div>
+  <!-- Banned overlay -->
+  <div id="banned">
+    <div style="font-weight:800;font-size:20px">🚫 AKUN DIBANNED</div>
+    <div class="small" style="margin-top:8px">Hubungi admin: <a href="https://t.me/nusataskproject" style="color:var(--grad2)">t.me/nusataskproject</a></div>
+  </div>
 
 <script>
-/* ================== CONFIG ================== */
-const firebaseConfig = {
+/* CONFIG */
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAUcac_uXdofDbqPwltgb4m7qIPiQhJi0s",
   authDomain: "nusataskproject.firebaseapp.com",
   databaseURL: "https://nusataskproject-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -112,23 +145,25 @@ const firebaseConfig = {
   appId: "1:409602188456:web:6302d3030b763324e28e9d",
   measurementId: "G-9389QL1WRE"
 };
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(FIREBASE_CONFIG);
 const auth = firebase.auth();
 const rdb = firebase.database();
 const fs = firebase.firestore();
 
-/* ============== CONSTANTS & UI ============== */
-const COOLDOWN = 3 * 60 * 1000; // 3 minutes
+/* CONSTANTS */
+const COOLDOWN = 3 * 60 * 1000; // 3 menit
 const EARN_MAX = 25;
 const BONUS_MAX = 25;
 
+/* UI refs */
+const splash = document.getElementById('splash');
 const authModal = document.getElementById('authModal');
-const emailEl = document.getElementById('email');
-const passEl = document.getElementById('password');
-const loginBtn = document.getElementById('loginBtn');
-const registerBtn = document.getElementById('registerBtn');
+const mEmail = document.getElementById('mEmail');
+const mPass = document.getElementById('mPass');
+const btnLogin = document.getElementById('btnLogin');
+const btnRegister = document.getElementById('btnRegister');
 const toastEl = document.getElementById('toast');
-const warningBox = document.getElementById('warning');
+const warningWrap = document.getElementById('warningWrap');
 const continueBtn = document.getElementById('continueBtn');
 const bannedEl = document.getElementById('banned');
 
@@ -142,254 +177,253 @@ const bonusUsedEl = document.getElementById('bonusUsed');
 document.getElementById('earnMax').innerText = EARN_MAX;
 document.getElementById('bonusMax').innerText = BONUS_MAX;
 
-/* ============== Helpers ============== */
-function showToast(txt, t=2500){ toastEl.innerText = txt; toastEl.style.display='block'; setTimeout(()=>toastEl.style.display='none', t); }
-function getDeviceId(){ let d = localStorage.getItem('nusatask_device'); if(!d){ d='dev-'+Math.random().toString(36).slice(2,12); localStorage.setItem('nusatask_device', d); } return d; }
+/* helpers */
+function showToast(txt, t=2800){ toastEl.innerText = txt; toastEl.style.display='block'; setTimeout(()=>toastEl.style.display='none', t); }
+function getDeviceId(){ let id=localStorage.getItem('nusatask_device'); if(!id){ id='dev-'+Math.random().toString(36).slice(2,12); localStorage.setItem('nusatask_device', id);} return id;}
 const deviceId = getDeviceId();
-async function fetchIP(){ try{ const r=await fetch('https://api.ipify.org?format=json'); const j=await r.json(); return j.ip||'unknown'; }catch(e){ return 'unknown'; } }
+async function fetchIP(){ try{ const r=await fetch('https://api.ipify.org?format=json'); const j=await r.json(); return j.ip||'unknown'; }catch(e){ return 'unknown'; }}
 
-/* server time offset cache */
+/* server time helper (cache) */
 let _offset = null;
 async function getServerTime(){
-  if(_offset===null){ const snap = await rdb.ref('.info/serverTimeOffset').once('value'); _offset = snap.val() || 0; }
+  if(_offset === null){
+    const snap = await rdb.ref('.info/serverTimeOffset').once('value');
+    _offset = snap.val() || 0;
+  }
   return Date.now() + _offset;
 }
 
-/* ============== Auth UI actions ============== */
-function openAuth(){ authModal.style.display='flex'; emailEl.focus(); }
+/* show/hide modal */
+function openAuth(){ authModal.style.display='flex'; mEmail.focus(); }
 function closeAuth(){ authModal.style.display='none'; }
-loginBtn.addEventListener('click', async ()=>{
-  const em = emailEl.value.trim(), pw = passEl.value;
-  if(!em || pw.length<6){ showToast('Email & password (min 6)'); return; }
-  showToast('Logging in…');
-  try{ await auth.signInWithEmailAndPassword(em,pw); closeAuth(); } catch(e){ showToast('Login error: '+e.message,4000); }
+
+/* Login / Register */
+btnLogin.addEventListener('click', async ()=>{
+  const em = mEmail.value.trim(), pw = mPass.value;
+  if(!em || pw.length < 6){ showToast('Email & password minimal 6 karakter'); return; }
+  showToast('Masuk…');
+  try{ await auth.signInWithEmailAndPassword(em,pw); closeAuth(); }
+  catch(e){ showToast('Login gagal: '+e.message,4000); }
 });
-registerBtn.addEventListener('click', async ()=>{
-  const em = emailEl.value.trim(), pw = passEl.value;
-  if(!em || pw.length<6){ showToast('Email & password (min 6)'); return; }
-  showToast('Registering…');
+btnRegister.addEventListener('click', async ()=>{
+  const em = mEmail.value.trim(), pw = mPass.value;
+  if(!em || pw.length < 6){ showToast('Email & password minimal 6 karakter'); return; }
+  showToast('Mendaftar…');
   try{
     await auth.createUserWithEmailAndPassword(em,pw);
-    // flag show warning
     localStorage.setItem('nusatask_justRegistered','1');
     closeAuth();
-  }catch(e){ showToast('Register error: '+e.message,4000); }
+  }catch(e){ showToast('Register gagal: '+e.message,4000); }
 });
 
-/* ============== Security checks & init ============== */
+/* Security checks */
 async function performSecurityChecks(uid){
   const ip = await fetchIP();
   const userRef = rdb.ref('users/'+uid);
 
-  // 1) device binding check
+  // device binding check
   const devSnap = await rdb.ref('devices/'+deviceId).once('value');
   if(devSnap.exists() && devSnap.val().uid !== uid){
     await userRef.set({banned:true});
-    return {ok:false, reason:'device_conflict'};
+    return {ok:false,reason:'device_conflict'};
   }
 
-  // 2) ip check
+  // ip check
   const ipRoot = rdb.ref('iplog/'+ip);
   const ipSnap = await ipRoot.once('value');
   if(ipSnap.exists()){
     const keys = Object.keys(ipSnap.val()||{});
     for(const otherUid of keys){
       if(otherUid === uid) continue;
-      // strictly ban multi-account from same IP unless it's the same device (we enforce 1 device=1 account)
       const otherDeviceSnap = await rdb.ref('users/'+otherUid+'/deviceId').once('value');
       const otherDevice = otherDeviceSnap.exists()?otherDeviceSnap.val():null;
+      // strict: one device = one account; multi-account from same device => ban
       if(otherDevice === deviceId){
-        // same device, different UID -> violates one-email-per-device -> ban
         await userRef.set({banned:true});
-        return {ok:false, reason:'multi_email_same_device'};
+        return {ok:false,reason:'multi_email_same_device'};
       } else {
-        // different device but same IP -> ban
+        // different device but same IP -> ban (strict)
         await userRef.set({banned:true});
-        return {ok:false, reason:'ip_conflict'};
+        return {ok:false,reason:'ip_conflict'};
       }
     }
   }
 
-  // 3) bind device & log ip
-  await rdb.ref('devices/'+deviceId).set({uid:uid, createdAt: Date.now()});
-  await ipRoot.child(uid).set({ts: Date.now()});
-  return {ok:true, ip};
+  // bind device and log ip
+  await rdb.ref('devices/'+deviceId).set({uid,createdAt:Date.now()});
+  await ipRoot.child(uid).set({ts:Date.now()});
+  return {ok:true,ip};
 }
 
-/* ============== Auth state handler ============== */
-let currentUserRef = null;
-auth.onAuthStateChanged(async user=>{
-  if(!user){ openAuth(); return; }
-  closeAuth();
-  const uid = user.uid;
+/* init user data (avoid "limit before play") */
+async function ensureUserInit(uid, ip){
   const userRef = rdb.ref('users/'+uid);
-
-  const sec = await performSecurityChecks(uid);
-  if(!sec.ok){ // banned
-    showBanned(); return;
-  }
-
-  // create default user doc if not exist
   const snap = await userRef.once('value');
   const serverNow = await getServerTime();
   if(!snap.exists()){
-    await userRef.set({
-      email: user.email || null,
+    const base = {
+      email: auth.currentUser.email || null,
       balance: 0,
       banned: false,
       deviceId,
-      ip: sec.ip || 'unknown',
+      ip: ip || 'unknown',
       earnUsedToday: 0,
       bonusUsedToday: 0,
       nextEarnAt: 0,
       nextBonusAt: 0,
       lastResetAt: serverNow,
       createdAt: serverNow
-    });
+    };
+    await userRef.set(base);
+    return base;
   } else {
-    // ensure device mapping exists
-    await rdb.ref('devices/'+deviceId).set({uid, createdAt: snap.val().createdAt || serverNow});
-    // update ip if changed
+    // update missing fields safely
     const data = snap.val();
-    if(data.ip !== sec.ip) { await userRef.update({ip: sec.ip}); await rdb.ref('iplog/'+sec.ip+'/'+uid).set({ts:Date.now()}); }
+    const updates = {};
+    if(!('balance' in data)) updates.balance = 0;
+    if(!('banned' in data)) updates.banned = false;
+    if(!('deviceId' in data)) updates.deviceId = deviceId;
+    if(!('earnUsedToday' in data)) updates.earnUsedToday = 0;
+    if(!('bonusUsedToday' in data)) updates.bonusUsedToday = 0;
+    if(!('nextEarnAt' in data)) updates.nextEarnAt = 0;
+    if(!('nextBonusAt' in data)) updates.nextBonusAt = 0;
+    if(!('lastResetAt' in data)) updates.lastResetAt = serverNow;
+    if(Object.keys(updates).length) await userRef.update(updates);
+    return Object.assign({}, data, updates);
   }
-
-  // if just registered show warning then continue
-  if(localStorage.getItem('nusatask_justRegistered')==='1'){
-    localStorage.removeItem('nusatask_justRegistered');
-    await showWarningFlow();
-  }
-
-  // start realtime listener
-  startUserListener(uid);
-});
-
-/* ============== Warning flow ============== */
-async function showWarningFlow(){
-  warningBox.style.display='flex';
-  continueBtn.disabled = true; continueBtn.classList.add('disabled');
-  let t = 5;
-  while(t>0){ continueBtn.innerText = `LANJUTKAN (${t}s)`; await new Promise(r=>setTimeout(r,1000)); t--; }
-  continueBtn.innerText = 'LANJUTKAN'; continueBtn.disabled=false; continueBtn.classList.remove('disabled');
-  await new Promise(resolve => { continueBtn.onclick = ()=>{ warningBox.style.display='none'; continueBtn.onclick=null; resolve(); }; });
 }
 
-/* ============== Real-time user listener ============== */
+/* listen auth state */
+let currentRef = null;
+auth.onAuthStateChanged(async user=>{
+  if(!user){
+    // show auth modal after splash done
+    setTimeout(()=>openAuth(), 700);
+    return;
+  }
+  closeAuth();
+  const uid = user.uid;
+  const sec = await performSecurityChecks(uid);
+  if(!sec.ok){ showBanned(); return; }
+  const base = await ensureUserInit(uid, sec.ip);
+  // show warning if just registered
+  if(localStorage.getItem('nusatask_justRegistered')==='1'){
+    localStorage.removeItem('nusatask_justRegistered');
+    await showWarning();
+  }
+  // start listener
+  startUserListener(uid);
+  // hide splash if still visible
+  if(document.getElementById('splash')) document.getElementById('splash').style.display='none';
+});
+
+/* show warning flow */
+async function showWarning(){
+  warningWrap.style.display='flex';
+  continueBtn.disabled = true; continueBtn.classList.add('disabled');
+  let t=5;
+  while(t>0){ continueBtn.innerText = `LANJUTKAN (${t}s)`; await new Promise(r=>setTimeout(r,1000)); t--; }
+  continueBtn.innerText = 'LANJUTKAN'; continueBtn.disabled=false; continueBtn.classList.remove('disabled');
+  await new Promise(resolve=>{ continueBtn.onclick = ()=>{ warningWrap.style.display='none'; continueBtn.onclick=null; resolve(); }} );
+}
+
+/* user listener */
 async function startUserListener(uid){
-  if(currentUserRef) currentUserRef.off();
-  currentUserRef = rdb.ref('users/'+uid);
-  currentUserRef.on('value', async snap=>{
+  if(currentRef) currentRef.off();
+  currentRef = rdb.ref('users/'+uid);
+  currentRef.on('value', async snap=>{
     const data = snap.val(); if(!data) return;
     if(data.banned){ showBanned(); return; }
 
-    // daily reset (server boundary 06:00)
+    // server-based daily reset (06:00)
     const serverNow = await getServerTime();
     const resetBoundary = (()=>{ const d=new Date(serverNow); d.setHours(6,0,0,0); if(serverNow < d.getTime()) d.setDate(d.getDate()-1); return d.getTime(); })();
     if(!data.lastResetAt || data.lastResetAt < resetBoundary){
-      await currentUserRef.update({earnUsedToday:0, bonusUsedToday:0, lastResetAt: serverNow});
+      await currentRef.update({earnUsedToday:0,bonusUsedToday:0,lastResetAt:serverNow});
       data.earnUsedToday = 0; data.bonusUsedToday = 0;
     }
 
     // update UI
-    saldoEl.innerText = (data.balance||0);
-    earnUsedEl.innerText = data.earnUsedToday||0;
-    bonusUsedEl.innerText = data.bonusUsedToday||0;
-    earnBar.style.width = ((data.earnUsedToday||0)/EARN_MAX*100)+'%';
-    bonusBar.style.width = ((data.bonusUsedToday||0)/BONUS_MAX*100)+'%';
+    saldoEl.innerText = data.balance || 0;
+    earnUsedEl.innerText = data.earnUsedToday || 0;
+    bonusUsedEl.innerText = data.bonusUsedToday || 0;
+    earnBar.style.width = ((data.earnUsedToday||0)/EARN_MAX*100) + '%';
+    bonusBar.style.width = ((data.bonusUsedToday||0)/BONUS_MAX*100) + '%';
 
     // cooldown control
     const serverNow2 = await getServerTime();
-    if(serverNow2 < (data.nextEarnAt||0)) { earnBtn.classList.add('disabled'); } else { earnBtn.classList.remove('disabled'); }
-    if(serverNow2 < (data.nextBonusAt||0)) { bonusBtn.classList.add('disabled'); } else { bonusBtn.classList.remove('disabled'); }
+    if(serverNow2 < (data.nextEarnAt||0)) earnBtn.classList.add('disabled'); else earnBtn.classList.remove('disabled');
+    if(serverNow2 < (data.nextBonusAt||0)) bonusBtn.classList.add('disabled'); else bonusBtn.classList.remove('disabled');
   });
 }
 
-/* ============== Earn & Bonus actions (RTDB transaction) ============== */
-async function writeHistoryToFirestore(doc){
-  try{ await fs.collection('transactions').add(doc); }
-  catch(e){ console.warn('Firestore write failed', e); }
+/* write history to Firestore (best-effort) */
+async function writeHistory(doc){
+  try{ await fs.collection('transactions').add(doc); } catch(e){ console.warn('Firestore backup failed', e); }
 }
 
+/* Earn / Bonus actions using transaction */
 earnBtn.addEventListener('click', async ()=>{
-  const user = auth.currentUser; if(!user) { showToast('Silakan login'); openAuth(); return; }
-  if(earnBtn.classList.contains('disabled')) { showToast('Masih cooldown'); return; }
-  const ref = rdb.ref('users/'+user.uid);
+  const user = auth.currentUser; if(!user){ showToast('Silakan login'); openAuth(); return; }
+  if(earnBtn.classList.contains('disabled')){ showToast('Masih cooldown atau limit'); return; }
+  const userRef = rdb.ref('users/'+user.uid);
   const serverNow = await getServerTime();
 
-  ref.transaction(data=>{
+  userRef.transaction(data=>{
     if(!data) return;
-    // in-transaction reset double-check
+    // ensure daily reset (redundant safe check)
     const resetBoundary = (()=>{ const d=new Date(serverNow); d.setHours(6,0,0,0); if(serverNow < d.getTime()) d.setDate(d.getDate()-1); return d.getTime(); })();
-    if(!data.lastResetAt || data.lastResetAt < resetBoundary){ data.earnUsedToday=0; data.bonusUsedToday=0; data.lastResetAt=serverNow; }
-
-    if((data.earnUsedToday||0) >= EARN_MAX) { return; } // no change
-    if(serverNow < (data.nextEarnAt||0)) { return; } // cooldown
-
+    if(!data.lastResetAt || data.lastResetAt < resetBoundary){ data.earnUsedToday=0; data.bonusUsedToday=0; data.lastResetAt = serverNow; }
+    if((data.earnUsedToday||0) >= EARN_MAX) return;
+    if(serverNow < (data.nextEarnAt||0)) return;
     data.balance = (data.balance||0) + 1;
     data.earnUsedToday = (data.earnUsedToday||0) + 1;
     data.nextEarnAt = serverNow + COOLDOWN;
     data.lastActionAt = serverNow;
     return data;
   }, async (err, committed, snapshot)=>{
-    if(err){ console.error(err); showToast('Terjadi kesalahan'); return; }
-    if(!committed){ showToast('Tidak berhasil: cooldown/limit'); return; }
-    // transaction succeeded -> write history to Firestore (non-critical)
-    const doc = {
-      uid: user.uid,
-      type: 'earn',
-      amount: 1,
-      ts: await getServerTime(),
-      deviceId,
-      ip: await fetchIP(),
-      source: 'button'
-    };
-    writeHistoryToFirestore(doc);
+    if(err){ console.error(err); showToast('Kesalahan transaksi'); return; }
+    if(!committed){ showToast('Gagal: cooldown/limit'); return; }
+    // success
     showToast('+1 berhasil');
+    const doc = { uid:user.uid, type:'earn', amount:1, ts: await getServerTime(), deviceId, ip: await fetchIP(), source:'earn_button' };
+    writeHistory(doc);
   });
 });
 
 bonusBtn.addEventListener('click', async ()=>{
-  const user = auth.currentUser; if(!user) { showToast('Silakan login'); openAuth(); return; }
-  if(bonusBtn.classList.contains('disabled')) { showToast('Bonus masih cooldown'); return; }
-  const ref = rdb.ref('users/'+user.uid);
+  const user = auth.currentUser; if(!user){ showToast('Silakan login'); openAuth(); return; }
+  if(bonusBtn.classList.contains('disabled')){ showToast('Masih cooldown atau limit'); return; }
+  const userRef = rdb.ref('users/'+user.uid);
   const serverNow = await getServerTime();
 
-  ref.transaction(data=>{
+  userRef.transaction(data=>{
     if(!data) return;
     const resetBoundary = (()=>{ const d=new Date(serverNow); d.setHours(6,0,0,0); if(serverNow < d.getTime()) d.setDate(d.getDate()-1); return d.getTime(); })();
-    if(!data.lastResetAt || data.lastResetAt < resetBoundary){ data.earnUsedToday=0; data.bonusUsedToday=0; data.lastResetAt=serverNow; }
-
-    if((data.bonusUsedToday||0) >= BONUS_MAX) { return; }
-    if(serverNow < (data.nextBonusAt||0)) { return; }
-
+    if(!data.lastResetAt || data.lastResetAt < resetBoundary){ data.earnUsedToday=0; data.bonusUsedToday=0; data.lastResetAt = serverNow; }
+    if((data.bonusUsedToday||0) >= BONUS_MAX) return;
+    if(serverNow < (data.nextBonusAt||0)) return;
     data.balance = (data.balance||0) + 30;
     data.bonusUsedToday = (data.bonusUsedToday||0) + 1;
     data.nextBonusAt = serverNow + COOLDOWN;
     data.lastActionAt = serverNow;
     return data;
   }, async (err, committed, snapshot)=>{
-    if(err){ console.error(err); showToast('Terjadi kesalahan'); return; }
-    if(!committed){ showToast('Tidak berhasil: cooldown/limit'); return; }
-    const doc = {
-      uid: user.uid,
-      type: 'bonus',
-      amount: 30,
-      ts: await getServerTime(),
-      deviceId,
-      ip: await fetchIP(),
-      source: 'button'
-    };
-    writeHistoryToFirestore(doc);
+    if(err){ console.error(err); showToast('Kesalahan transaksi'); return; }
+    if(!committed){ showToast('Gagal: cooldown/limit'); return; }
     showToast('+30 berhasil');
+    const doc = { uid:auth.currentUser.uid, type:'bonus', amount:30, ts: await getServerTime(), deviceId, ip: await fetchIP(), source:'bonus_button' };
+    writeHistory(doc);
   });
 });
 
-/* ============== helper: show banned ============== */
+/* banned overlay */
 function showBanned(){ bannedEl.style.display='flex'; showToast('Akun dibanned',4000); }
 
-/* ============== initial actions ============== */
-window.addEventListener('load', ()=>{ // open auth modal if not authed
-  setTimeout(()=>{ if(!auth.currentUser) openAuth(); }, 700);
+/* initial flow: splash then open auth if not authed */
+window.addEventListener('load', ()=>{
+  setTimeout(()=>{ if(splash) splash.style.display='none'; }, 900);
+  setTimeout(()=>{ if(!auth.currentUser) openAuth(); }, 1100);
 });
 </script>
 </body>
