@@ -1,321 +1,609 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NUSA TASK – Bot Earning</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NUSA TASK — Final (Super Premium)</title>
+
+  <!-- Font & SweetAlert2 -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
+    :root{
+      --bg:#05060a; --card:#0e1620; --muted:#98a1a8; --accent1:#00ffd0; --accent2:#2b7cff;
+      --glass: rgba(255,255,255,0.03);
     }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:'Poppins',system-ui,Roboto,Arial;color:#e6eef1;background:linear-gradient(180deg,#03040a,#07101a)}
+    .center{display:flex;align-items:center;justify-content:center}
     /* Loading */
-    #loadingScreen {
-      animation: fadeOut 1s ease-in-out forwards;
-      animation-delay: 3.2s;
-    }
-    @keyframes fadeOut {
-      to { opacity: 0; visibility: hidden; }
-    }
-    .logo {
-      font-size: 4rem;
-      font-weight: 900;
-      background: linear-gradient(to right, #34d399, #3b82f6, #9333ea);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.1); opacity: 0.8; }
-    }
-    #loadingBar {
-      animation: loadAnim 3s linear forwards;
-    }
-    @keyframes loadAnim {
-      from { width: 0%; }
-      to { width: 100%; }
-    }
-    /* Disabled button */
-    .disabled {
-      background-color: #4b5563 !important; /* abu abu */
-      cursor: not-allowed !important;
-      opacity: 0.6 !important;
-    }
+    #loading{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:linear-gradient(180deg,rgba(2,6,11,0.85),rgba(2,6,11,0.95))}
+    .logo{font-size:64px;font-weight:800;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:logoPulse 2.4s ease-in-out infinite}
+    @keyframes logoPulse{0%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:.9}100%{transform:scale(1);opacity:1}}
+    .loading-track{width:320px;height:10px;border-radius:999px;background:rgba(255,255,255,0.04);overflow:hidden}
+    .loading-bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent1),var(--accent2));transition:width 0.2s linear}
+
+    /* App container */
+    .wrap{max-width:980px;margin:28px auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{font-weight:700}
+    .profile{display:flex;align-items:center;gap:12px}
+    .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#071826,#0b2b35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#cfeee7}
+    .email{font-size:13px;color:var(--muted)}
+
+    /* layout */
+    .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:18px;max-width:720px;margin-left:auto;margin-right:auto}
+    .card{background:var(--card);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 40px rgba(2,6,14,0.6)}
+    .title{font-weight:700;color:var(--accent1)}
+
+    /* buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:12px;border:none;cursor:pointer;font-weight:700}
+    .btn-large{width:100%;padding:16px;border-radius:14px;font-size:16px}
+    .btn-earn{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#021018}
+    .btn-xtra1{background:linear-gradient(135deg,#6ee7b7,#60a5fa);color:#021018}
+    .btn-xtra2{background:linear-gradient(135deg,#f9a8d4,#a78bfa);color:#021018}
+    .disabled{background:#4b5563!important;color:#cfcfcf!important;cursor:not-allowed!important;opacity:.85!important}
+
+    .small{font-size:13px;color:var(--muted)}
+    .saldo{font-weight:800;font-size:22px}
+
+    /* progress bars (daily progress) */
+    .progress-wrap{height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;margin-top:8px}
+    .progress-bar{height:100%;width:0%;transition:width .5s ease;border-radius:999px}
+
+    /* counters */
+    .counter{font-size:13px;color:var(--muted);margin-top:8px;text-align:center}
+
+    /* responsive */
+    @media(min-width:820px){ .grid{grid-template-columns:1fr 360px} }
   </style>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+<body>
 
   <!-- Loading -->
-  <div id="loadingScreen" class="fixed inset-0 bg-gray-900 flex flex-col items-center justify-center z-50">
+  <div id="loading">
     <div class="logo">NT</div>
-    <div class="mt-6 w-48 bg-gray-700 rounded-full h-2 overflow-hidden">
-      <div id="loadingBar" class="h-2 bg-gradient-to-r from-green-400 via-blue-500 to-purple-500"></div>
-    </div>
-    <p class="mt-4 text-gray-400">Loading...</p>
+    <div class="loading-track"><div id="loadingBar" class="loading-bar"></div></div>
+    <div class="small">Menyiapkan NUSA TASK…</div>
   </div>
 
-  <!-- Auth -->
-  <div id="authBox" class="hidden bg-gray-800 p-6 rounded-2xl shadow-lg w-96">
-    <h1 class="text-2xl font-bold text-center mb-4 text-green-400">NUSA TASK – Login</h1>
-    <form id="authForm" class="space-y-4">
-      <input id="email" type="email" placeholder="Email" required
-        class="w-full p-3 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-400">
-      <input id="password" type="password" placeholder="Password" required
-        class="w-full p-3 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-400">
-      <button type="submit" 
-        class="w-full bg-gradient-to-r from-green-400 to-blue-500 text-black font-bold py-2 rounded-lg shadow-lg hover:opacity-90">
-        Login / Register
-      </button>
-    </form>
+  <!-- App -->
+  <div class="wrap" id="app" style="display:none">
+    <header>
+      <div>
+        <div class="brand">NUSA TASK</div>
+        <div class="small">Bot Earning — Super Premium</div>
+      </div>
+
+      <div class="profile">
+        <div class="saldo" id="saldoDisplay">Rp 0</div>
+        <div class="avatar" id="avatar">NT</div>
+        <div class="email" id="emailDisplay">—</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Left: earning controls -->
+      <div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div class="title">Earning</div>
+              <div class="small">Tekan tombol untuk membuka iklan / klaim reward.</div>
+            </div>
+          </div>
+
+          <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
+
+          <!-- Earn -->
+          <div style="margin-bottom:14px">
+            <button id="btnEarn" class="btn btn-large btn-earn">Menghasilkan (Rp 20.000)</button>
+            <div class="progress-wrap" id="earnProgressWrap"><div id="earnProgress" class="progress-bar" style="background:linear-gradient(90deg,#00ffd0,#2b7cff)"></div></div>
+            <div class="counter" id="earnCounter">0 / 20 hari ini</div>
+          </div>
+
+          <!-- Bonus 1 -->
+          <div style="margin-bottom:14px">
+            <button id="btnBonus1" class="btn btn-large btn-xtra1">Xstra Bonus 1 (Rp 10.000)</button>
+            <div class="progress-wrap" id="b1ProgressWrap"><div id="b1Progress" class="progress-bar" style="background:linear-gradient(90deg,#60a5fa,#34d399)"></div></div>
+            <div class="counter" id="b1Counter">0 / 10 hari ini</div>
+          </div>
+
+          <!-- Bonus 2 -->
+          <div style="margin-bottom:6px">
+            <button id="btnBonus2" class="btn btn-large btn-xtra2">Xstra Bonus 2 (Rp 10.000)</button>
+            <div class="progress-wrap" id="b2ProgressWrap"><div id="b2Progress" class="progress-bar" style="background:linear-gradient(90deg,#f472b6,#a78bfa)"></div></div>
+            <div class="counter" id="b2Counter">0 / 10 hari ini</div>
+          </div>
+
+          <div style="margin-top:12px"><div id="statusMsg" class="small"></div></div>
+        </div>
+      </div>
+
+      <!-- Right: account info -->
+      <div>
+        <div class="card">
+          <div class="title">Informasi Akun</div>
+          <div style="margin-top:10px" class="small">
+            <div><strong>Email:</strong> <span id="infoEmail">—</span></div>
+            <div><strong>Device ID:</strong> <span id="infoDevice">—</span></div>
+            <div><strong>IP Publik:</strong> <span id="infoIP">—</span></div>
+            <div><strong>Status:</strong> <span id="infoBanned">—</span></div>
+            <div><strong>Last IP Change:</strong> <span id="infoIpChange">—</span></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="title">Aturan Anti-Tuyul</div>
+          <div class="small" style="margin-top:8px;line-height:1.5">
+            • 1 device = 1 akun. • 1 akun = 1 device. • 1 IP = 1 device. • Duplikasi akan di-ban otomatis.<br>
+            • Reset harian: <strong>06:00 WIB</strong>.<br>
+            • Jika ganti jaringan (IP) sekali dalam 6 jam masih dianggap normal.
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Dashboard -->
-  <div id="dashboard" class="hidden w-full max-w-md mx-auto p-6 space-y-6">
-    <div class="text-center">
-      <h2 class="text-2xl font-bold text-green-400">NUSA TASK – Earning</h2>
-      <span id="userEmail" class="block mt-1 text-sm bg-gray-700 px-3 py-1 rounded-lg"></span>
-    </div>
-
-    <!-- Menghasilkan -->
-    <div class="space-y-2 text-center">
-      <button id="earnBtn" class="w-full bg-green-500 text-black font-bold py-3 rounded-xl shadow hover:opacity-80 transition">
-        Menghasilkan (Rp 20.000)
-      </button>
-      <div id="earnBar" class="h-2 bg-gray-700 rounded hidden">
-        <div class="h-2 bg-green-400 rounded" style="width:0%"></div>
+  <!-- AUTH Modal (hidden until needed) -->
+  <div id="authModal" style="display:none;position:fixed;inset:0;z-index:999;align-items:center;justify-content:center" class="center">
+    <div style="width:92%;max-width:420px;background:var(--card);padding:18px;border-radius:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(2,6,14,0.6)">
+      <div style="text-align:center">
+        <div style="font-size:28px;font-weight:800;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">NT</div>
+        <div class="small" style="margin-top:6px">Masuk / Daftar</div>
       </div>
-      <p id="earnCounter" class="text-sm text-gray-400"></p>
-    </div>
 
-    <!-- Bonus 1 -->
-    <div class="space-y-2 text-center">
-      <button id="bonus1Btn" class="w-full bg-blue-500 text-black font-bold py-3 rounded-xl shadow hover:opacity-80 transition">
-        Xstra Bonus 1 (Rp 10.000)
-      </button>
-      <div id="bonus1Bar" class="h-2 bg-gray-700 rounded hidden">
-        <div class="h-2 bg-blue-400 rounded" style="width:0%"></div>
-      </div>
-      <p id="bonus1Counter" class="text-sm text-gray-400"></p>
+      <form id="authForm" style="margin-top:12px;display:grid;gap:8px">
+        <input id="inputEmail" type="email" placeholder="Email" required style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#0a0f13;color:#fff">
+        <input id="inputPass" type="password" placeholder="Password" required style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#0a0f13;color:#fff">
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+          <button type="button" id="btnAuth" class="btn btn-earn" style="padding:10px 14px">Login / Register</button>
+        </div>
+      </form>
     </div>
-
-    <!-- Bonus 2 -->
-    <div class="space-y-2 text-center">
-      <button id="bonus2Btn" class="w-full bg-purple-500 text-black font-bold py-3 rounded-xl shadow hover:opacity-80 transition">
-        Xstra Bonus 2 (Rp 10.000)
-      </button>
-      <div id="bonus2Bar" class="h-2 bg-gray-700 rounded hidden">
-        <div class="h-2 bg-purple-400 rounded" style="width:0%"></div>
-      </div>
-      <p id="bonus2Counter" class="text-sm text-gray-400"></p>
-    </div>
-
-    <p id="statusMsg" class="mt-4 text-center text-sm text-gray-400"></p>
   </div>
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
-      from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
-    import { getDatabase, ref, set, get, update, onValue } 
-      from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+<script type="module">
+/* =========================================================
+   NUSA TASK — Final script
+   - Firebase Auth (email/password)
+   - Realtime DB for user state + cooldown persistence
+   - Auto login (onAuthStateChanged)
+   - Anti-tuyul: deviceId + IP checks, auto-ban logic
+   - Reset daily at 06:00 WIB (client-triggered, robust on login)
+   - Cooldown persisted in DB (lastEarn, lastBonus1, lastBonus2)
+   - Progress bars show daily usage
+   ========================================================= */
 
-    // Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBpKWInCFVA_4-qyCT4QvW86e1uVf5YtEA",
-      authDomain: "nusataskproject-872a1.firebaseapp.com",
-      databaseURL: "https://nusataskproject-872a1-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "nusataskproject-872a1",
-      storageBucket: "nusataskproject-872a1.firebasestorage.app",
-      messagingSenderId: "669134125045",
-      appId: "1:669134125045:web:840b60f2f987aba8fcd2bc",
-      measurementId: "G-MX4259KDTG"
-    };
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+import { getDatabase, ref, set, get, update, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-    // Init
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+const firebaseConfig = {
+  apiKey: "AIzaSyBpKWInCFVA_4-qyCT4QvW86e1uVf5YtEA",
+  authDomain: "nusataskproject-872a1.firebaseapp.com",
+  databaseURL: "https://nusataskproject-872a1-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "nusataskproject-872a1",
+  storageBucket: "nusataskproject-872a1.firebasestorage.app",
+  messagingSenderId: "669134125045",
+  appId: "1:669134125045:web:840b60f2f987aba8fcd2bc",
+  measurementId: "G-MX4259KDTG"
+};
 
-    // Cooldown (ms)
-    const COOLDOWN = 180000;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-    // Progress bar
-    function startProgress(barId, duration, btn, originalText) {
-      const bar = document.querySelector(`#${barId} div`);
-      const wrapper = document.getElementById(barId);
-      wrapper.classList.remove("hidden");
+const COOLDOWN = 3 * 60 * 1000; // 3 minutes
+const EARN_REWARD = 20000;
+const XTRA_REWARD = 10000;
+const EARN_LIMIT = 20;
+const XTRA_LIMIT = 10;
 
-      let start = Date.now();
-      btn.classList.add("disabled");
-      let interval = setInterval(() => {
-        let elapsed = Date.now() - start;
-        let percent = Math.min((elapsed / duration) * 100, 100);
-        bar.style.width = percent + "%";
+// Small helpers
+const $ = id => document.getElementById(id);
+const fmt = n => 'Rp ' + Number(n||0).toLocaleString('id-ID');
 
-        let remain = Math.max(0, duration - elapsed);
-        let min = Math.floor(remain / 60000);
-        let sec = Math.floor((remain % 60000) / 1000);
-        btn.innerText = `Cooldown (${min}:${sec.toString().padStart(2,"0")})`;
+// UI elements
+const loading = $('loading');
+const loadingBar = $('loadingBar');
+const appWrap = $('app');
+const authModal = $('authModal');
+const btnAuth = $('btnAuth');
+const inputEmail = $('inputEmail');
+const inputPass = $('inputPass');
 
-        if (percent >= 100) {
-          clearInterval(interval);
-          wrapper.classList.add("hidden");
-          bar.style.width = "0%";
-          btn.classList.remove("disabled");
-          btn.innerText = originalText;
-        }
-      }, 1000);
+const btnEarn = $('btnEarn');
+const btnBonus1 = $('btnBonus1');
+const btnBonus2 = $('btnBonus2');
+const earnProgress = $('earnProgress');
+const b1Progress = $('b1Progress');
+const b2Progress = $('b2Progress');
+const earnCounter = $('earnCounter');
+const b1Counter = $('b1Counter');
+const b2Counter = $('b2Counter');
+const statusMsg = $('statusMsg');
+
+const saldoDisplay = $('saldoDisplay');
+const emailDisplay = $('emailDisplay');
+const infoEmail = $('infoEmail');
+const infoDevice = $('infoDevice');
+const infoIP = $('infoIP');
+const infoBanned = $('infoBanned');
+const infoIpChange = $('infoIpChange');
+
+// Device ID (persistent)
+function getDeviceId(){
+  let d = localStorage.getItem('nusa_device_id');
+  if(!d){
+    if(window.crypto && crypto.randomUUID) d = crypto.randomUUID();
+    else d = 'dev-' + Math.random().toString(36).slice(2,12);
+    localStorage.setItem('nusa_device_id', d);
+  }
+  return d;
+}
+const deviceId = getDeviceId();
+infoDevice.textContent = deviceId;
+
+// Smooth loading animation (3s)
+function runLoadingThenShowAuth(){
+  // animate loadingBar to 100% via CSS animation already set; ensure it reaches 100%
+  setTimeout(()=> {
+    loading.style.display = 'none';
+    // show auth modal (auto login if session exists handled below)
+    authModal.style.display = 'flex';
+  }, 3200);
+}
+runLoadingThenShowAuth();
+
+// fetch IP
+async function fetchIP(){
+  try{
+    const r = await fetch('https://api.ipify.org?format=json');
+    const j = await r.json(); return j.ip;
+  }catch(e){
+    console.warn('ipify fail',e); return '0.0.0.0';
+  }
+}
+
+// AUTH flow (login or register)
+btnAuth.addEventListener('click', async ()=> {
+  const email = inputEmail.value.trim();
+  const pass = inputPass.value.trim();
+  if(!email || !pass){ Swal.fire('Lengkapi form','Isi email & password','warning'); return; }
+
+  try{
+    // try sign in
+    const signIn = await signInWithEmailAndPassword(auth, email, pass);
+    // signed in -> modal will auto close by onAuthStateChanged
+  }catch(err){
+    // register
+    try{
+      const reg = await createUserWithEmailAndPassword(auth, email, pass);
+      // new user created -> onAuthStateChanged will init user record
+    }catch(e){
+      Swal.fire('Error', e.message, 'error');
     }
+  }
+});
 
-    // Anti tuyul
-    async function checkAntiTuyul(uid) {
-      const deviceId = localStorage.getItem("deviceId") || crypto.randomUUID();
-      localStorage.setItem("deviceId", deviceId);
+// onAuthStateChanged => auto login
+onAuthStateChanged(auth, async (user) => {
+  if(user){
+    // hide auth modal
+    authModal.style.display = 'none';
+    appWrap.style.display = 'block';
+    const uid = user.uid;
+    const email = user.email || '—';
+    emailDisplay.textContent = email;
+    infoEmail.textContent = email;
 
-      let ip = "unknown";
-      try {
-        const res = await fetch("https://api.ipify.org?format=json");
-        ip = (await res.json()).ip;
-      } catch {}
-
-      const snap = await get(ref(db, "users/" + uid));
-      if (snap.exists()) {
-        const data = snap.val();
-        if (data.deviceId && data.deviceId !== deviceId) {
-          await update(ref(db, "users/" + uid), { banned: true });
-          throw new Error("Banned: Multi device");
-        }
-        if (data.ip && data.ip !== ip) {
-          await update(ref(db, "users/" + uid), { banned: true });
-          throw new Error("Banned: Multi IP");
-        }
+    // initialize user record if not exist
+    const uRef = ref(db, 'users/' + uid);
+    const snap = await get(uRef);
+    const now = Date.now();
+    if(!snap.exists()){
+      // create user
+      await set(uRef, {
+        email,
+        balance: 0,
+        earnToday: 0, bonus1Today: 0, bonus2Today: 0,
+        lastEarn: 0, lastBonus1: 0, lastBonus2: 0,
+        lastReset: new Date().toDateString(),
+        deviceId: deviceId,
+        ip: 'unknown',
+        lastIpChangeTime: 0,
+        ipHistory: {},
+        banned: false
+      });
+    } else {
+      // ensure deviceId is set (only once)
+      const data = snap.val();
+      if(!data.deviceId){
+        await update(uRef, { deviceId });
       }
-      await update(ref(db, "users/" + uid), { deviceId, ip });
     }
 
-    // Auth
-    document.getElementById("authForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+    // run anti-tuyul checks + update IP
+    try{
+      await antiTuyulAndRegister(uid);
+    }catch(e){
+      // banned in antiTuyul
+      console.warn('Anti-tuyul triggered:', e.message);
+      Swal.fire('Akun dibanned', 'Sistem mendeteksi kecurangan — akun dibanned.', 'error');
+    }
 
-      try {
-        const userCred = await signInWithEmailAndPassword(auth, email, password);
-        await initUser(userCred.user.uid, email);
-      } catch {
-        try {
-          const userCred = await createUserWithEmailAndPassword(auth, email, password);
-          await initUser(userCred.user.uid, email, true);
-        } catch (err) {
-          Swal.fire("Error", err.message, "error");
-        }
+    // realtime listener for user data (update UI)
+    onValue(ref(db, 'users/' + uid), (s) => {
+      if(!s.exists()) return;
+      const d = s.val();
+      updateUI(d);
+      // if banned -> show message and disable buttons
+      if(d.banned){
+        disableAll('Akun dibanned');
+      }else{
+        enableButtons();
       }
     });
 
-    // Init user
-    async function initUser(uid, email, isNew=false) {
-      if (isNew) {
-        await set(ref(db, "users/" + uid), {
-          email, balance: 0,
-          earnToday: 0, bonus1Today: 0, bonus2Today: 0,
-          lastEarn: 0, lastBonus1: 0, lastBonus2: 0,
-          lastReset: new Date().toDateString(),
-          banned: false
-        });
-      }
-      await checkAntiTuyul(uid);
+    // schedule reset at next 06:00 WIB (client-side guard)
+    scheduleDailyReset(uid);
 
-      document.getElementById("authBox").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
-      document.getElementById("userEmail").innerText = email;
+  } else {
+    // signed out
+    appWrap.style.display = 'none';
+    authModal.style.display = 'flex';
+  }
+});
 
-      onValue(ref(db, "users/" + uid), (snap) => {
-        if (snap.exists()) updateUI(snap.val());
+// Anti-Tuyul logic (client-side checks + DB updates)
+// - 1 device = 1 account (deviceId bind)
+// - 1 account = 1 device (if account used on other device => ban)
+// - 1 IP = 1 device (if multiple devices on same IP => ban)
+// - Distinguish normal IP change: allow if last change > 6 hours
+async function antiTuyulAndRegister(uid){
+  const ip = await fetchIP();
+  infoIP.textContent = ip;
+  const uRef = ref(db, 'users/' + uid);
+  const snap = await get(uRef);
+  if(!snap.exists()) throw new Error('User not found');
+
+  const data = snap.val();
+
+  // 1) device change: if user already has deviceId different -> banned
+  if(data.deviceId && data.deviceId !== deviceId){
+    // if account used on another device -> ban account
+    await update(uRef, { banned: true });
+    throw new Error('device-mismatch');
+  }
+
+  // 2) device record mapping (devices/{deviceId} => uid)
+  const devRef = ref(db, 'devices/' + deviceId);
+  const devSnap = await get(devRef);
+  if(!devSnap.exists()){
+    // create device record mapping -> uid
+    await set(devRef, { uid, ip, ts: Date.now() });
+  } else {
+    const dv = devSnap.val();
+    if(dv.uid && dv.uid !== uid){
+      // device already mapped to another uid => ban the new uid (clone)
+      await update(uRef, { banned: true });
+      throw new Error('device-used-by-other');
+    }
+    // update ip/ts for device
+    await update(devRef, { ip, ts: Date.now() });
+  }
+
+  // 3) IP mapping: ips/{ipKey} list of deviceIds in last 24h
+  const ipKey = ip.replace(/\./g,'-');
+  const ipRef = ref(db, 'ips/' + ipKey);
+  const ipSnap = await get(ipRef);
+  let list = ipSnap.exists() ? ipSnap.val().list || [] : [];
+
+  // filter entries older than 24h
+  const now = Date.now();
+  list = list.filter(it => now - (it.ts||0) < 24*60*60*1000);
+
+  // if this ip already used by different deviceId (and deviceId different)
+  const otherDevices = list.map(x=>x.deviceId).filter(d=>d && d !== deviceId);
+  if(otherDevices.length > 0){
+    // aggressive rule: multiple devices on same IP -> ban account (as requested)
+    await update(uRef, { banned: true });
+    throw new Error('ip-shared-multiple-devices');
+  }
+
+  // push current device to ip list
+  list.push({ deviceId, uid, ts: now });
+  await set(ipRef, { list });
+
+  // 4) Update user ip & ipHistory & lastIpChangeTime
+  let updateData = {};
+  if(!data.ip || data.ip !== ip){
+    // if user already had ip and changed recently -> check grace
+    const lastChange = data.lastIpChangeTime || 0;
+    const SIX_HOURS = 6 * 60 * 60 * 1000;
+    if(lastChange && (now - lastChange) < SIX_HOURS){
+      // changed IP again within 6 hours => suspicious => ban
+      await update(uRef, { banned: true });
+      throw new Error('frequent-ip-change');
+    }
+    updateData.ip = ip;
+    updateData.lastIpChangeTime = now;
+    // add to ipHistory
+    const hist = data.ipHistory || {};
+    hist[now] = { ip, deviceId };
+    updateData.ipHistory = hist;
+  }
+  await update(uRef, updateData);
+}
+
+// Update UI with user data
+function updateUI(d){
+  saldoDisplay.textContent = fmt(d.balance || 0);
+  emailDisplay.textContent = d.email || '—';
+  infoEmail.textContent = d.email || '—';
+  infoBanned.textContent = d.banned ? 'BANNED' : 'ACTIVE';
+  if(d.lastIpChangeTime) infoIpChange.textContent = new Date(d.lastIpChangeTime).toLocaleString();
+
+  // update counters & progress bars (daily)
+  const e = d.earnToday || 0;
+  const b1 = d.bonus1Today || 0;
+  const b2 = d.bonus2Today || 0;
+
+  earnCounter.textContent = `${e} / ${EARN_LIMIT} hari ini`;
+  b1Counter.textContent = `${b1} / ${XTRA_LIMIT} hari ini`;
+  b2Counter.textContent = `${b2} / ${XTRA_LIMIT} hari ini`;
+
+  // progress percentages
+  earnProgress.style.width = Math.min(100, Math.round((e / EARN_LIMIT) * 100)) + '%';
+  b1Progress.style.width = Math.min(100, Math.round((b1 / XTRA_LIMIT) * 100)) + '%';
+  b2Progress.style.width = Math.min(100, Math.round((b2 / XTRA_LIMIT) * 100)) + '%';
+
+  // cooldowns - disable buttons if within cooldown (based on last timestamps)
+  const now = Date.now();
+  // Earn
+  if(d.lastEarn && (now - d.lastEarn) < COOLDOWN){
+    startCooldownUI(btnEarn, d.lastEarn, COOLDOWN, "Menghasilkan (Rp 20.000)");
+  } else {
+    enableButton(btnEarn, "Menghasilkan (Rp 20.000)");
+  }
+  // bonus1
+  if(d.lastBonus1 && (now - d.lastBonus1) < COOLDOWN){
+    startCooldownUI(btnBonus1, d.lastBonus1, COOLDOWN, "Xstra Bonus 1 (Rp 10.000)");
+  } else {
+    enableButton(btnBonus1, "Xstra Bonus 1 (Rp 10.000)");
+  }
+  // bonus2
+  if(d.lastBonus2 && (now - d.lastBonus2) < COOLDOWN){
+    startCooldownUI(btnBonus2, d.lastBonus2, COOLDOWN, "Xstra Bonus 2 (Rp 10.000)");
+  } else {
+    enableButton(btnBonus2, "Xstra Bonus 2 (Rp 10.000)");
+  }
+}
+
+// disable all
+function disableAll(msg){
+  btnEarn.classList.add('disabled');
+  btnBonus1.classList.add('disabled');
+  btnBonus2.classList.add('disabled');
+  statusMsg.textContent = msg || '';
+}
+function enableButtons(){ btnEarn.classList.remove('disabled'); btnBonus1.classList.remove('disabled'); btnBonus2.classList.remove('disabled'); statusMsg.textContent=''; }
+function enableButton(btn, text){ btn.classList.remove('disabled'); btn.innerText = text; }
+
+// start cooldown UI given lastTimestamp persisted
+function startCooldownUI(btn, lastTs, duration, originalText){
+  const remaining = Math.max(0, duration - (Date.now() - lastTs));
+  if(remaining <= 0){ enableButton(btn, originalText); return; }
+  btn.classList.add('disabled');
+  let end = Date.now() + remaining;
+  btn.innerText = formatRemaining(remaining);
+  const interval = setInterval(()=> {
+    const rem = end - Date.now();
+    if(rem <= 0){
+      clearInterval(interval);
+      enableButton(btn, originalText);
+    } else {
+      btn.innerText = formatRemaining(rem);
+    }
+  }, 1000);
+}
+function formatRemaining(ms){
+  const mm = Math.floor(ms/60000);
+  const ss = Math.floor((ms%60000)/1000);
+  return `Cooldown (${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')})`;
+}
+
+// schedule daily reset at 06:00 WIB (client-side): if user active, reset values at 06:00 local
+function scheduleDailyReset(uid){
+  // compute ms until next 06:00 local time
+  const now = new Date();
+  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0, 0);
+  if(now >= target) target.setDate(target.getDate() + 1);
+  const ms = target.getTime() - now.getTime();
+  setTimeout(async ()=> {
+    // reset daily counters in DB
+    try{
+      await update(ref(db, 'users/' + uid), {
+        earnToday: 0, bonus1Today: 0, bonus2Today: 0,
+        lastReset: new Date().toDateString()
       });
-    }
+    }catch(e){ console.warn('daily reset failed', e); }
+    // schedule next
+    scheduleDailyReset(uid);
+  }, ms + 2000); // small buffer
+}
 
-    // Update UI realtime
-    function updateUI(data) {
-      if (data.banned) {
-        document.getElementById("statusMsg").innerText = "❌ Akun Anda dibanned";
-        return;
-      }
-      document.getElementById("statusMsg").innerText = `Saldo Anda: Rp ${data.balance.toLocaleString()}`;
-      document.getElementById("earnCounter").innerText = `${data.earnToday}/20 kali hari ini`;
-      document.getElementById("bonus1Counter").innerText = `${data.bonus1Today}/10 kali hari ini`;
-      document.getElementById("bonus2Counter").innerText = `${data.bonus2Today}/10 kali hari ini`;
-    }
+// claim reward logic (atomic-ish: using runTransaction on balance)
+async function claimReward(uid, type){
+  const uRef = ref(db, 'users/' + uid);
+  const snap = await get(uRef);
+  if(!snap.exists()) return;
+  const data = snap.val();
+  if(data.banned) { Swal.fire('Akun dibanned','Anda tidak dapat melakukan klaim','error'); return; }
 
-    // Reset harian jam 00:00
-    function scheduleReset(uid) {
-      const now = new Date();
-      const msToMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime();
-      setTimeout(async () => {
-        await update(ref(db, "users/" + uid), {
-          earnToday: 0, bonus1Today: 0, bonus2Today: 0,
-          lastReset: new Date().toDateString()
-        });
-        scheduleReset(uid);
-      }, msToMidnight);
-    }
+  // ensure reset if needed (in case lastReset not today; uses 06:00 rule)
+  const today = new Date().toDateString();
+  if(data.lastReset !== today){
+    data.earnToday = 0; data.bonus1Today = 0; data.bonus2Today = 0; data.lastReset = today;
+  }
 
-    // Claim reward
-    async function claim(uid, type) {
-      const snap = await get(ref(db, "users/" + uid));
-      if (!snap.exists()) return;
-      let data = snap.val();
+  const now = Date.now();
 
-      if (data.banned) return Swal.fire("Akun Banned", "Anda tidak bisa earning.", "error");
+  // check limits & cooldowns
+  if(type === 'earn'){
+    if((data.earnToday||0) >= EARN_LIMIT){ Swal.fire('Limit Tercapai', 'Sudah mencapai limit harian', 'warning'); return; }
+    if(data.lastEarn && (now - data.lastEarn) < COOLDOWN){ Swal.fire('Cooldown', 'Tunggu beberapa saat', 'info'); return; }
+    // apply: increase balance and update counters & lastEarn
+    await runTransaction(ref(db, 'users/' + uid + '/balance'), (cur) => (cur||0) + EARN_REWARD);
+    await update(uRef, { earnToday: (data.earnToday||0) + 1, lastEarn: now });
+    startCooldownUI(btnEarn, now, COOLDOWN, 'Menghasilkan (Rp 20.000)');
+    Swal.fire('Berhasil 🎉', 'Reward Rp 20.000 telah dikreditkan', 'success');
+  }
 
-      const today = new Date().toDateString();
-      if (data.lastReset !== today) {
-        data.earnToday = 0; data.bonus1Today = 0; data.bonus2Today = 0;
-        data.lastReset = today;
-      }
+  if(type === 'bonus1'){
+    if((data.bonus1Today||0) >= XTRA_LIMIT){ Swal.fire('Limit Tercapai', 'Bonus1 sudah habis hari ini', 'warning'); return; }
+    if(data.lastBonus1 && (now - data.lastBonus1) < COOLDOWN){ Swal.fire('Cooldown', 'Tunggu beberapa saat', 'info'); return; }
+    await runTransaction(ref(db, 'users/' + uid + '/balance'), (cur) => (cur||0) + XTRA_REWARD);
+    await update(uRef, { bonus1Today: (data.bonus1Today||0) + 1, lastBonus1: now });
+    startCooldownUI(btnBonus1, now, COOLDOWN, 'Xstra Bonus 1 (Rp 10.000)');
+    Swal.fire('Berhasil 🎉', 'Bonus Rp 10.000 telah dikreditkan', 'success');
+  }
 
-      let now = Date.now();
+  if(type === 'bonus2'){
+    if((data.bonus2Today||0) >= XTRA_LIMIT){ Swal.fire('Limit Tercapai', 'Bonus2 sudah habis hari ini', 'warning'); return; }
+    if(data.lastBonus2 && (now - data.lastBonus2) < COOLDOWN){ Swal.fire('Cooldown', 'Tunggu beberapa saat', 'info'); return; }
+    await runTransaction(ref(db, 'users/' + uid + '/balance'), (cur) => (cur||0) + XTRA_REWARD);
+    await update(uRef, { bonus2Today: (data.bonus2Today||0) + 1, lastBonus2: now });
+    startCooldownUI(btnBonus2, now, COOLDOWN, 'Xstra Bonus 2 (Rp 10.000)');
+    Swal.fire('Berhasil 🎉', 'Bonus Rp 10.000 telah dikreditkan', 'success');
+  }
+}
 
-      if (type === "earn") {
-        const btn = document.getElementById("earnBtn");
-        if (data.earnToday >= 20) return Swal.fire("Limit", "20x/hari sudah tercapai", "warning");
-        if (now - data.lastEarn < COOLDOWN) return;
-        data.balance += 20000; data.earnToday++; data.lastEarn = now;
-        startProgress("earnBar", COOLDOWN, btn, "Menghasilkan (Rp 20.000)");
-      }
+// button handlers guarded by auth
+btnEarn.addEventListener('click', async ()=>{
+  const u = auth.currentUser;
+  if(!u) return Swal.fire('Login dulu','Silakan login untuk klaim','info');
+  await claimReward(u.uid, 'earn');
+});
+btnBonus1.addEventListener('click', async ()=>{
+  const u = auth.currentUser;
+  if(!u) return Swal.fire('Login dulu','Silakan login untuk klaim','info');
+  await claimReward(u.uid, 'bonus1');
+});
+btnBonus2.addEventListener('click', async ()=>{
+  const u = auth.currentUser;
+  if(!u) return Swal.fire('Login dulu','Silakan login untuk klaim','info');
+  await claimReward(u.uid, 'bonus2');
+});
 
-      if (type === "bonus1") {
-        const btn = document.getElementById("bonus1Btn");
-        if (data.bonus1Today >= 10) return Swal.fire("Limit", "Bonus1 sudah 10x/hari", "warning");
-        if (now - data.lastBonus1 < COOLDOWN) return;
-        data.balance += 10000; data.bonus1Today++; data.lastBonus1 = now;
-        startProgress("bonus1Bar", COOLDOWN, btn, "Xstra Bonus 1 (Rp 10.000)");
-      }
+/* Small polish: hide loading bar progress update to 100% smoothly (already CSS animated),
+   but also animate set width for older browsers */
+(function animateLoadingBar(){ // fill gradually if CSS didn't
+  let w = 0; const iv = setInterval(()=>{ w += 2; if(w>100){ w=100; clearInterval(iv); } loadingBar.style.width = w + '%'; }, 60);
+})();
 
-      if (type === "bonus2") {
-        const btn = document.getElementById("bonus2Btn");
-        if (data.bonus2Today >= 10) return Swal.fire("Limit", "Bonus2 sudah 10x/hari", "warning");
-        if (now - data.lastBonus2 < COOLDOWN) return;
-        data.balance += 10000; data.bonus2Today++; data.lastBonus2 = now;
-        startProgress("bonus2Bar", COOLDOWN, btn, "Xstra Bonus 2 (Rp 10.000)");
-      }
-
-      await update(ref(db, "users/" + uid), data);
-    }
-
-    // Tombol
-    document.getElementById("earnBtn").addEventListener("click", () => claim(auth.currentUser.uid, "earn"));
-    document.getElementById("bonus1Btn").addEventListener("click", () => claim(auth.currentUser.uid, "bonus1"));
-    document.getElementById("bonus2Btn").addEventListener("click", () => claim(auth.currentUser.uid, "bonus2"));
-
-    // Hilangin loading setelah 3s
-    setTimeout(() => {
-      document.getElementById("loadingScreen").style.display = "none";
-      document.getElementById("authBox").classList.remove("hidden");
-    }, 3200);
-  </script>
+</script>
 </body>
 </html>
