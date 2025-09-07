@@ -4,13 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NUSA TASK – Bot Earning</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    /* Animasi loading premium */
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    /* Loading */
     #loadingScreen {
       animation: fadeOut 1s ease-in-out forwards;
-      animation-delay: 2.5s;
+      animation-delay: 3.2s;
     }
     @keyframes fadeOut {
       to { opacity: 0; visibility: hidden; }
@@ -27,6 +31,19 @@
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.1); opacity: 0.8; }
     }
+    #loadingBar {
+      animation: loadAnim 3s linear forwards;
+    }
+    @keyframes loadAnim {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+    /* Disabled button */
+    .disabled {
+      background-color: #4b5563 !important; /* abu abu */
+      cursor: not-allowed !important;
+      opacity: 0.6 !important;
+    }
   </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
@@ -34,8 +51,8 @@
   <!-- Loading -->
   <div id="loadingScreen" class="fixed inset-0 bg-gray-900 flex flex-col items-center justify-center z-50">
     <div class="logo">NT</div>
-    <div class="mt-6 w-40 bg-gray-700 rounded-full h-2 overflow-hidden">
-      <div class="h-2 bg-gradient-to-r from-green-400 via-blue-500 to-purple-500 animate-pulse w-full"></div>
+    <div class="mt-6 w-48 bg-gray-700 rounded-full h-2 overflow-hidden">
+      <div id="loadingBar" class="h-2 bg-gradient-to-r from-green-400 via-blue-500 to-purple-500"></div>
     </div>
     <p class="mt-4 text-gray-400">Loading...</p>
   </div>
@@ -56,46 +73,46 @@
   </div>
 
   <!-- Dashboard -->
-  <div id="dashboard" class="hidden w-full max-w-lg p-6">
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-xl font-bold">NUSA TASK – Earning</h2>
-      <span id="userEmail" class="bg-gray-700 px-3 py-1 rounded-lg text-sm"></span>
+  <div id="dashboard" class="hidden w-full max-w-md mx-auto p-6 space-y-6">
+    <div class="text-center">
+      <h2 class="text-2xl font-bold text-green-400">NUSA TASK – Earning</h2>
+      <span id="userEmail" class="block mt-1 text-sm bg-gray-700 px-3 py-1 rounded-lg"></span>
     </div>
 
     <!-- Menghasilkan -->
-    <div class="mb-6">
+    <div class="space-y-2 text-center">
       <button id="earnBtn" class="w-full bg-green-500 text-black font-bold py-3 rounded-xl shadow hover:opacity-80 transition">
         Menghasilkan (Rp 20.000)
       </button>
-      <div id="earnBar" class="h-2 bg-gray-700 rounded mt-2 hidden">
+      <div id="earnBar" class="h-2 bg-gray-700 rounded hidden">
         <div class="h-2 bg-green-400 rounded" style="width:0%"></div>
       </div>
-      <p id="earnCounter" class="text-sm text-gray-400 mt-1"></p>
+      <p id="earnCounter" class="text-sm text-gray-400"></p>
     </div>
 
     <!-- Bonus 1 -->
-    <div class="mb-6">
+    <div class="space-y-2 text-center">
       <button id="bonus1Btn" class="w-full bg-blue-500 text-black font-bold py-3 rounded-xl shadow hover:opacity-80 transition">
         Xstra Bonus 1 (Rp 10.000)
       </button>
-      <div id="bonus1Bar" class="h-2 bg-gray-700 rounded mt-2 hidden">
+      <div id="bonus1Bar" class="h-2 bg-gray-700 rounded hidden">
         <div class="h-2 bg-blue-400 rounded" style="width:0%"></div>
       </div>
-      <p id="bonus1Counter" class="text-sm text-gray-400 mt-1"></p>
+      <p id="bonus1Counter" class="text-sm text-gray-400"></p>
     </div>
 
     <!-- Bonus 2 -->
-    <div class="mb-6">
+    <div class="space-y-2 text-center">
       <button id="bonus2Btn" class="w-full bg-purple-500 text-black font-bold py-3 rounded-xl shadow hover:opacity-80 transition">
         Xstra Bonus 2 (Rp 10.000)
       </button>
-      <div id="bonus2Bar" class="h-2 bg-gray-700 rounded mt-2 hidden">
+      <div id="bonus2Bar" class="h-2 bg-gray-700 rounded hidden">
         <div class="h-2 bg-purple-400 rounded" style="width:0%"></div>
       </div>
-      <p id="bonus2Counter" class="text-sm text-gray-400 mt-1"></p>
+      <p id="bonus2Counter" class="text-sm text-gray-400"></p>
     </div>
 
-    <p id="statusMsg" class="mt-6 text-center text-sm text-gray-400"></p>
+    <p id="statusMsg" class="mt-4 text-center text-sm text-gray-400"></p>
   </div>
 
   <!-- Firebase -->
@@ -127,18 +144,29 @@
     const COOLDOWN = 180000;
 
     // Progress bar
-    function startProgress(barId, duration) {
+    function startProgress(barId, duration, btn, originalText) {
       const bar = document.querySelector(`#${barId} div`);
       const wrapper = document.getElementById(barId);
       wrapper.classList.remove("hidden");
+
       let start = Date.now();
+      btn.classList.add("disabled");
       let interval = setInterval(() => {
-        let percent = Math.min(((Date.now() - start) / duration) * 100, 100);
+        let elapsed = Date.now() - start;
+        let percent = Math.min((elapsed / duration) * 100, 100);
         bar.style.width = percent + "%";
+
+        let remain = Math.max(0, duration - elapsed);
+        let min = Math.floor(remain / 60000);
+        let sec = Math.floor((remain % 60000) / 1000);
+        btn.innerText = `Cooldown (${min}:${sec.toString().padStart(2,"0")})`;
+
         if (percent >= 100) {
           clearInterval(interval);
           wrapper.classList.add("hidden");
           bar.style.width = "0%";
+          btn.classList.remove("disabled");
+          btn.innerText = originalText;
         }
       }, 1000);
     }
@@ -201,7 +229,7 @@
       }
       await checkAntiTuyul(uid);
 
-      document.getElementById("authBox").classList.remove("hidden");
+      document.getElementById("authBox").classList.add("hidden");
       document.getElementById("dashboard").classList.remove("hidden");
       document.getElementById("userEmail").innerText = email;
 
@@ -252,24 +280,27 @@
       let now = Date.now();
 
       if (type === "earn") {
+        const btn = document.getElementById("earnBtn");
         if (data.earnToday >= 20) return Swal.fire("Limit", "20x/hari sudah tercapai", "warning");
-        if (now - data.lastEarn < COOLDOWN) return Swal.fire("Cooldown", "Tunggu 3 menit lagi", "info");
+        if (now - data.lastEarn < COOLDOWN) return;
         data.balance += 20000; data.earnToday++; data.lastEarn = now;
-        startProgress("earnBar", COOLDOWN);
+        startProgress("earnBar", COOLDOWN, btn, "Menghasilkan (Rp 20.000)");
       }
 
       if (type === "bonus1") {
+        const btn = document.getElementById("bonus1Btn");
         if (data.bonus1Today >= 10) return Swal.fire("Limit", "Bonus1 sudah 10x/hari", "warning");
-        if (now - data.lastBonus1 < COOLDOWN) return Swal.fire("Cooldown", "Tunggu 3 menit lagi", "info");
+        if (now - data.lastBonus1 < COOLDOWN) return;
         data.balance += 10000; data.bonus1Today++; data.lastBonus1 = now;
-        startProgress("bonus1Bar", COOLDOWN);
+        startProgress("bonus1Bar", COOLDOWN, btn, "Xstra Bonus 1 (Rp 10.000)");
       }
 
       if (type === "bonus2") {
+        const btn = document.getElementById("bonus2Btn");
         if (data.bonus2Today >= 10) return Swal.fire("Limit", "Bonus2 sudah 10x/hari", "warning");
-        if (now - data.lastBonus2 < COOLDOWN) return Swal.fire("Cooldown", "Tunggu 3 menit lagi", "info");
+        if (now - data.lastBonus2 < COOLDOWN) return;
         data.balance += 10000; data.bonus2Today++; data.lastBonus2 = now;
-        startProgress("bonus2Bar", COOLDOWN);
+        startProgress("bonus2Bar", COOLDOWN, btn, "Xstra Bonus 2 (Rp 10.000)");
       }
 
       await update(ref(db, "users/" + uid), data);
@@ -284,7 +315,7 @@
     setTimeout(() => {
       document.getElementById("loadingScreen").style.display = "none";
       document.getElementById("authBox").classList.remove("hidden");
-    }, 3000);
+    }, 3200);
   </script>
 </body>
 </html>
