@@ -16,6 +16,22 @@
     .btn:hover { transform: scale(1.03); opacity: .9; }
     .btn-green { background: linear-gradient(135deg, #11998e, #38ef7d); color: white; }
     .btn-disabled { background: #555 !important; cursor: not-allowed; }
+
+    /* 🔔 Notif Overlay */
+    #notifOverlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      display: none; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.6); z-index: 9999;
+    }
+    #notifCard {
+      background: #151b2b; padding: 20px; border-radius: 15px;
+      text-align: center; max-width: 320px; width: 90%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      animation: fadeInUp 0.4s ease;
+    }
+    #notifCard h2 { font-size: 1.2rem; margin-bottom: 10px; font-weight: 600; }
+    #notifCard p { font-size: .9rem; opacity: .9; }
+    @keyframes fadeInUp { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
   </style>
 </head>
 <body>
@@ -39,6 +55,15 @@
 
       <div class="section-title">Tugas Harian</div>
       <button id="btnTask1" class="btn btn-green">Kerjakan Tugas 1</button>
+      <button id="btnLogout" class="btn btn-green">Logout</button>
+    </div>
+  </div>
+
+  <!-- Notif -->
+  <div id="notifOverlay">
+    <div id="notifCard">
+      <h2 id="notifTitle">Notif</h2>
+      <p id="notifMsg">Pesan disini</p>
     </div>
   </div>
 
@@ -46,7 +71,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import { 
-      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged 
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import { getDatabase, ref, onValue, runTransaction, get, set } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
@@ -65,15 +90,38 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
+    // 🔔 Notif Function
+    function showNotif(type, title, msg, sticky=false) {
+      const overlay = document.getElementById("notifOverlay");
+      const titleEl = document.getElementById("notifTitle");
+      const msgEl = document.getElementById("notifMsg");
+
+      let color = "#38ef7d"; // green
+      if (type === "error") color = "#ff4444";
+      if (type === "warn") color = "#ffbb33";
+      if (type === "ban") color = "#ff4444";
+
+      titleEl.innerText = title;
+      msgEl.innerText = msg;
+      titleEl.style.color = color;
+
+      overlay.style.display = "flex";
+      if (!sticky) setTimeout(() => { overlay.style.display = "none"; }, 3000);
+    }
+
+    // 🔒 Overlay banned
+    function showBanned() {
+      showNotif("ban", "Akun Diblokir", "❌ Akun anda dibanned. Hubungi admin: t.me/nusataskproject", true);
+      document.getElementById("mainBox").innerHTML = "";
+    }
+
     // 🔹 Ambil IP Publik
     async function getUserIP() {
       try {
         const res = await fetch("https://api.ipify.org?format=json");
         const data = await res.json();
         return data.ip;
-      } catch {
-        return "0.0.0.0";
-      }
+      } catch { return "0.0.0.0"; }
     }
 
     // 🔹 Anti Tuyul Security
@@ -89,7 +137,6 @@
       if (secData.banned) { showBanned(); return false; }
 
       let ips = secData.ipHistory[today] || [];
-
       if (!ips.includes(ip)) {
         if (ips.length >= 2) {
           await set(secRef, { ...secData, banned: true });
@@ -118,24 +165,13 @@
       return true;
     }
 
-    // 🔹 Overlay Banned
-    function showBanned() {
-      document.body.innerHTML = `
-        <div style="background:#000c;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;text-align:center;z-index:9999;">
-          <h1 style="font-size:2rem;color:red;">❌ Akun anda di banned</h1>
-          <p>Hubungi admin</p>
-          <a href="https://t.me/nusataskproject" style="color:#00aced;font-size:1.2rem;">t.me/nusataskproject</a>
-        </div>
-      `;
-    }
-
     // 🔹 Register
     document.getElementById("btnRegister").addEventListener("click", () => {
       const email = document.getElementById("email").value;
       const pass = document.getElementById("password").value;
       createUserWithEmailAndPassword(auth, email, pass)
-        .then(() => console.log("Registrasi berhasil"))
-        .catch(err => alert(err.message));
+        .then(() => showNotif("success", "Registrasi", "✅ Akun berhasil dibuat & login"))
+        .catch(err => showNotif("error", "Error", err.message));
     });
 
     // 🔹 Login
@@ -143,14 +179,20 @@
       const email = document.getElementById("email").value;
       const pass = document.getElementById("password").value;
       signInWithEmailAndPassword(auth, email, pass)
-        .catch(err => alert(err.message));
+        .catch(err => showNotif("error", "Login Gagal", err.message));
+    });
+
+    // 🔹 Logout
+    document.getElementById("btnLogout").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        location.reload();
+      });
     });
 
     // 🔹 Listener Auth
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const uid = user.uid;
-
         const safe = await checkSecurity(uid);
         if (!safe) return;
 
@@ -174,25 +216,19 @@
           const last = dailyData["btnTask1"]?.last || 0;
           const now = Date.now();
 
-          if (count >= 20) { alert("❌ Limit harian tercapai."); return; }
-          if (now - last < 120000) { alert("⏳ Masih cooldown, tunggu 2 menit."); return; }
+          if (count >= 20) { showNotif("warn", "Limit Harian", "❌ Sudah 20x klik hari ini"); return; }
+          if (now - last < 120000) { showNotif("warn", "Cooldown", "⏳ Tunggu 2 menit sebelum klik lagi"); return; }
 
           const ip = await getUserIP();
-
           runTransaction(saldoRef, (saldo) => (saldo || 0) + 500);
-
           set(ref(db, `daily/${uid}/btnTask1`), { count: count + 1, last: now });
 
-          // 🔹 Simpan log
+          // 🔹 Log aktivitas
           const today = new Date().toISOString().split("T")[0];
           const logRef = ref(db, `logs/${uid}/${today}/${Date.now()}`);
-          set(logRef, {
-            task: "btnTask1",
-            reward: 500,
-            ip: ip,
-            time: new Date().toISOString()
-          });
+          set(logRef, { task: "btnTask1", reward: 500, ip: ip, time: new Date().toISOString() });
 
+          showNotif("success", "Berhasil", "✅ +Rp500 ditambahkan ke saldo");
           startCooldown(el, 120);
         });
 
